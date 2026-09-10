@@ -8,6 +8,33 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [0.35.0] — 2026-09-10
+
+### Fixed
+
+- **A deploy no longer kills an in-flight `mycelium login`.** Pending device
+  authorizations and one-time login codes were held only in process memory, so
+  the twenty-second redeploy any push to main triggers invalidated a code the
+  user was mid-approve or mid-paste. Both stores now persist to
+  `devices.json` and `login-codes.json` under the data dir and reload at boot.
+  Device codes are stored keyed by hash (matching `tokens.json`), the minted
+  token is never written to disk, and a consumed code is removed at consume-time
+  so a restart can't replay it. Writes are atomic (temp file + rename), so a
+  torn file on crash cannot silently empty the store.
+
+### Changed
+
+- **Server state files are fenced from sync.** `devices.json` and
+  `login-codes.json` join `tokens.json` in `syncSkip`, so a machine can't fetch
+  them through the file sync that moves wiki content.
+
+### Removed
+
+- **The nacelle transcript collector.** `collectNacelle` tailed
+  `~/.nacelle/sessions/` — a privacy-narrowed transcript — while Nacelle usage
+  already arrives through the canonical `events/` feed. The redundant,
+  transcript-reading collector is gone; no nacelle usage is lost.
+
 ## [0.34.0] — 2026-09-10
 
 ### Added
