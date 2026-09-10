@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -67,8 +68,8 @@ func New(dataDir, password string) *Server {
 			devStarts: newRateLimiter(20, time.Minute),
 			devPolls:  newRateLimiter(120, time.Minute),
 		},
-		devices:    newDeviceStore(),
-		loginCodes: newLoginCodeStore(),
+		devices:    newDeviceStore(filepath.Join(dataDir, "devices.json"), slog.Default()),
+		loginCodes: newLoginCodeStore(filepath.Join(dataDir, "login-codes.json"), slog.Default()),
 	}
 	s.loadTokens()
 	return s

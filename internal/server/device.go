@@ -1,8 +1,8 @@
 package server
 
 import (
-	"crypto/rand"
 	"errors"
+	"log/slog"
 	"strings"
 	"sync"
 	"time"
@@ -28,26 +28,44 @@ var ErrTooManyDevices = errors.New("too many pending device authorizations")
 type deviceStatus string
 
 type deviceRequest struct {
-	DeviceCode string
-	UserCode   string
-	Machine    string
-	IP         string
-	Status     deviceStatus
-	Token      string
-	Expires    time.Time
+	// DeviceCode is the bearer the terminal polls with, handed back exactly once
+	// at create and never serialized.
+	DeviceCode string       `json:"-"`
+	UserCode   string       `json:"user_code"`
+	Machine    string       `json:"machine"`
+	IP         string       `json:"ip"`
+	Status     deviceStatus `json:"status"`
+	// Token is the minted credential delivered to a poll. It is the one
+	// long-lived secret in the record, so it never reaches disk, and an approved
+	// request is dropped from the persisted set entirely so a restart cannot
+	// replay it.
+	Token   string    `json:"-"`
+	Expires time.Time `json:"expires"`
 }
 
+// deviceStore tracks pending and in-flight device authorizations. Entries
+// persist to path (keyed by hash of the device code, matching tokens.json) so a
+// restarted server — any push to main is a deploy — keeps a login a human
+// started before the restart instead of telling them their code died. A nil or
+// empty path keeps the store purely in memory, which is what the unit tests
+// want.
 type deviceStore struct {
 	mu       sync.Mutex
 	byDevice map[string]*deviceRequest
 	byUser   map[string]*deviceRequest
+	path     string
+	log      *slog.Logger
 }
 
-func newDeviceStore() *deviceStore {
-	return &deviceStore{
+func newDeviceStore(path string, log *slog.Logger) *deviceStore {
+	d := &deviceStore{
 		byDevice: make(map[string]*deviceRequest),
 		byUser:   make(map[string]*deviceRequest),
+		path:     path,
+		log:      log,
 	}
+	d.load()
+	return d
 }
 
 // normalizeUserCode upper-cases and strips anything that isn't part of the
@@ -94,8 +112,9 @@ func (d *deviceStore) create(machine, ip string, now time.Time) (deviceRequest, 
 	if len(d.byDevice) >= maxPendingDevices {
 		return deviceRequest{}, ErrTooManyDevices
 	}
-	d.byDevice[deviceCode] = req
+	d.byDevice[deviceKey(deviceCode)] = req
 	d.byUser[normalizeUserCode(userCode)] = req
+	d.persist()
 	return *req, nil
 }
 
@@ -120,6 +139,7 @@ func (d *deviceStore) approve(userCode, token string) (string, bool) {
 	}
 	req.Status = deviceApproved
 	req.Token = token
+	d.persist()
 	return req.Machine, true
 }
 
@@ -132,6 +152,7 @@ func (d *deviceStore) deny(userCode string) bool {
 		return false
 	}
 	req.Status = deviceDenied
+	d.persist()
 	return true
 }
 
@@ -141,30 +162,17 @@ func (d *deviceStore) poll(deviceCode string) (deviceStatus, string, bool) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	d.sweep(time.Now())
-	req, ok := d.byDevice[deviceCode]
+	key := deviceKey(deviceCode)
+	req, ok := d.byDevice[key]
 	if !ok {
 		return "", "", false
 	}
 	if req.Status == deviceApproved {
 		token := req.Token
-		delete(d.byDevice, req.DeviceCode)
+		delete(d.byDevice, key)
 		delete(d.byUser, normalizeUserCode(req.UserCode))
+		d.persist()
 		return deviceApproved, token, true
 	}
 	return req.Status, "", true
-}
-
-func generateUserCode() (string, error) {
-	b := make([]byte, 8)
-	if _, err := rand.Read(b); err != nil {
-		return "", err
-	}
-	out := make([]byte, 0, 9)
-	for i, c := range b {
-		if i == 4 {
-			out = append(out, '-')
-		}
-		out = append(out, userCodeAlphabet[int(c)%len(userCodeAlphabet)])
-	}
-	return string(out), nil
 }

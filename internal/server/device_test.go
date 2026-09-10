@@ -124,7 +124,7 @@ func TestDeviceApproveRequiresAdmin(t *testing.T) {
 // The store caps pending requests and normalizes user-code lookups: entry is
 // forgiving, so lowercase and a mangled separator still resolve.
 func TestDeviceStoreCapAndNormalization(t *testing.T) {
-	d := newDeviceStore()
+	d := newDeviceStore("", nil)
 	now := time.Now()
 
 	var last deviceRequest

@@ -147,6 +147,8 @@ func (s *Server) resolveSyncPath(root, rel string) (string, bool) {
 // is reachable only through its own scoped root, never via the common tree.
 func syncSkip(rel string) bool {
 	return rel == "tokens.json" ||
+		rel == "devices.json" ||
+		rel == "login-codes.json" ||
 		strings.HasPrefix(rel, ".") ||
 		strings.HasPrefix(rel, "runs/") ||
 		inPackageDir(rel) ||

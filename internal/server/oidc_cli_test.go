@@ -206,7 +206,7 @@ func TestAnExchangeWithoutAValidCodeIsRefused(t *testing.T) {
 }
 
 func TestAnExpiredLoginCodeIsRefused(t *testing.T) {
-	store := newLoginCodeStore()
+	store := newLoginCodeStore("", nil)
 	now := time.Now().UTC()
 	store.create(hashToken("code"), "yann@facile.studio", scopeUser, now)
 
