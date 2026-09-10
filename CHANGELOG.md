@@ -8,7 +8,37 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
-## [Unreleased]
+## [0.34.0] — 2026-09-10
+
+### Added
+
+- **Every recorded flow is now its own MCP tool.** `~/.mycelium/flows/*.yml` each
+  generate a dedicated `run_flow_<name>` tool carrying the flow's description, so a
+  host calling Mycelium's MCP server gets a named entry per procedure instead of one
+  generic `run_flow`. The generic `run_flow` and `list_flows` remain as fallbacks.
+
+- **`mycelium spaces` matches nuage.** The CLI now renders the suite standard — a
+  leading `*` selection marker, an explicit `common` row, 8-character short ids — and
+  resolves a space by id prefix as well as full id and case-insensitive name, with an
+  explicit `--json` output for script use.
+
+### Changed
+
+- **The compose file is swarm-safe and comment-light.** `docker-compose.yml` was
+  reformatted for zero-downtime swarm deploys and sheds its block explanatory comments
+  (the env-driven bus and search provenance is now documented in `docs/deployment.md`
+  and `AGENTS.md` instead).
+- **The API reference is generated from the scalar OpenAPI spec.** `internal/documentation`
+  now derives the endpoint reference from OpenAPI rather than a hand-maintained list,
+  so the docs cannot drift from the routes.
+- **`filet.yml` harmonised to the strict suite standard**, and the release config drops
+  the deprecated Homebrew cask `url.verified` key.
+
+### Fixed
+
+- **The container healthcheck probes the binary, not `nc`.** The base image carries no
+  `nc`, so the compose healthcheck could never pass; it now runs `/mycelium healthcheck`
+  at a tighter 10s interval.
 
 ## [0.33.0] — 2026-08-30
 
