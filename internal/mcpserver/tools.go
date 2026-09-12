@@ -79,7 +79,7 @@ func runFlowTool() *mcp.Tool {
 	}
 }
 
-// publishArtifactTool declares the tool that records rendered artifacts and reports.
+// publishArtifactTool declares the tool that records rendered artifacts.
 func publishArtifactTool() *mcp.Tool {
 	return &mcp.Tool{
 		Name:  "publish_artifact",
@@ -87,9 +87,9 @@ func publishArtifactTool() *mcp.Tool {
 		Description: "Record a markdown or HTML document in the synced tree, open it in the browser, " +
 			"and return its canonical web URL and file path. Accepts either inline 'content' or a file 'path'.\n\n" +
 			"Use it when the answer is structural rather than linear: a comparison across many items, " +
-			"a timeline, a graph, or an extensive report. Answer in the conversation first and " +
+			"a timeline, a graph, or an extensive overview. Answer in the conversation first and " +
 			"record an artifact as an attachment to that answer, never in place of it. A durable finding belongs " +
-			"in the wiki as memory; an artifact is a rendered presentation or report, and it expires in 30 days.\n\n" +
+			"in the wiki as memory; an artifact is a rendered presentation, and it expires in 30 days.\n\n" +
 			"The page must carry everything it needs inline. The document's title becomes the artifact's name, " +
 			"so recording the same title replaces it rather than piling up copies.",
 		Annotations: &mcp.ToolAnnotations{
@@ -99,13 +99,6 @@ func publishArtifactTool() *mcp.Tool {
 			OpenWorldHint:   hint(false),
 		},
 	}
-}
-
-func publishReportTool() *mcp.Tool {
-	t := publishArtifactTool()
-	t.Name = "publish_report"
-	t.Title = "Publish a report"
-	return t
 }
 
 // flowToTool converts a recorded flow into an MCP tool that runs it. The

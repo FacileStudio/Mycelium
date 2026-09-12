@@ -73,7 +73,7 @@ func resultText(res *mcp.CallToolResult) string {
 // appearing here should be a decision somebody made rather than a surprise.
 func TestToolsListReportsAllBuiltInAndFlowTools(t *testing.T) {
 	tools := listTools(t)
-	builtIn := map[string]bool{"list_flows": true, "publish_artifact": true, "publish_report": true, "run_flow": true, "search_memory": true}
+	builtIn := map[string]bool{"list_flows": true, "publish_artifact": true, "run_flow": true, "search_memory": true}
 	seen := make(map[string]bool)
 	for _, tool := range tools {
 		if seen[tool.Name] {
@@ -102,9 +102,7 @@ func TestEveryToolSetsAllFourAnnotationsExplicitly(t *testing.T) {
 		"list_flows":       {ReadOnlyHint: true, DestructiveHint: hint(false), IdempotentHint: true, OpenWorldHint: hint(false)},
 		"run_flow":         {ReadOnlyHint: false, DestructiveHint: hint(true), IdempotentHint: false, OpenWorldHint: hint(true)},
 		"publish_artifact": {ReadOnlyHint: false, DestructiveHint: hint(false), IdempotentHint: true, OpenWorldHint: hint(false)},
-		"publish_report":   {ReadOnlyHint: false, DestructiveHint: hint(false), IdempotentHint: true, OpenWorldHint: hint(false)},
 	}
-	// Flow tools inherit the same annotations as run_flow (destructive, open-world)
 	flowAnnotations := &mcp.ToolAnnotations{ReadOnlyHint: false, DestructiveHint: hint(true), IdempotentHint: false, OpenWorldHint: hint(true)}
 	for _, tool := range listTools(t) {
 		if tool.Annotations == nil {
@@ -113,7 +111,6 @@ func TestEveryToolSetsAllFourAnnotationsExplicitly(t *testing.T) {
 		}
 		expected, ok := want[tool.Name]
 		if !ok {
-			// Flow tool — uses run_flow annotations
 			expected = flowAnnotations
 		}
 		if !reflect.DeepEqual(tool.Annotations, expected) {

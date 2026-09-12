@@ -8,6 +8,20 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [0.36.0] — 2026-09-12
+
+### Removed
+
+- **`publish_report` MCP tool alias removed.** The compatibility alias left
+  behind when `publish_artifact` became the primary tool name is no longer
+  registered. Clients must call `publish_artifact`. Tool descriptions no longer
+  refer to artifacts as "reports".
+
+### Fixed
+
+- **The fire-and-forget artifact sync in the MCP server is explicit.** A failed
+  sync after recording an artifact no longer looks like an ignored error.
+
 ## [0.35.0] — 2026-09-10
 
 ### Fixed

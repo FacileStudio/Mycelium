@@ -39,7 +39,6 @@ func New(version string) *mcp.Server {
 	mcp.AddTool(s, listFlowsTool(), listFlows)
 	mcp.AddTool(s, runFlowTool(), runFlow)
 	mcp.AddTool(s, publishArtifactTool(), publishArtifact)
-	mcp.AddTool(s, publishReportTool(), publishArtifact)
 
 	flows, _ := flow.List()
 	for _, f := range flows {

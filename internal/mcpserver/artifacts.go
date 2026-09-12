@@ -63,7 +63,8 @@ func syncArtifact() string {
 	}
 	client := hsync.NewClient(cfg.ServerURL(), cfg.AuthToken())
 	client.Space = cfg.SpaceID()
-	_, _ = client.Sync(config.DataDir())
+	//nolint:errcheck // best-effort sync: the artifact is already recorded, the URL must survive a dead server
+	client.Sync(config.DataDir())
 	return cfg.ServerURL()
 }
 
