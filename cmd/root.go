@@ -37,7 +37,7 @@ func init() {
 	_ = doctorCmd
 	_ = flowCmd
 	_ = initCmd
-	_ = installCmd
+	newInstallCmd()
 	_ = loginCmd
 	_ = logoutCmd
 	_ = mcpCmd
