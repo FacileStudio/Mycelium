@@ -6,11 +6,11 @@
 		bucketLabel,
 		dayKey,
 		dayWindow,
-		formatAge,
 		formatBytes,
 		periodDelta,
 		sum
 	} from '$lib/metrics';
+	import { formatAge } from '$lib/format';
 
 	let {
 		files,

@@ -6,7 +6,7 @@ import 'highlight.js/styles/github-dark.css';
 import AlertBlock from './AlertBlock.svelte';
 import MermaidBlock from './MermaidBlock.svelte';
 import ListItem from './ListItem.svelte';
-import { parseAlert, parseBarChart, parseCompare, parseDiff, parseListItem, stripFrontmatter } from './MarkdownMuseUtils';
+import { parseAlert, parseBarChart, parseCompare, parseDiff, parseListItem, parseMetrics, stripFrontmatter } from './MarkdownMuseUtils';
 import { richInline, richBlock } from './MarkdownMuseRich';
 
 function highlightCode(code: string, lang: string): string {
