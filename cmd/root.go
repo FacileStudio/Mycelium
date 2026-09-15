@@ -50,7 +50,7 @@ func init() {
 	newServeCmd()
 	_ = sessionsCmd
 	_ = statusCmd
-	_ = syncCmd
+	newSyncCmd()
 	_ = usageCmd
 }
 
