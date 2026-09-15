@@ -47,7 +47,7 @@ func init() {
 	_ = memoryRatifyCmd
 	_ = recapCmd
 	_ = rulesCmd
-	_ = serveCmd
+	newServeCmd()
 	_ = sessionsCmd
 	_ = statusCmd
 	_ = syncCmd
