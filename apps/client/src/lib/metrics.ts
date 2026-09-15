@@ -71,3 +71,58 @@ export function bucketLabel(label: string): string {
 	if (parts.length >= 3) return `${month} ${Number(parts[2])}`;
 	return `${month} ${parts[0]?.slice(2) ?? ''}`;
 }
+
+export function formatDuration(seconds: number): string {
+	const h = Math.floor(seconds / 3600);
+	const m = Math.floor((seconds % 3600) / 60);
+	const s = seconds % 60;
+	if (h > 0) {
+		return `${h}h ${m > 0 ? m + 'm' : ''} ${s > 0 ? s + 's' : ''}`.trim();
+	}
+	if (m > 0) {
+		return `${m}m ${s > 0 ? s + 's' : ''}`.trim();
+	}
+	return `${s}s`;
+}
+
+export function formatTokens(tokens: number): string {
+	if (tokens >= 1_000_000) {
+		return `${(tokens / 1_000_000).toFixed(1)}M`;
+	}
+	if (tokens >= 1_000) {
+		return `${(tokens / 1_000).toFixed(1)}K`;
+	}
+	return tokens.toString();
+}
+
+export function formatCost(cost: number): string {
+	if (cost >= 100) return `$${Math.round(cost)}`;
+	if (cost >= 0.01) return `$${cost.toFixed(2)}`;
+	return `$${cost.toFixed(4)}`;
+}
+
+export function formatBytes(bytes: number): string {
+	if (bytes >= 1_000_000_000) {
+		return `${(bytes / 1_000_000_000).toFixed(1)} GB`;
+	}
+	if (bytes >= 1_000_000) {
+		return `${(bytes / 1_000_000).toFixed(1)} MB`;
+	}
+	if (bytes >= 1_000) {
+		return `${(bytes / 1_000).toFixed(1)} KB`;
+	}
+	return `${bytes} B`;
+}
+
+export function formatAge(timestamp: number): string {
+	const now = Date.now();
+	const diff = now - timestamp;
+	const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+	if (days === 0) return 'today';
+	if (days === 1) return 'yesterday';
+	if (days < 7) return `${days} days ago`;
+	if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
+	if (days < 365) return `${Math.floor(days / 30)} months ago`;
+	return `${Math.floor(days / 365)} years ago`;
+}
