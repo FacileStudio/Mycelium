@@ -47,3 +47,51 @@ export function formatCost(n: number): string {
 	if (n >= 0.01) return `$${n.toFixed(2)}`;
 	return `$${n.toFixed(4)}`;
 }
+
+export function parseBarChart(raw: string) {
+	const lines = raw.trim().split('\n');
+	let title = '';
+	const items: { label: string; value: number; formatted: string }[] = [];
+
+	for (const line of lines) {
+		const trimmed = line.trim();
+		if (!trimmed) continue;
+		const colon = trimmed.indexOf(':');
+		if (colon < 0) continue;
+		const key = trimmed.slice(0, colon).trim();
+		const rawVal = trimmed.slice(colon + 1).trim();
+		if (key.toLowerCase() === 'title') {
+			title = rawVal;
+			continue;
+		}
+		const numMatch = rawVal.match(/[\d.,]+/);
+		const num = numMatch ? parseFloat(numMatch[0].replace(',', '.')) : 0;
+		items.push({ label: key, value: num, formatted: rawVal });
+	}
+
+	const max = Math.max(...items.map((i) => i.value), 1);
+	return { title, items, max };
+}
+
+export function parseMetrics(raw: string) {
+	const blocks = raw.trim().split(/---+/);
+	return blocks
+		.map((block) => {
+			const lines = block.trim().split('\n');
+			let label = '';
+			let val = '';
+			let sub = '';
+			for (const line of lines) {
+				const colon = line.indexOf(':');
+				if (colon < 0) continue;
+				const k = line.slice(0, colon).trim().toLowerCase();
+				const v = line.slice(colon + 1).trim();
+				if (k === 'label' || k === 'title') label = v;
+				else if (k === 'val' || k === 'value') val = v;
+				else if (k === 'sub' || k === 'desc' || k === 'subtitle') sub = v;
+			}
+			if (!val && !label) return null;
+			return { label, val, sub };
+		})
+		.filter((m): m is { label: string; val: string; sub: string } => m !== null);
+}
