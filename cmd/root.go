@@ -55,6 +55,7 @@ func init() {
 }
 
 // Execute runs the root command and exits non-zero on failure.
+// Trigger rebuild for Dokploy.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
