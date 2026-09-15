@@ -88,28 +88,24 @@
 		zoom = Math.min(Math.max(zoom * factor, 0.2), 8);
 	}
 
-	function handlePointerDown(e: PointerEvent) {
-		if (e.button !== 0) return;
-		isDragging = true;
-		startX = e.clientX;
-		startY = e.clientY;
-		startPanX = panX;
-		startPanY = panY;
-		(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-	}
-
-	function handlePointerMove(e: PointerEvent) {
-		if (!isDragging) return;
-		panX = startPanX + (e.clientX - startX);
-		panY = startPanY + (e.clientY - startY);
-	}
-
-	function handlePointerUp(e: PointerEvent) {
-		if (!isDragging) return;
-		isDragging = false;
-		try {
-			(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-		} catch {}
+	function handlePointer(e: PointerEvent) {
+		if (e.button !== 0 && e.type !== 'pointerup') return;
+		if (e.type === 'pointerdown') {
+			isDragging = true;
+			startX = e.clientX;
+			startY = e.clientY;
+			startPanX = panX;
+			startPanY = panY;
+			(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+		} else if (e.type === 'pointermove' && isDragging) {
+			panX = startPanX + (e.clientX - startX);
+			panY = startPanY + (e.clientY - startY);
+		} else if (e.type === 'pointerup' && isDragging) {
+			isDragging = false;
+			try {
+				(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+			} catch {}
+		}
 	}
 
 	function copyToClipboard(text: string) {
@@ -194,10 +190,10 @@
 		{:else}
 			<div
 				class="relative flex h-full w-full flex-1 items-center justify-center overflow-hidden p-8 cursor-grab active:cursor-grabbing touch-none"
-				onpointerdown={handlePointerDown}
-				onpointermove={handlePointerMove}
-				onpointerup={handlePointerUp}
-				onpointercancel={handlePointerUp}
+				onpointerdown={handlePointer}
+				onpointermove={handlePointer}
+				onpointerup={handlePointer}
+				onpointercancel={handlePointer}
 				onwheel={handleWheel}
 				ondblclick={fitToScreen}
 				role="region"

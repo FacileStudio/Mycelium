@@ -21,22 +21,14 @@
 	let inlineStartPanY = 0;
 
 	function getSvgDimensions(): { width: number; height: number } {
-		const match = svgHtml.match(/viewBox=["']([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)["']/i);
+		const match = svgHtml.match(/viewBox=["\']([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)["\']/i);
 		if (match) {
 			const w = parseFloat(match[3]);
 			const h = parseFloat(match[4]);
 			if (w > 0 && h > 0) return { width: w, height: h };
 		}
 		return { width: 800, height: 600 };
-	}
-
-	function defaultInlineZoom(): number {
-		const { width } = getSvgDimensions();
-		if (width <= 350) return 1.5;
-		if (width <= 550) return 1.35;
-		if (width <= 800) return 1.2;
-		return 1.05;
-	}
+}
 
 	async function renderDiagram(diagramCode: string) {
 		const trimmed = diagramCode.trim();
@@ -59,7 +51,8 @@
 			const id = `mermaid-svg-${Math.random().toString(36).slice(2, 9)}`;
 			const result = await mermaid.render(id, trimmed);
 			svgHtml = result.svg.replace(/style="([^"]*?)max-width:\s*[^;"]+;?([^"]*?)"/gi, 'style="$1$2"');
-			inlineZoom = defaultInlineZoom();
+			const { width } = getSvgDimensions();
+			inlineZoom = width <= 350 ? 1.5 : width <= 550 ? 1.35 : width <= 800 ? 1.2 : 1.05;
 			inlinePanX = 0;
 			inlinePanY = 0;
 		} catch (e: unknown) {
@@ -88,7 +81,8 @@
 	}
 
 	function resetInlineZoom() {
-		inlineZoom = defaultInlineZoom();
+		const { width } = getSvgDimensions();
+		inlineZoom = width <= 350 ? 1.5 : width <= 550 ? 1.35 : width <= 800 ? 1.2 : 1.05;
 		inlinePanX = 0;
 		inlinePanY = 0;
 	}
@@ -99,28 +93,24 @@
 		inlineZoom = Math.min(Math.max(inlineZoom * factor, 0.2), 6);
 	}
 
-	function handleInlinePointerDown(e: PointerEvent) {
-		if (e.button !== 0) return;
-		inlineDragging = true;
-		inlineStartX = e.clientX;
-		inlineStartY = e.clientY;
-		inlineStartPanX = inlinePanX;
-		inlineStartPanY = inlinePanY;
-		(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-	}
-
-	function handleInlinePointerMove(e: PointerEvent) {
-		if (!inlineDragging) return;
-		inlinePanX = inlineStartPanX + (e.clientX - inlineStartX);
-		inlinePanY = inlineStartPanY + (e.clientY - inlineStartY);
-	}
-
-	function handleInlinePointerUp(e: PointerEvent) {
-		if (!inlineDragging) return;
-		inlineDragging = false;
-		try {
-			(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-		} catch {}
+	function handleInlinePointer(e: PointerEvent) {
+		if (e.button !== 0 && e.type !== 'pointerup') return;
+		if (e.type === 'pointerdown') {
+			inlineDragging = true;
+			inlineStartX = e.clientX;
+			inlineStartY = e.clientY;
+			inlineStartPanX = inlinePanX;
+			inlineStartPanY = inlinePanY;
+			(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+		} else if (e.type === 'pointermove' && inlineDragging) {
+			inlinePanX = inlineStartPanX + (e.clientX - inlineStartX);
+			inlinePanY = inlineStartPanY + (e.clientY - inlineStartY);
+		} else if (e.type === 'pointerup' && inlineDragging) {
+			inlineDragging = false;
+			try {
+				(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+			} catch {}
+		}
 	}
 </script>
 
@@ -193,10 +183,10 @@
 	{:else}
 		<div
 			class="relative flex min-h-[160px] w-full items-center justify-center overflow-hidden p-6 text-fc-fg select-none cursor-grab active:cursor-grabbing touch-none"
-			onpointerdown={handleInlinePointerDown}
-			onpointermove={handleInlinePointerMove}
-			onpointerup={handleInlinePointerUp}
-			onpointercancel={handleInlinePointerUp}
+			onpointerdown={handleInlinePointer}
+			onpointermove={handleInlinePointer}
+			onpointerup={handleInlinePointer}
+			onpointercancel={handleInlinePointer}
 			onwheel={handleInlineWheel}
 			ondblclick={() => (isFullscreen = true)}
 			role="region"

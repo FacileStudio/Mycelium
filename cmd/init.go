@@ -24,6 +24,7 @@ var initCmd = &cobra.Command{
 	},
 }
 
-func init() {
+func newInitCmd() *cobra.Command {
 	rootCmd.AddCommand(initCmd)
+	return initCmd
 }

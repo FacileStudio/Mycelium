@@ -146,14 +146,14 @@ func refuseUntrusted(f *flow.Flow) error {
 	return fmt.Errorf("flow %q is not trusted on this machine", f.Name)
 }
 
-func confirmTrust(f *flow.Flow) error {
+func confirmTrust(f *flow.Flow, trustYes bool) error {
 	data, err := os.ReadFile(f.Path)
 	if err != nil {
 		return err
 	}
 	fmt.Printf("\n%s\n%s\n\n", ui.Dim("--- "+f.Path), strings.TrimRight(string(data), "\n"))
 	ui.Hint("current  %s", f.Checksum)
-	if flowTrustYes {
+	if trustYes {
 		return nil
 	}
 	if !term.IsTerminal(int(os.Stdin.Fd())) {
@@ -174,7 +174,7 @@ func confirmTrust(f *flow.Flow) error {
 // read, so the same rule as a flow applies: nothing runs on this machine until
 // a person has looked at it here — and that means every file it imports, not
 // just the entry, since a helper runs exactly as much as the entry does.
-func confirmModel(m *flow.Model) error {
+func confirmModel(m *flow.Model, trustYes bool) error {
 	for _, src := range m.Sources {
 		fmt.Printf("\n%s\n%s\n", ui.Dim("--- "+src.Path), strings.TrimRight(string(src.Data), "\n"))
 	}
@@ -183,7 +183,7 @@ func confirmModel(m *flow.Model) error {
 		ui.Hint("%d files: the entry and everything it imports", len(m.Sources))
 	}
 	ui.Hint("current  %s", m.Checksum)
-	if flowTrustYes {
+	if trustYes {
 		return nil
 	}
 	if !term.IsTerminal(int(os.Stdin.Fd())) {
@@ -200,11 +200,11 @@ func confirmModel(m *flow.Model) error {
 	return nil
 }
 
-func resolveRun(args []string) (*flow.Run, error) {
+func resolveRun(args []string, limit int) (*flow.Run, error) {
 	if len(args) == 2 {
 		return flow.LoadRun(args[0], args[1])
 	}
-	runs, err := flow.ListRuns(args[0], flowRunsLimit)
+	runs, err := flow.ListRuns(args[0], limit)
 	if err != nil {
 		return nil, err
 	}

@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { Alert, Badge, Button, Card, ConfirmModal, Spinner, icons, toast } from '@facile/muse';
+	import { Alert, Badge, Button, ConfirmModal, Spinner, icons, toast } from '@facile/muse';
 	import { backend, type ArtifactDetail } from '$lib/backend';
+	import hljs from 'highlight.js';
+	import 'highlight.js/styles/github-dark.css';
 	import MarkdownMuse from '$lib/components/MarkdownMuse.svelte';
 
 	const id = $derived(page.params.id ?? '');
@@ -24,19 +26,11 @@
 			.finally(() => (loading = false));
 	});
 
-	async function remove() {
-		if (!detail) return;
-		deleting = true;
+	function highlight(code: string, lang: string): string {
 		try {
-			await backend.artifactDelete(detail.id);
-			toast.success(`Deleted artifact “${detail.title}”.`);
-			goto('/artifacts');
-		} catch (e) {
-			toast.danger(e instanceof Error ? e.message : 'Could not delete artifact.', {
-				title: 'Delete failed'
-			});
-		} finally {
-			deleting = false;
+			return hljs.highlight(code, { language: lang || 'plaintext', ignoreIllegals: true }).value;
+		} catch {
+			return code;
 		}
 	}
 
@@ -52,6 +46,22 @@
 			});
 		} catch {
 			return iso;
+		}
+	}
+
+	async function remove() {
+		if (!detail) return;
+		deleting = true;
+		try {
+			await backend.artifactDelete(detail.id);
+			toast.success(`Deleted artifact "${detail.title}".`);
+			goto('/artifacts');
+		} catch (e) {
+			toast.danger(e instanceof Error ? e.message : 'Could not delete artifact.', {
+				title: 'Delete failed'
+			});
+		} finally {
+			deleting = false;
 		}
 	}
 </script>
@@ -109,14 +119,13 @@
 							Preview
 						</button>
 						<button
-							type="button"
-							class="rounded px-2.5 py-1 text-fc-xs font-medium transition-colors {viewMode === 'source' ? 'bg-fc-accent text-fc-accent-fg' : 'text-fc-fg-muted hover:text-fc-fg'}"
-							onclick={() => (viewMode = 'source')}
-						>
-							Source
-						</button>
-					</div>
-
+								type="button"
+								class="rounded px-2.5 py-1 text-fc-xs font-medium transition-colors {viewMode === 'source' ? 'bg-fc-accent text-fc-accent-fg' : 'text-fc-fg-muted hover:text-fc-fg'}"
+								onclick={() => (viewMode = 'source')}
+							>
+								Source
+							</button>
+						</div>
 					<Button
 						variant="ghost-danger"
 						icon={icons.remove}
@@ -152,9 +161,20 @@
 					<MarkdownMuse content={detail.content} />
 				</div>
 			{/if}
-		{:else}
-			<div class="overflow-hidden rounded-fc-lg border border-fc-border bg-fc-surface">
-				<pre class="max-h-[75dvh] overflow-auto p-4 whitespace-pre-wrap font-fc-mono text-fc-sm leading-relaxed text-fc-fg">{detail.content}</pre>
+		{:else if viewMode === 'source'}
+			{@const srcLang = detail.format === 'html' ? 'html' : 'markdown'}
+			{@const srcContent = detail.content}
+			<div class="my-3 overflow-hidden rounded-fc-lg border border-fc-border bg-fc-surface">
+				<div class="flex items-center justify-between border-b border-fc-border bg-fc-surface-hover/40 px-4 py-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-fc-fg-muted">
+					<span>{srcLang}</span>
+					<Button variant="ghost" size="sm" icon={icons.copy} onclick={() => {
+						navigator.clipboard.writeText(srcContent);
+						toast.success('Code copied to clipboard');
+					}}>
+						Copy
+					</Button>
+				</div>
+				<pre class="overflow-x-auto p-4 font-fc-mono text-fc-xs leading-relaxed text-fc-fg"><code>{@html highlight(srcContent, srcLang)}</code></pre>
 			</div>
 		{/if}
 	{/if}
@@ -164,7 +184,7 @@
 	<ConfirmModal
 		bind:open={confirmOpen}
 		tone="danger"
-		title="Delete “{detail.title}”?"
+		title={'Delete "' + (detail?.title ?? '') + '"?'}
 		description="The artifact will be permanently deleted from this machine and from sync."
 		confirmLabel="Delete"
 		cancelLabel="Keep it"

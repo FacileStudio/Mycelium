@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button, Card, StatusDot, icons } from '@facile/muse';
 	import { backend, type Claim } from '$lib/backend';
-	import { formatDuration } from '$lib/metrics';
+	import { formatDuration } from '$lib/format';
 
 	let claims: Claim[] = $state([]);
 	let releasing: string | null = $state(null);

@@ -9,8 +9,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var updateCheckOnly bool
-
 var updateCmd = &cobra.Command{
 	Use:     "update",
 	Aliases: []string{"upgrade"},
@@ -18,6 +16,7 @@ var updateCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fmt.Printf("Current version: %s\n", version)
 
+		updateCheckOnly, _ := cmd.Flags().GetBool("check")
 		if updateCheckOnly {
 			latest, available, err := selfupdate.CheckLatest(version)
 			if err != nil {
@@ -54,6 +53,7 @@ var updateCmd = &cobra.Command{
 }
 
 func init() {
+	var updateCheckOnly bool
 	updateCmd.Flags().BoolVar(&updateCheckOnly, "check", false, "Report whether an update is available without installing")
 	rootCmd.AddCommand(updateCmd)
 }

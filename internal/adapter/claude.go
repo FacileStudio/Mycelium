@@ -164,7 +164,9 @@ func writeConfigAtomically(path, content string) error {
 		return err
 	}
 	if err := tmp.Sync(); err != nil {
-		_ = tmp.Close()
+		if closeErr := tmp.Close(); closeErr != nil {
+			return closeErr
+		}
 		return err
 	}
 	if err := tmp.Close(); err != nil {

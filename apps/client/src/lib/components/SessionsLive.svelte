@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Card, StatusDot, icons } from '@facile/muse';
 	import { backend, type LiveSession } from '$lib/backend';
-	import { formatDuration, formatTokens } from '$lib/metrics';
+	import { formatDuration, formatTokens } from '$lib/format';
 
 	let live: LiveSession[] = $state([]);
 

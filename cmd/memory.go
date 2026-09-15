@@ -138,7 +138,7 @@ var memoryIndexCmd = &cobra.Command{
 	},
 }
 
-func init() {
+func newMemoryCmd() *cobra.Command {
 	memorySearchCmd.Flags().IntVar(&memorySearchLimit, "limit", 20, "Maximum results to print")
 	memorySearchCmd.Flags().BoolVar(&memorySearchLocal, "local", false,
 		"Search the local index without asking the server")
@@ -147,4 +147,5 @@ func init() {
 	memoryCmd.AddCommand(memorySearchCmd)
 	memoryCmd.AddCommand(memoryIndexCmd)
 	rootCmd.AddCommand(memoryCmd)
+	return memoryCmd
 }

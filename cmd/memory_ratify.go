@@ -130,11 +130,12 @@ func unratifiedOrChanged(dataDir string) ([]string, error) {
 	return pending, nil
 }
 
-func init() {
+func newMemoryRatifyCmd() *cobra.Command {
 	memoryRatifyCmd.Flags().BoolVar(&memoryRatifyAll, "all", false,
 		"Ratify every normative page that is not ratified or has changed")
 	memoryCmd.AddCommand(memoryRatifyCmd)
 	memoryCmd.AddCommand(memoryForgetCmd)
+	return memoryCmd
 }
 
 // normativeState reports whether any page that claims authority over a

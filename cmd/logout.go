@@ -67,6 +67,7 @@ func revokeSession(serverURL, token string) {
 	resp.Body.Close()
 }
 
-func init() {
+func newLogoutCmd() *cobra.Command {
 	rootCmd.AddCommand(logoutCmd)
+	return logoutCmd
 }

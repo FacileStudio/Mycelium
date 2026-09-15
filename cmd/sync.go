@@ -209,10 +209,11 @@ var pullCmd = &cobra.Command{
 	},
 }
 
-func init() {
+func newSyncCmd() *cobra.Command {
 	syncCmd.Flags().Bool("force", false,
 		fmt.Sprintf("Accept a sync that would delete more than %d files (terminal only)", hsync.MaxSilentDeletes))
 	rootCmd.AddCommand(syncCmd)
 	rootCmd.AddCommand(pushCmd)
 	rootCmd.AddCommand(pullCmd)
+	return syncCmd
 }

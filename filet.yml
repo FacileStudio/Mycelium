@@ -67,6 +67,12 @@ style:
   banInit: true
   banTrailingSpace: true
 
+# The svelte-language-server package ships its binary as `svelteserver`,
+# not `svelte-language-server`, so the built-in default never finds it.
+lsp:
+  servers:
+    .svelte: {server: svelteserver}
+
 disabled:
   # gofmt/rustfmt/prettier owns line breaking; every survivor is a line no
   # formatter could have wrapped. Flagging it is noise that teaches people to

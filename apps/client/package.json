@@ -24,6 +24,7 @@
 		"@facile/journal": "github:FacileStudio/Journal#ts",
 		"@facile/muse": "github:FacileStudio/muse#v0.7.0",
 		"gsap": "^3.15.0",
+		"highlight.js": "^11.11.1",
 		"iconify-icon": "^3.0.2",
 		"marked": "^18.0.11",
 		"mermaid": "^11.17.2"

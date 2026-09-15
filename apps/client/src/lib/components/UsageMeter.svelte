@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Card, LineChart, icons, type ChartSeries } from '@facile/muse';
 	import type { UsageHistory, UsageSnapshot, UsageWindow } from '$lib/backend';
-	import { formatAge, formatCountdown, formatSpan } from '$lib/metrics';
+	import { formatAge, formatCountdown, formatSpan } from '$lib/format';
 
 	let {
 		snapshots = [],

@@ -120,7 +120,7 @@ func reportAdd(res memory.Result) {
 	}
 }
 
-func init() {
+func newMemoryAddCmd() *cobra.Command {
 	memoryAddCmd.Flags().StringVar(&memoryAddTitle, "title", "", "The finding's heading")
 	memoryAddCmd.Flags().StringVar(&memoryAddSource, "source", "",
 		"Where the claim comes from: a URL, a file path, or 'direct observation'")
@@ -130,4 +130,5 @@ func init() {
 	memoryAddCmd.Flags().StringVar(&memoryAddLog, "log", "",
 		"The log.md line: what was wrong before and what still holds")
 	memoryCmd.AddCommand(memoryAddCmd)
+	return memoryAddCmd
 }

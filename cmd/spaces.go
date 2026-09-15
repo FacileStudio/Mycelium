@@ -13,11 +13,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	spacesUseNone bool
-	spacesJSON    bool
-)
-
 type spaceInfo struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
@@ -126,7 +121,7 @@ var spacesListCmd = &cobra.Command{
 		}
 
 		currentID := cfg.SpaceID()
-
+		spacesJSON, _ := cmd.Flags().GetBool("json")
 		if spacesJSON {
 			var selected any = nil
 			if currentID != "" {
@@ -171,7 +166,7 @@ var spacesCurrentCmd = &cobra.Command{
 		}
 		spaceID := cfg.SpaceID()
 		if spaceID == "" {
-			if spacesJSON {
+			if spacesJSON, _ := cmd.Flags().GetBool("json"); spacesJSON {
 				out := map[string]any{"selected": nil}
 				data, _ := json.Marshal(out)
 				fmt.Println(string(data))
@@ -184,7 +179,7 @@ var spacesCurrentCmd = &cobra.Command{
 		if err == nil {
 			for _, s := range spaces {
 				if s.ID == spaceID {
-					if spacesJSON {
+					if spacesJSON, _ := cmd.Flags().GetBool("json"); spacesJSON {
 						out := map[string]any{"selected": s.ID, "name": s.Name}
 						data, _ := json.Marshal(out)
 						fmt.Println(string(data))
@@ -195,7 +190,7 @@ var spacesCurrentCmd = &cobra.Command{
 				}
 			}
 		}
-		if spacesJSON {
+		if spacesJSON, _ := cmd.Flags().GetBool("json"); spacesJSON {
 			out := map[string]any{"selected": spaceID}
 			data, _ := json.Marshal(out)
 			fmt.Println(string(data))
@@ -216,7 +211,8 @@ var spacesUseCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-
+		spacesUseNone, _ := cmd.Flags().GetBool("none")
+		spacesJSON, _ := cmd.Flags().GetBool("json")
 		if spacesUseNone || (len(args) == 1 && (args[0] == "common" || args[0] == "personal")) {
 			if err := setSpace(cfg, ""); err != nil {
 				return err
@@ -258,6 +254,8 @@ var spacesUseCmd = &cobra.Command{
 }
 
 func init() {
+	var spacesUseNone bool
+	var spacesJSON bool
 	spacesCmd.PersistentFlags().BoolVar(&spacesJSON, "json", false, "Output as JSON")
 	spacesUseCmd.Flags().BoolVar(&spacesUseNone, "none", false, "Clear the space and sync the common tree")
 	spacesCmd.AddCommand(spacesListCmd)

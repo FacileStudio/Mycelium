@@ -261,6 +261,7 @@ func historyState(dataDir string) (string, bool) {
 		health.Last.When.Format("2006-01-02 15:04"), health.Last.Machine), true
 }
 
-func init() {
+func newDoctorCmd() *cobra.Command {
 	rootCmd.AddCommand(doctorCmd)
+	return doctorCmd
 }

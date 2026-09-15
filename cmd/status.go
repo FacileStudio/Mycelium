@@ -70,6 +70,7 @@ var statusCmd = &cobra.Command{
 	},
 }
 
-func init() {
+func newStatusCmd() *cobra.Command {
 	rootCmd.AddCommand(statusCmd)
+	return statusCmd
 }

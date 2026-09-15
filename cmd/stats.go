@@ -11,45 +11,42 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	statsSince string
-	statsBy    string
-)
-
 var statsCmd = &cobra.Command{
 	Use:   "stats",
 	Short: "Aggregate agent session stats",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		since, err := sessions.ParseSince(statsSince, time.Now())
+		sinceStr, _ := cmd.Flags().GetString("since")
+		by, _ := cmd.Flags().GetString("by")
+		since, err := sessions.ParseSince(sinceStr, time.Now())
 		if err != nil {
 			return err
 		}
 		valid := false
 		for _, k := range sessions.GroupKeys {
-			if k == statsBy {
+			if k == by {
 				valid = true
+				break
 			}
 		}
 		if !valid {
-			return fmt.Errorf("invalid --by %q (choose: %s)", statsBy, strings.Join(sessions.GroupKeys, ", "))
+			return fmt.Errorf("invalid --by %q (choose: %s)", by, strings.Join(sessions.GroupKeys, ", "))
 		}
 
 		blocks, err := sessions.ReadBlocks(config.DataDir())
 		if err != nil {
 			return err
 		}
-		rows := sessions.Aggregate(blocks, since, statsBy)
+		rows := sessions.Aggregate(blocks, since, by)
 		if len(rows) == 0 {
 			fmt.Println("No sessions in range.")
 			return nil
 		}
 
-		color.New(color.Bold).Printf("%-24s %8s %10s %12s %12s\n", strings.Title(statsBy), "Sessions", "Active", "Tokens in", "Tokens out")
+		color.New(color.Bold).Printf("%-24s %8s %10s %12s %12s\n", strings.Title(by), "Sessions", "Active", "Tokens in", "Tokens out")
 		var totalSec, totalIn, totalOut int64
 		totalSessions := 0
 		for _, r := range rows {
-			fmt.Printf("%-24s %8d %10s %12s %12s\n",
-				truncate(r.Key, 24), r.Sessions,
+			fmt.Printf("%-24s %8d %10s %12s %12s\n", truncate(r.Key, 24), r.Sessions,
 				sessions.FormatDuration(time.Duration(r.Seconds)*time.Second),
 				sessions.FormatTokens(r.TokensIn), sessions.FormatTokens(r.TokensOut))
 			totalSessions += r.Sessions
@@ -72,6 +69,8 @@ func truncate(s string, n int) string {
 }
 
 func init() {
+	var statsSince string
+	var statsBy string
 	statsCmd.Flags().StringVar(&statsSince, "since", "7d", "Window: 7d, 30d, 12h, or all")
 	statsCmd.Flags().StringVar(&statsBy, "by", "project", "Group by: project, machine, agent, branch, model")
 	rootCmd.AddCommand(statsCmd)

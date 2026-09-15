@@ -28,7 +28,7 @@ func selfPath() (string, error) {
 	}
 	resolved, err := filepath.EvalSymlinks(p)
 	if err != nil {
-		return p, nil
+		return p, fmt.Errorf("cannot resolve %s: %w", p, err)
 	}
 	return stablePath(resolved), nil
 }

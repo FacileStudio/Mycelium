@@ -60,7 +60,8 @@ var daemonRunCmd = &cobra.Command{
 	},
 }
 
-func init() {
+func newDaemonCmd() *cobra.Command {
 	daemonCmd.AddCommand(daemonInstallCmd, daemonUninstallCmd, daemonStatusCmd, daemonRunCmd)
 	rootCmd.AddCommand(daemonCmd)
+	return daemonCmd
 }

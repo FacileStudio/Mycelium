@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Table } from '@facile/muse';
 	import type { SessionBlock, SessionStatRow } from '$lib/backend';
-	import { formatCost, formatDuration, formatTokens } from '$lib/metrics';
+	import { formatCost, formatDuration, formatTokens } from '$lib/format';
 
 	let {
 		rows,

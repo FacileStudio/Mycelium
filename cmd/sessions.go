@@ -102,8 +102,9 @@ var sessionsScanCmd = &cobra.Command{
 	},
 }
 
-func init() {
+func newSessionsCmd() *cobra.Command {
 	sessionsScanCmd.Flags().BoolVar(&sessionsScanAll, "all", false, "Rebuild this machine's history from full transcripts")
 	sessionsCmd.AddCommand(sessionsScanCmd, sessionsLiveCmd)
 	rootCmd.AddCommand(sessionsCmd)
+	return sessionsCmd
 }

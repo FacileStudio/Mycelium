@@ -157,8 +157,9 @@ func installLong() string {
 		"Available agents: " + adapter.Available()
 }
 
-func init() {
+func newInstallCmd() *cobra.Command {
 	installCmd.Long = installLong()
 	installCmd.Flags().BoolVar(&installAll, "all", false, "Generate configs for all agents")
 	rootCmd.AddCommand(installCmd)
+	return installCmd
 }

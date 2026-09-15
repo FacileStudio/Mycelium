@@ -50,50 +50,59 @@
 			return;
 		}
 
-		(async () => {
-			try {
-				me = await backend.authMe();
-			} catch {
-				goto('/login');
-				return;
-			}
-
-			let spaces: Space[] = [];
-			try {
-				spaces = await backend.spacesList();
-				setSpaces(spaces);
-			} catch {
-				setSpaces([]);
-			}
-
-			const currentSpace = getActiveSpaceId();
-			if (!me.admin) {
-				const hasValidSpace = currentSpace !== null && spaces.some((s) => s.id === currentSpace);
-				if (!hasValidSpace) {
-					if (spaces.length > 0) {
-						setActiveSpaceId(spaces[0].id);
-					} else {
-						setActiveSpaceId(null);
-						const isAllowed =
-							page.url.pathname.startsWith('/spaces') || page.url.pathname.startsWith('/settings');
-						if (!isAllowed) goto('/spaces');
-					}
-				}
-			} else if (currentSpace !== null && !spaces.some((s) => s.id === currentSpace)) {
-				setActiveSpaceId(null);
-			}
-
-			if (me.admin || getActiveSpaceId() !== null) {
-				try {
-					status = await backend.status();
-				} catch {
-					status = null;
-				}
-			}
-
-			ready = true;
-		})();
+		initSession();
 	});
+
+	async function initSession() {
+		try {
+			me = await backend.authMe();
+		} catch {
+			goto('/login');
+			return;
+		}
+
+		const spaces = await loadSpaces();
+		setSpaces(spaces);
+		const currentSpace = getActiveSpaceId();
+
+		if (!me.admin) {
+			handleNonAdminSpace(spaces, currentSpace);
+		} else if (currentSpace !== null && !spaces.some((s) => s.id === currentSpace)) {
+			setActiveSpaceId(null);
+		}
+
+		if (me.admin || getActiveSpaceId() !== null) {
+			try {
+				status = await backend.status();
+			} catch {
+				status = null;
+			}
+		}
+
+		ready = true;
+	}
+
+	async function loadSpaces(): Promise<Space[]> {
+		try {
+			return await backend.spacesList();
+		} catch {
+			return [];
+		}
+	}
+
+	function handleNonAdminSpace(spaces: Space[], currentSpace: string | null) {
+		const hasValidSpace = currentSpace !== null && spaces.some((s) => s.id === currentSpace);
+		if (!hasValidSpace) {
+			if (spaces.length > 0) {
+				setActiveSpaceId(spaces[0].id);
+			} else {
+				setActiveSpaceId(null);
+				const isAllowed =
+					page.url.pathname.startsWith('/spaces') || page.url.pathname.startsWith('/settings');
+				if (!isAllowed) goto('/spaces');
+			}
+		}
+	}
 
 	$effect(() => {
 		if (page.url.pathname) scroller?.scrollTo({ top: 0 });

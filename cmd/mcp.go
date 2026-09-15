@@ -22,6 +22,7 @@ var mcpCmd = &cobra.Command{
 	},
 }
 
-func init() {
+func newMcpCmd() *cobra.Command {
 	rootCmd.AddCommand(mcpCmd)
+	return mcpCmd
 }

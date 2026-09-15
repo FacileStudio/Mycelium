@@ -95,9 +95,10 @@ func firstArg(args []string) string {
 	return args[0]
 }
 
-func init() {
+func newMemoryHistoryCmd() *cobra.Command {
 	memoryLogCmd.Flags().IntVar(&memoryLogLimit, "limit", 20, "Maximum entries to print")
 	memoryCmd.AddCommand(memoryLogCmd)
 	memoryCmd.AddCommand(memoryDiffCmd)
 	memoryCmd.AddCommand(memoryRevertCmd)
+	return memoryCmd
 }

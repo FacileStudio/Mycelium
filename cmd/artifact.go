@@ -16,14 +16,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	artifactJSON      bool
-	artifactTitle     string
-	artifactExpires   string
-	artifactNoOpen    bool
-	artifactBodyStdin bool
-)
-
 var artifactCmd = &cobra.Command{
 	Use:     "artifact",
 	Aliases: []string{"artifacts", "report", "reports"},
@@ -45,19 +37,23 @@ var artifactAddCmd = &cobra.Command{
 	Args:         cobra.MaximumNArgs(1),
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		expires, pinned, err := parseExpiry(artifactExpires)
+		title, _ := cmd.Flags().GetString("title")
+		expiresStr, _ := cmd.Flags().GetString("expires")
+		noOpen, _ := cmd.Flags().GetBool("no-open")
+		bodyStdin, _ := cmd.Flags().GetBool("body-stdin")
+		expires, pinned, err := parseExpiry(expiresStr)
 		if err != nil {
 			return err
 		}
 		var art artifacts.Artifact
-		fromStdin := artifactBodyStdin || (len(args) == 1 && args[0] == "-")
+		fromStdin := bodyStdin || (len(args) == 1 && args[0] == "-")
 		if fromStdin {
 			raw, err := io.ReadAll(os.Stdin)
 			if err != nil {
 				return fmt.Errorf("failed to read from stdin: %w", err)
 			}
 			art, err = artifacts.AddContent(config.DataDir(), raw, "stdin.md", artifacts.Request{
-				Title:   artifactTitle,
+				Title:   title,
 				Machine: config.MachineName(),
 				Expires: expires,
 				Pinned:  pinned,
@@ -71,7 +67,7 @@ var artifactAddCmd = &cobra.Command{
 			}
 			art, err = artifacts.Add(config.DataDir(), artifacts.Request{
 				Source:  args[0],
-				Title:   artifactTitle,
+				Title:   title,
 				Machine: config.MachineName(),
 				Expires: expires,
 				Pinned:  pinned,
@@ -81,7 +77,7 @@ var artifactAddCmd = &cobra.Command{
 			}
 			warnExternalRefs(args[0])
 		}
-		artifactRecorded(art)
+		artifactRecorded(art, noOpen)
 		return nil
 	},
 }
@@ -95,7 +91,8 @@ var artifactListCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		if artifactJSON {
+		jsonOut, _ := cmd.Flags().GetBool("json")
+		if jsonOut {
 			return printJSON(all)
 		}
 		if len(all) == 0 {
@@ -198,14 +195,14 @@ func artifactTarget(art artifacts.Artifact) string {
 	return art.Path
 }
 
-func artifactRecorded(art artifacts.Artifact) {
+func artifactRecorded(art artifacts.Artifact, noOpen bool) {
 	ui.Success("Recorded %s", art.ID)
 	if err := pushAfterWrite(); err != nil {
 		ui.Warn("Recorded here but not synced (%v)", err)
 	}
 	target := artifactTarget(art)
 	ui.Hint("%s", target)
-	if artifactNoOpen {
+	if noOpen {
 		return
 	}
 	showInBrowser(target)
@@ -229,12 +226,17 @@ func showInBrowser(target string) {
 }
 
 func init() {
+	var artifactTitle string
+	var artifactExpires string
+	var artifactNoOpen bool
+	var artifactBodyStdin bool
 	artifactAddCmd.Flags().StringVar(&artifactTitle, "title", "", "Override the document's own title")
 	artifactAddCmd.Flags().StringVar(&artifactExpires, "expires", "",
 		"How long to keep it: 7d, 12h, or never (default 30d)")
 	artifactAddCmd.Flags().BoolVar(&artifactNoOpen, "no-open", false, "Record it without opening a browser")
 	artifactAddCmd.Flags().BoolVar(&artifactBodyStdin, "body-stdin", false, "Read artifact body from stdin")
 	artifactAddCmd.Flags().BoolVar(&artifactBodyStdin, "stdin", false, "Read artifact body from stdin")
+	var artifactJSON bool
 	artifactListCmd.Flags().BoolVar(&artifactJSON, "json", false, "Print the listing as JSON")
 	artifactCmd.AddCommand(artifactAddCmd, artifactListCmd, artifactOpenCmd, artifactRmCmd, artifactSweepCmd)
 	rootCmd.AddCommand(artifactCmd)

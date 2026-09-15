@@ -58,8 +58,9 @@ var rulesEditCmd = &cobra.Command{
 	},
 }
 
-func init() {
+func newRulesCmd() *cobra.Command {
 	rulesCmd.AddCommand(rulesListCmd)
 	rulesCmd.AddCommand(rulesEditCmd)
 	rootCmd.AddCommand(rulesCmd)
+	return rulesCmd
 }

@@ -13,13 +13,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var flowJSON bool
-var flowRunsLimit int
-var flowTrustYes bool
-var flowQueryStatus string
-var flowQuerySince string
-var flowQueryFlow string
-
 var flowCmd = &cobra.Command{
 	Use:   "flow",
 	Short: "Run recorded shell procedures and keep a record of every execution",
@@ -30,7 +23,8 @@ var flowListCmd = &cobra.Command{
 	Short: "List flows with their step count and trust state",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		flows, listErr := flow.List()
-		if flowJSON {
+		jsonOut, _ := cmd.Flags().GetBool("json")
+		if jsonOut {
 			return printJSON(flowListRows(flows))
 		}
 		if len(flows) == 0 && listErr == nil {
@@ -117,11 +111,13 @@ var flowRunsCmd = &cobra.Command{
 	Short: "List recent runs of a flow",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		runs, err := flow.ListRuns(args[0], flowRunsLimit)
+		limit, _ := cmd.Flags().GetInt("limit")
+		runs, err := flow.ListRuns(args[0], limit)
 		if err != nil {
 			return err
 		}
-		if flowJSON {
+		jsonOut, _ := cmd.Flags().GetBool("json")
+		if jsonOut {
 			return printJSON(flowRunRows(runs))
 		}
 		if len(runs) == 0 {
@@ -145,7 +141,8 @@ var flowTrustModelCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		if err := confirmModel(m); err != nil {
+		trustYes, _ := cmd.Flags().GetBool("yes")
+		if err := confirmModel(m, trustYes); err != nil {
 			return err
 		}
 		if err := flow.TrustModel(m); err != nil {
@@ -161,17 +158,22 @@ var flowQueryCmd = &cobra.Command{
 	Short: "Search every flow's history at once",
 	Args:  cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		since, err := sessions.ParseSince(flowQuerySince, time.Now().UTC())
+		sinceStr, _ := cmd.Flags().GetString("since")
+		status, _ := cmd.Flags().GetString("status")
+		flowName, _ := cmd.Flags().GetString("flow")
+		limit, _ := cmd.Flags().GetInt("limit")
+		since, err := sessions.ParseSince(sinceStr, time.Now().UTC())
 		if err != nil {
 			return err
 		}
 		runs, err := flow.Query(flow.QueryOptions{
-			Flow: flowQueryFlow, Status: flowQueryStatus, Since: since, Limit: flowRunsLimit,
+			Flow: flowName, Status: status, Since: since, Limit: limit,
 		})
 		if err != nil {
 			return err
 		}
-		if flowJSON {
+		jsonOut, _ := cmd.Flags().GetBool("json")
+		if jsonOut {
 			return printJSON(flowQueryRows(runs))
 		}
 		if len(runs) == 0 {
@@ -188,11 +190,12 @@ var flowShowCmd = &cobra.Command{
 	Short: "Show one run in full, defaulting to the latest",
 	Args:  cobra.RangeArgs(1, 2),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		r, err := resolveRun(args)
+		r, err := resolveRun(args, 0)
 		if err != nil {
 			return err
 		}
-		if flowJSON {
+		jsonOut, _ := cmd.Flags().GetBool("json")
+		if jsonOut {
 			return printJSON(flowRunJSON{ID: r.ID, Run: r})
 		}
 		printRun(r)
@@ -223,7 +226,8 @@ var flowTrustCmd = &cobra.Command{
 			ui.Step("%q changed since it was approved here. Read what it does now.", f.Name)
 			ui.Hint("approved %s", pinned)
 		}
-		if err := confirmTrust(f); err != nil {
+		trustYes, _ := cmd.Flags().GetBool("yes")
+		if err := confirmTrust(f, trustYes); err != nil {
 			return err
 		}
 		if err := flow.Trust(f); err != nil {
@@ -240,7 +244,7 @@ func printJSON(v any) error {
 	return enc.Encode(v)
 }
 
-func init() {
+func newFlowCmd() *cobra.Command {
 	flowCmd.AddCommand(flowListCmd)
 	flowCmd.AddCommand(flowAddCmd)
 	flowCmd.AddCommand(flowRunCmd)
@@ -250,14 +254,21 @@ func init() {
 	flowCmd.AddCommand(flowTrustModelCmd)
 	flowCmd.AddCommand(flowTrustCmd)
 	flowCmd.AddCommand(flowUntrustCmd)
+	var flowQueryStatus string
+	var flowQuerySince string
+	var flowQueryFlow string
 	flowQueryCmd.Flags().StringVar(&flowQueryStatus, "status", "", "Only runs with this status (ok, failed, timeout, unresolved)")
 	flowQueryCmd.Flags().StringVar(&flowQuerySince, "since", "", "Only runs started within this window: 7d, 24h, 30m")
 	flowQueryCmd.Flags().StringVar(&flowQueryFlow, "flow", "", "Only runs of this flow")
+	var flowJSON bool
 	for _, c := range []*cobra.Command{flowListCmd, flowRunsCmd, flowShowCmd, flowQueryCmd} {
 		c.Flags().BoolVar(&flowJSON, "json", false, "Emit JSON")
 	}
+	var flowTrustYes bool
 	flowTrustModelCmd.Flags().BoolVar(&flowTrustYes, "yes", false, "Pin without the interactive confirmation")
 	flowTrustCmd.Flags().BoolVar(&flowTrustYes, "yes", false, "Pin without the interactive confirmation")
+	var flowRunsLimit int
 	flowRunsCmd.Flags().IntVar(&flowRunsLimit, "limit", 20, "How many runs to list")
 	rootCmd.AddCommand(flowCmd)
+	return flowCmd
 }

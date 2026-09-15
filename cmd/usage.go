@@ -192,10 +192,11 @@ func printUsageJSON(snapshots []usage.SnapshotView, machine string) error {
 	return nil
 }
 
-func init() {
+func newUsageCmd() *cobra.Command {
 	usageCmd.Flags().BoolVar(&usageStatusLine, "statusline", false, "Read Claude Code's status-line payload on stdin, record it, print one line")
 	usageCmd.Flags().BoolVar(&usageLive, "live", false, "Fetch live limits from Anthropic's OAuth usage endpoint")
 	usageCmd.Flags().BoolVar(&usageJSON, "json", false, "Emit the snapshot as JSON")
 	usageCmd.AddCommand(usageLoginCmd, usageLogoutCmd)
 	rootCmd.AddCommand(usageCmd)
+	return usageCmd
 }

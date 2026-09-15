@@ -121,8 +121,8 @@ func finishLogin(cfg *config.MyceliumConfig, serverURL, token, machine string) e
 	color.Green("Logged in to %s as %s", serverURL, machine)
 	fmt.Printf("Config saved to %s\n", config.ConfigPath())
 
-	if flagSpace != "" {
-		if err := selectLoginSpace(cfg, flagSpace); err != nil {
+	if space, _ := rootCmd.PersistentFlags().GetString("space"); space != "" {
+		if err := selectLoginSpace(cfg, space); err != nil {
 			color.Yellow("Space not selected: %v", err)
 			fmt.Println("Select later with: mycelium spaces use <name-or-id>")
 		}

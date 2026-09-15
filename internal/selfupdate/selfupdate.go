@@ -168,7 +168,7 @@ func realExecutablePath() (string, error) {
 	}
 	resolved, err := filepath.EvalSymlinks(exe)
 	if err != nil {
-		return exe, nil
+		return "", fmt.Errorf("cannot resolve %s: %w", exe, err)
 	}
 	return resolved, nil
 }

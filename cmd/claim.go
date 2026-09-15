@@ -267,7 +267,7 @@ var claimShowCmd = &cobra.Command{
 	},
 }
 
-func init() {
+func newClaimCmd() *cobra.Command {
 	claimCmd.PersistentFlags().StringVarP(&claimProject, "project", "p", "", "Project/repo to claim (default: current repo)")
 	claimCmd.PersistentFlags().StringVarP(&claimMachine, "machine", "m", "", "Machine name (default: config)")
 	claimCmd.PersistentFlags().StringVar(&claimAgent, "agent", "", "Agent name (default: machine)")
@@ -276,4 +276,5 @@ func init() {
 	claimListCmd.Flags().BoolVar(&claimAll, "all", false, "Show claims across all repos")
 	claimCmd.AddCommand(claimStartCmd, claimNoteCmd, claimDoneCmd, claimListCmd, claimShowCmd)
 	rootCmd.AddCommand(claimCmd)
+	return claimCmd
 }

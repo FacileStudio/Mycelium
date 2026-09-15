@@ -91,6 +91,7 @@ func printSimpleDiff(old, new []string) {
 	fmt.Println()
 }
 
-func init() {
+func newDiffCmd() *cobra.Command {
 	rootCmd.AddCommand(diffCmd)
+	return diffCmd
 }

@@ -96,7 +96,8 @@ func flowRecap() string {
 	return strings.Join(lines, "\n")
 }
 
-func init() {
+func newRecapCmd() *cobra.Command {
 	recapCmd.Flags().BoolVar(&recapHook, "hook", false, "Read hook JSON from stdin, emit hookSpecificOutput")
 	rootCmd.AddCommand(recapCmd)
+	return recapCmd
 }

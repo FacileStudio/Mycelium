@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { Card, Sparkline, StatusDot, chartColor, icons } from '@facile/muse';
 	import type { SessionStatRow, TimelineSeries, TokenInfo } from '$lib/backend';
-	import { formatDuration, hours } from '$lib/metrics';
+	import { formatDuration } from '$lib/format';
+import { hours } from '$lib/metrics';
 
 	let {
 		machines,
