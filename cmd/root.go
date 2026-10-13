@@ -31,27 +31,27 @@ func init() {
 		}
 	})
 	_ = artifactCmd
-	_ = claimCmd
-	_ = daemonCmd
-	_ = diffCmd
-	_ = doctorCmd
-	_ = flowCmd
-	_ = initCmd
+	newClaimCmd()
+	newDaemonCmd()
+	newDiffCmd()
+	newDoctorCmd()
+	newFlowCmd()
+	newInitCmd()
 	newInstallCmd()
 	_ = loginCmd
-	_ = logoutCmd
-	_ = mcpCmd
-	_ = memoryCmd
-	_ = memoryAddCmd
-	_ = memoryLogCmd
-	_ = memoryRatifyCmd
-	_ = recapCmd
-	_ = rulesCmd
+	newLogoutCmd()
+	newMcpCmd()
+	newMemoryCmd()
+	newMemoryAddCmd()
+	newMemoryHistoryCmd()
+	newMemoryRatifyCmd()
+	newRecapCmd()
+	newRulesCmd()
 	newServeCmd()
-	_ = sessionsCmd
-	_ = statusCmd
+	newSessionsCmd()
+	newStatusCmd()
 	newSyncCmd()
-	_ = usageCmd
+	newUsageCmd()
 }
 
 // Execute runs the root command and exits non-zero on failure.
