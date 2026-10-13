@@ -107,21 +107,6 @@ func (c *MyceliumConfig) AuthToken() string {
 	return c.Token
 }
 
-// DataDir is the root of the local memory store, overridable via DATA_DIR.
-func DataDir() string {
-	if dir := os.Getenv("DATA_DIR"); dir != "" {
-		return dir
-	}
-	home, _ := os.UserHomeDir()
-	return filepath.Join(home, ".mycelium")
-}
-
-// ConfigPath is where the client configuration file lives.
-func ConfigPath() string {
-	home, _ := os.UserHomeDir()
-	return filepath.Join(home, ".mycelium.yml")
-}
-
 // MemoryDir returns the memory store's root.
 func MemoryDir() string { return filepath.Join(DataDir(), "memory") }
 
@@ -134,8 +119,10 @@ func SkillsDir() string { return filepath.Join(DataDir(), "skills") }
 // FlowsDir returns the directory holding flow files.
 func FlowsDir() string { return filepath.Join(DataDir(), "flows") }
 
-// RunsDir returns the directory holding flow run artifacts.
-func RunsDir() string { return filepath.Join(DataDir(), "runs") }
+// RunsDir returns the directory holding flow run artifacts. They are history
+// that survives a restart but is not worth carrying between reinstalls, so
+// they live with the state rather than in the synced store.
+func RunsDir() string { return filepath.Join(StateDir(), "runs") }
 
 // ModelsDir returns the directory holding typed model extensions. Unlike runs,
 // these sync: they are code, which is why running one needs a trust pin.
@@ -148,19 +135,22 @@ func SessionsDir() string { return filepath.Join(DataDir(), "sessions") }
 func MachinesDir() string { return filepath.Join(DataDir(), "machines") }
 
 // LoadMyceliumConfig reads the config file, returning an empty config when no
-// file exists yet.
+// file exists yet. The pre-XDG file is still read when the new one is absent,
+// so a machine that has not been migrated yet does not silently log out.
 func LoadMyceliumConfig() (*MyceliumConfig, error) {
-	path := ConfigPath()
 	cfg := &MyceliumConfig{}
-	data, err := os.ReadFile(path)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return cfg, nil
+	for _, path := range []string{ConfigPath(), LegacyConfigPath()} {
+		data, err := os.ReadFile(path)
+		if err != nil {
+			if os.IsNotExist(err) {
+				continue
+			}
+			return nil, fmt.Errorf("failed to read %s: %w", path, err)
 		}
-		return nil, fmt.Errorf("failed to read %s: %w", path, err)
-	}
-	if err := yaml.Unmarshal(data, cfg); err != nil {
-		return nil, fmt.Errorf("failed to parse %s: %w", path, err)
+		if err := yaml.Unmarshal(data, cfg); err != nil {
+			return nil, fmt.Errorf("failed to parse %s: %w", path, err)
+		}
+		return cfg, nil
 	}
 	return cfg, nil
 }
@@ -168,6 +158,9 @@ func LoadMyceliumConfig() (*MyceliumConfig, error) {
 // SaveMyceliumConfig writes the config file with owner-only permissions.
 func SaveMyceliumConfig(cfg *MyceliumConfig) error {
 	path := ConfigPath()
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		return err
+	}
 	data, err := yaml.Marshal(cfg)
 	if err != nil {
 		return err

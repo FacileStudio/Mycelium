@@ -133,7 +133,7 @@ var serveCmd = &cobra.Command{
 
 func newServeCmd() *cobra.Command {
 	serveCmd.Flags().IntVar(&servePort, "port", env.DefaultPort, "Port to listen on (default: $PORT)")
-	serveCmd.Flags().String("data", "", "Data directory (default: $DATA_DIR, else ~/.mycelium/)")
+	serveCmd.Flags().String("data", "", "Data directory (default: $DATA_DIR, else ${XDG_DATA_HOME:-~/.local/share}/mycelium)")
 	rootCmd.AddCommand(serveCmd)
 	return serveCmd
 }

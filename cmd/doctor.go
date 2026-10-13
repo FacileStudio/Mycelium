@@ -39,6 +39,16 @@ var doctorCmd = &cobra.Command{
 
 		dataDir := config.DataDir()
 
+		check("layout", func() (string, bool) {
+			if err := config.MigrateLegacyLayout(); err != nil {
+				return fmt.Sprintf("migration failed — %v", err), false
+			}
+			if os.Getenv("DATA_DIR") != "" {
+				return dataDir + " (DATA_DIR)", true
+			}
+			return dataDir + ", state " + config.StateDir(), true
+		})
+
 		check("data dir", func() (string, bool) {
 			info, err := os.Stat(dataDir)
 			if err != nil {
@@ -65,10 +75,14 @@ var doctorCmd = &cobra.Command{
 				return fmt.Sprintf("invalid — %v", err), false
 			}
 			path := config.ConfigPath()
-			if _, err := os.Stat(path); os.IsNotExist(err) {
-				return "not found — create ~/.mycelium.yml", false
+			if _, err := os.Stat(path); err == nil {
+				return path, true
 			}
-			return path, true
+			legacy := config.LegacyConfigPath()
+			if _, err := os.Stat(legacy); err == nil {
+				return fmt.Sprintf("%s (legacy, moves to %s on next write)", legacy, path), true
+			}
+			return "not found — create " + path, false
 		})
 
 		check("machine", func() (string, bool) {

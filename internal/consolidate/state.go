@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/FacileStudio/Mycelium/internal/config"
 )
 
 // State is the persisted outcome of the last run, read by doctor and used
@@ -18,9 +20,10 @@ type State struct {
 	Result  *Result   `json:"result,omitempty"`
 }
 
-// StatePath is where the last-run state lives under the data dir.
+// StatePath is where the last-run state lives, inside the state directory
+// that belongs to dataDir.
 func StatePath(dataDir string) string {
-	return filepath.Join(dataDir, ".consolidate-run.json")
+	return filepath.Join(config.StateDirFor(dataDir), ".consolidate-run.json")
 }
 
 // LoadState reads the last-run state, returning nil when none exists yet.
@@ -54,6 +57,9 @@ func saveState(dataDir string, s State) error {
 		return err
 	}
 	path := StatePath(dataDir)
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		return err
+	}
 	tmp := path + ".tmp"
 	if err := os.WriteFile(tmp, append(data, '\n'), 0o600); err != nil {
 		return err

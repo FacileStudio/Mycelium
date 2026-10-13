@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/FacileStudio/Mycelium/internal/cell"
+	"github.com/FacileStudio/Mycelium/internal/config"
 )
 
 // TestAgentsWritesTheStandardPaths pins the two paths that are the entire
@@ -69,6 +70,13 @@ func TestAgentsAnnouncesItselfAsGenerated(t *testing.T) {
 	}
 	if !strings.Contains(body, "overwritten") {
 		t.Error("notice must say an edit does not survive the next run")
+	}
+	notice := generatedNotice()
+	if !strings.HasPrefix(notice, "<!--") || !strings.HasSuffix(notice, "-->") {
+		t.Errorf("notice must be one complete HTML comment, got %q", notice)
+	}
+	if !strings.Contains(notice, config.RulesDir()) || !strings.Contains(notice, config.SkillsDir()) {
+		t.Errorf("notice must name the real rules and skills directories, got %q", notice)
 	}
 }
 

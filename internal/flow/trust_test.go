@@ -115,6 +115,9 @@ func TestUntrustRemovesAndTolerates(t *testing.T) {
 
 func TestCorruptStoreFailsClosed(t *testing.T) {
 	trustDir(t)
+	if err := os.MkdirAll(filepath.Dir(TrustPath()), 0o700); err != nil {
+		t.Fatal(err)
+	}
 	if err := os.WriteFile(TrustPath(), []byte("{not json"), 0600); err != nil {
 		t.Fatal(err)
 	}

@@ -7,7 +7,7 @@ is both the CLI you run on each machine and the server you self-host.
 
 ### `mycelium init`
 
-Scaffolds `~/.mycelium` — `memory/` with its `bugs/`, `tools/`, `projects/`, `conventions/`,
+Scaffolds `~/.local/share/mycelium` — `memory/` with its `bugs/`, `tools/`, `projects/`, `conventions/`,
 `standards/`, `syntheses/` and `people/` subdirectories, plus `rules/`, `skills/`, `machines/` and `sessions/` — and
 seeds `overview.md`, `index.md` and `log.md` when they do not exist. Safe to re-run.
 
@@ -18,7 +18,7 @@ mycelium init
 ### `mycelium login [url]`
 
 Authenticates this machine against a Mycelium server and writes `url`, `token` and `machine`
-into `~/.mycelium.yml`. By default it signs in through the browser against the server's
+into `~/.config/mycelium/config.yml`. By default it signs in through the browser against the server's
 identity provider: it opens a loopback port, sends you to `/api/auth/oidc`, and trades the
 one-time code that comes back for a token — so a session already open with another Facile
 tool completes the login without a second prompt. A server with no identity provider, or a
@@ -52,7 +52,7 @@ printf '%s' "$TOKEN" | mycelium login https://mycelium.facile.studio --token-std
 
 ### `mycelium logout`
 
-Revokes the session on the server and clears `token` from `~/.mycelium.yml`. Everything else in
+Revokes the session on the server and clears `token` from `~/.config/mycelium/config.yml`. Everything else in
 that file — the server URL, the machine, the space, the rule order, the agent list and the
 Anthropic usage token — is left alone, and running it while logged out is not an error. This
 is the server session; `mycelium usage logout` forgets the unrelated Anthropic token.
@@ -66,9 +66,9 @@ and skill counts, and this week's session total.
 
 ### `mycelium sync`
 
-The normal path: a three-way reconcile against `~/.mycelium/.sync-base.json`. Local edits
+The normal path: a three-way reconcile against `~/.local/share/mycelium/.sync-base.json`. Local edits
 push, remote edits pull, deletions propagate both ways, and an edit-versus-edit conflict
-keeps the losing version at `~/.mycelium/.conflicts/<path>` rather than dropping it. The
+keeps the losing version at `~/.local/share/mycelium/.conflicts/<path>` rather than dropping it. The
 copy sits outside the tree you read, keeps its real extension, and never syncs.
 
 ### `mycelium push` / `mycelium pull`
@@ -186,13 +186,13 @@ until someone confirms the deletion was meant.
 
 ### `mycelium rules list` / `mycelium rules edit <name>`
 
-Rules are ordered policy files under `~/.mycelium/rules/`. `edit` opens one in `$EDITOR`,
-creating it if it does not exist. Emission order is `rule_order` from `~/.mycelium.yml` first,
+Rules are ordered policy files under `~/.local/share/mycelium/rules/`. `edit` opens one in `$EDITOR`,
+creating it if it does not exist. Emission order is `rule_order` from `~/.config/mycelium/config.yml` first,
 then everything else.
 
 ### `mycelium skills list` / `mycelium skills add <name>`
 
-Skills are reusable agent capabilities under `~/.mycelium/skills/`. `add` scaffolds a new one
+Skills are reusable agent capabilities under `~/.local/share/mycelium/skills/`. `add` scaffolds a new one
 with frontmatter, and refuses rather than overwriting an existing skill.
 
 ```sh
@@ -223,7 +223,7 @@ since it was approved here. Add `--json` for the machine-readable form.
 
 ### `mycelium flow add <name>`
 
-Scaffolds `~/.mycelium/flows/<name>.yml` and nothing else — a scaffolded flow is not trusted,
+Scaffolds `~/.local/share/mycelium/flows/<name>.yml` and nothing else — a scaffolded flow is not trusted,
 so it still has to be reviewed and pinned before it can run.
 
 ### `mycelium flow trust <name>` / `mycelium flow untrust [name]`
@@ -246,7 +246,7 @@ $ mycelium flow run release
 [version] v0.12.0
 [notify] shipping v0.12.0
 ✓ release: 2 steps in 412ms
-  /home/yann/.mycelium/runs/release/2026-08-19T13-35-07.357725744Z.json
+  /home/yann/.local/state/mycelium/runs/release/2026-08-19T13-35-07.357725744Z.json
 ```
 
 A step can read an earlier step's output. `needs` binds an environment variable to
@@ -305,7 +305,7 @@ flow you deleted still answers for what it did while it existed.
 ### `mycelium flow trust-model <type>`
 
 Pins a model extension so typed steps may run it here. A model is TypeScript run by `bun` under
-`~/.mycelium/extensions/models/`, and it syncs — so, like a flow, it prints itself for review and
+`~/.local/share/mycelium/extensions/models/`, and it syncs — so, like a flow, it prints itself for review and
 runs nowhere until a person approves it on that machine. See
 [flow-composition.md](flow-composition.md).
 
@@ -432,7 +432,7 @@ mycelium usage logout
 
 It must be a subscription token from `claude setup-token`; a standard `sk-ant-api…` API key
 cannot read subscription limits at all and is refused. The token goes to the OS keychain when
-one is available, and only falls back to `usage_token` in `~/.mycelium.yml` when it is not — see
+one is available, and only falls back to `usage_token` in `~/.config/mycelium/config.yml` when it is not — see
 [configuration.md](configuration.md). `logout` clears both, and warns when the environment
 still sets one.
 
@@ -462,7 +462,7 @@ mycelium serve --port 9000 --data /srv/mycelium
 | Flag | Default | What it does |
 |---|---|---|
 | `--port` | `$PORT`, else `8420` | Listen port. Only overrides the environment when passed |
-| `--data` | `$DATA_DIR`, else `~/.mycelium` | Data directory |
+| `--data` | `$DATA_DIR`, else `~/.local/share/mycelium` | Data directory |
 
 ## Maintenance
 

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -13,13 +14,14 @@ import (
 )
 
 // claimFixture isolates one claim command from the machine running the test:
-// its own data dir, its own home so no real ~/.mycelium.yml is read, and its
+// its own data dir, its own config path so no real config is read, and its
 // own identity. Nothing here can reach the live server.
 func claimFixture(t *testing.T, serverURL string) string {
 	t.Helper()
 	dir := t.TempDir()
 	t.Setenv("DATA_DIR", dir)
 	t.Setenv("HOME", t.TempDir())
+	t.Setenv("XDG_CONFIG_HOME", filepath.Join(t.TempDir(), ".config"))
 	t.Setenv(config.URLEnv, serverURL)
 	t.Setenv(config.TokenEnv, "tok")
 	claimProject, claimMachine, claimAgent, claimBranch, claimBody = "Mycelium", "lucy", "claude", "main", ""

@@ -4,7 +4,7 @@ Written 2026-08-22, current as of 2026-08-24 and v0.23.0. A cold-start handoff: 
 conversation. **The executable form is `SPEC.md` — exact files, exact steps, exit criteria per
 step.** This file holds the why and the ordering; the reasoning behind each item lives in the commit that
 closes it, and the research behind both tracks is in
-`~/.mycelium/memory/syntheses/agent-memory-practice-2026.md`.
+`~/.local/share/mycelium/memory/syntheses/agent-memory-practice-2026.md`.
 
 ## Where this is
 
@@ -45,7 +45,7 @@ knew, so B3 and step 10 both shipped unmeasured. Four things changed:
   `SearchChunks`, where step 10's recency decay and struck-span dropping actually live. One-line
   fix; fixture MRR moved 0.974 to 0.990 and the floors held.
 - **The live golden set left the repository.** Mycelium is public and the set is 76 plain-English
-  descriptions of a private wiki's pages. It now lives at `~/.mycelium/eval/golden.json`, syncs like
+  descriptions of a private wiki's pages. It now lives at `~/.local/share/mycelium/eval/golden.json`, syncs like
   the wiki, and `loadGolden` skips when it is absent. Both it and `doctor` resolve through
   `config.DataDir()`, so they cannot read different trees.
 - **`mycelium doctor` gained an `eval set` line** at the same 25% threshold the eval's own guard
@@ -80,7 +80,7 @@ improvement. See the saturation risk in `SPEC.md`.
   directions count against one limit, because a local wipe pushed up empties the copy every other
   machine pulls from, and that is the half no journal can undo yet.
 - **A6, `.conflict` files out of `memory/`** (v0.21.0). The losing copy of an edit-vs-edit now
-  mirrors the page under `~/.mycelium/.conflicts/<path>` and keeps its real extension. Both layouts
+  mirrors the page under `~/.local/share/mycelium/.conflicts/<path>` and keeps its real extension. Both layouts
   are pruned and reported, because machines are still carrying the old sibling files.
 - **A7, dot-directories pruned from the tree walk** (v0.21.0). `LocalTree` returns
   `filepath.SkipDir` rather than `nil`, so no sync descends into the `.git` A1 is about to
@@ -142,7 +142,7 @@ gained a `history` check, and `node_modules/` is excluded from `syncSkip` on bot
 ## Track A — give memory a history
 
 The agent-facing surface must not change. Agents keep writing files and running `mycelium sync`;
-they never learn that git exists. See `~/.mycelium/memory/conventions/mycelium-agent-surface.md`.
+they never learn that git exists. See `~/.local/share/mycelium/memory/conventions/mycelium-agent-surface.md`.
 
 ### A1. A go-git journal over the authored tree
 
@@ -237,7 +237,7 @@ optimised for keyword retrieval rather than for reading top to bottom.
 
 A conflict as an event is domain and `doctor` already reports it. A file called
 `foo.md.conflict` sitting in the tree is storage leaking into the agent's view. Write it under
-`~/.mycelium/.conflicts/` instead. Already excluded from sync, so it is local clutter only.
+`~/.local/share/mycelium/.conflicts/` instead. Already excluded from sync, so it is local clutter only.
 
 Once A1 lands, most of these stop being written at all: today's reconcile compares checksums and
 has no common-ancestor **text**, so "edited on both sides" can only park a copy. Git objects
@@ -409,7 +409,7 @@ consolidation happens only when an agent chooses to write a synthesis — one pa
 
 ### Yes, under ratification. Decided and shipped 2026-08-24.
 
-A page carrying `type: standard` is pinned per machine in `~/.mycelium/.memory-ratified.json` at
+A page carrying `type: standard` is pinned per machine in `~/.local/share/mycelium/.memory-ratified.json` at
 the checksum a human accepted, with the machine and day they accepted it. Four standings:
 `ratified`, `not ratified`, `CHANGED`, `MISSING`. `mycelium memory ratify` accepts, `forget` closes
 out a deletion, `doctor` fails on CHANGED and MISSING, and `memory search` marks a CHANGED result

@@ -1,8 +1,6 @@
 package memory
 
 import (
-	"os"
-	"path/filepath"
 	"strings"
 	"time"
 )
@@ -161,16 +159,4 @@ func itoa(n int) string {
 		n /= 10
 	}
 	return string(digits)
-}
-
-func wikiDir() (string, bool) {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return "", false
-	}
-	dir := filepath.Join(home, ".mycelium", "memory")
-	if _, err := os.Stat(dir); err != nil {
-		return "", false
-	}
-	return dir, true
 }

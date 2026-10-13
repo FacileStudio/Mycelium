@@ -38,7 +38,7 @@ var ErrNoKeychain = errors.New("no OS keychain backend available")
 var ErrTokenRejected = errors.New("usage token rejected — run `mycelium usage login` with a fresh `claude setup-token`")
 
 // ResolveToken walks the sources in order of decreasing safety: the two env
-// vars, then the OS keychain, then the plaintext ~/.mycelium.yml field the caller
+// vars, then the OS keychain, then the plaintext config file field the caller
 // passes in, which exists only for backwards compatibility. A keychain lookup
 // that fails falls through quietly; a missing token is not an error here.
 func ResolveToken(configured string) string {

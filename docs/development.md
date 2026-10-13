@@ -45,7 +45,7 @@ go build -o mycelium .
 ./mycelium --version
 ```
 
-The CLI needs nothing else — `mycelium init` scaffolds `~/.mycelium` and every command works
+The CLI needs nothing else — `mycelium init` scaffolds `~/.local/share/mycelium` and every command works
 offline until you `mycelium login`.
 
 To run the server against a throwaway data directory:

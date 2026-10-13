@@ -25,8 +25,8 @@ Open only the 1-3 most relevant pages.
 
 // fixtureRule writes the fenced rule to a temp file and reads it back, so the
 // renderer is exercised against bytes off disk rather than a string literal
-// the compiler already normalised. The real rules live in ~/.mycelium/rules
-// and are never touched by a test.
+// the compiler already normalised. The real rules live under the store's rules
+// directory and are never touched by a test.
 func fixtureRule(t *testing.T) cell.NamedFile {
 	t.Helper()
 	path := filepath.Join(t.TempDir(), "20-memory.md")

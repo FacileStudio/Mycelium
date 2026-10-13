@@ -3,6 +3,27 @@
 Every variable and file the CLI and the server actually read, and what happens when one is
 missing.
 
+## The three roots
+
+Mycelium follows the [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir/latest):
+one config file, one data tree, one state directory. Configured data is portable, machine-local
+state is not, so they never share a directory.
+
+| Root | Default | Holds | Overrides it |
+|---|---|---|---|
+| Config | `~/.config/mycelium/config.yml` | `machine`, `url`, `token`, `agents`, `rule_order` | `XDG_CONFIG_HOME` |
+| Data | `~/.local/share/mycelium/` | `memory/`, `rules/`, `skills/`, `sessions/`, `events/`, `flows/`, `machines/`, `usage/`, `.sync-base.json`, `.conflicts/`, `.git` | `DATA_DIR`, `XDG_DATA_HOME` |
+| State | `~/.local/state/mycelium/` | `daemon.log`, `.last-install`, `.sessions-state.json`, `.consolidate-cursor.json`, `.consolidate-run.json`, `.flow-trust.json`, `runs/` | `MYCELIUM_STATE_DIR`, `XDG_STATE_HOME` |
+
+When `DATA_DIR` points somewhere explicit, its state sits beside it at `<DATA_DIR>/state` instead,
+so one placed store stays one self-contained tree.
+
+Migration: the first run of a new binary moves a pre-XDG install into place. The data directory
+`$HOME/.mycelium` becomes `~/.local/share/mycelium`, the config file `$HOME/.mycelium.yml` becomes
+`~/.config/mycelium/config.yml`, and the state files are lifted out of the data tree into
+`~/.local/state/mycelium`. The migration is idempotent, never moves the data tree when `DATA_DIR`
+is set, and is reported by `mycelium doctor`.
+
 ## Server environment
 
 `internal/env` reads the whole configuration once, at startup, through `tronc/env`. Any
@@ -14,7 +35,7 @@ deliberate — a half-configured server is worse than one that refuses to boot.
 | `APP_ENV` | no | `development` | `development`, `staging`, or `production`. Anything unrecognized parses as `development` |
 | `PORT` | no | `8420` | HTTP listen port. Must be 1–65535 |
 | `LOG_LEVEL` | no | `info` | Level for the tronc structured logger |
-| `DATA_DIR` | no | `~/.mycelium` | Root of the markdown tree and the server's JSON state |
+| `DATA_DIR` | no | `~/.local/share/mycelium` | Root of the markdown tree and the server's JSON state |
 | `CLIENT_DIR` | no | `./client` | Directory holding the built SPA. The image sets `/client` |
 | `PASSWORD` | conditional | — | Shared password for `mycelium login --password` |
 | `CORS_ALLOWED_ORIGINS` | no | — | Comma-separated origins. Empty denies every cross-origin browser caller |
@@ -85,7 +106,7 @@ mycelium serve --port 9000 --data /srv/mycelium
 
 The CLI keeps its state in two places.
 
-`~/.mycelium.yml` is written by `mycelium login` and read by every command that talks to a
+`~/.config/mycelium/config.yml` is written by `mycelium login` and read by every command that talks to a
 server:
 
 ```yaml
@@ -115,17 +136,17 @@ agents:
 
 The file is written mode `0600`, because `usage_token` may hold a credential.
 
-`~/.mycelium` (or `$DATA_DIR`) is the data tree itself: `memory/`, `rules/`, `skills/`,
-`machines/`, `sessions/`, `usage/`. Two local-only files sit beside it and are never synced —
-`.sync-base.json`, the reconcile manifest, and `.sessions-state.json`, the per-transcript
-byte offsets.
+`~/.local/share/mycelium` (or `$DATA_DIR`) is the data tree itself: `memory/`, `rules/`, `skills/`,
+`machines/`, `sessions/`, `usage/`. One local-only file sits beside it and is never synced:
+`.sync-base.json`, the reconcile manifest. `.sessions-state.json`, the per-transcript byte
+offsets, lives in `~/.local/state/mycelium/`.
 
 `DATA_DIR` is read by the CLI too, not just the server. `mycelium rules edit` shells out to
 `$EDITOR`.
 
 ### Consolidation
 
-The daemon's consolidation stage reads recent episodes from `~/.mycelium/events/`, proposes
+The daemon's consolidation stage reads recent episodes from `~/.local/share/mycelium/events/`, proposes
 candidate findings heuristically, judges their durability against a local Ollama model, and
 writes the ones that pass into `memory/`. Two keys tune it:
 
@@ -145,7 +166,7 @@ heuristic-fallback verdict and the run continues offline.
 
 ### The server session
 
-`mycelium login` writes `url` and `token` into `~/.mycelium.yml` at mode `0600`. Two environment
+`mycelium login` writes `url` and `token` into `~/.config/mycelium/config.yml` at mode `0600`. Two environment
 variables override that file, with precedence **flag > environment > config file**:
 
 | Variable | Overrides |
@@ -157,7 +178,7 @@ A CI job cannot run an interactive login and must not commit a config file, so t
 environment is the only credential channel it has. Nothing ever writes these back to disk.
 
 `mycelium logout` revokes the session on the server when it can reach it and clears `token`
-from `~/.mycelium.yml`, leaving `url`, `machine`, `space`, `rule_order`, `agents` and
+from `~/.config/mycelium/config.yml`, leaving `url`, `machine`, `space`, `rule_order`, `agents` and
 `usage_token` alone. Running it while logged out is not an error.
 
 ### The usage token
@@ -171,11 +192,11 @@ decreasing safety and takes the first non-empty one:
 | 1 | `CLAUDE_CODE_OAUTH_TOKEN` in the environment |
 | 2 | `MYCELIUM_USAGE_TOKEN` in the environment |
 | 3 | The OS keychain, service `mycelium-usage-token` — `security` on macOS, `secret-tool` on Linux |
-| 4 | `usage_token` in `~/.mycelium.yml`, plaintext, last resort |
+| 4 | `usage_token` in `~/.config/mycelium/config.yml`, plaintext, last resort |
 
-`mycelium usage login` writes to the keychain and only falls through to `~/.mycelium.yml` when the
+`mycelium usage login` writes to the keychain and only falls through to `~/.config/mycelium/config.yml` when the
 machine has no keychain backend Mycelium can drive, saying so out loud. It refuses outright if
-`~/.mycelium.yml` resolves inside the synced data directory.
+`~/.config/mycelium/config.yml` resolves inside the synced data directory.
 
 The token is only ever used to read subscription limits from Anthropic's usage endpoint. It is
 never sent to the Mycelium server, never written into the synced data directory, and never used

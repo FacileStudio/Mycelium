@@ -21,14 +21,14 @@ tree it syncs, plus a handful of dot-prefixed JSON files for tokens, users, spac
 settings, and the emit ledger.
 
 On the machine side there is no server at all — the CLI reads and writes the same shape of
-tree under `~/.mycelium` and talks to the server over HTTP.
+tree under `~/.local/share/mycelium` and talks to the server over HTTP.
 
 ## Components
 
 | Package | Responsibility |
 |---|---|
 | `cmd/` | The cobra command tree, one file per command |
-| `internal/config` | `~/.mycelium.yml` and the `DATA_DIR` paths |
+| `internal/config` | `~/.config/mycelium/config.yml` and the `DATA_DIR` paths |
 | `internal/cell` | Scaffolds the local tree and reads rules, skills, and the machine block |
 | `internal/adapter` | One pure function per agent: `(rules + skills + machine) -> files` |
 | `internal/memory` | Substring search and `index.md` reads over the memory tree |
@@ -43,7 +43,11 @@ tree under `~/.mycelium` and talks to the server over HTTP.
 
 ## The data tree
 
-Both the machine (`~/.mycelium`) and the server (`DATA_DIR`) hold the same shape:
+The layout follows the [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir/latest):
+config, syncable data and machine-local state are three separate roots, because only the middle one
+is safe to sync between machines.
+
+Both the machine (`~/.local/share/mycelium`) and the server (`DATA_DIR`) hold the same shape:
 
 ```
 memory/          the brain — durable, non-obvious knowledge
@@ -61,13 +65,14 @@ usage/           <machine>/current.json latest snapshot, <YYYY-MM>.jsonl history
 `mycelium init` creates the directories and seeds `overview.md`, `index.md`, and `log.md`.
 
 Server-side state lives beside the tree and is never synced: `tokens.json`, `.users.json`,
-`.spaces.json`, `.settings.json`, `.pool-ledger.json`. On a machine, `.sync-base.json`,
-`.sessions-state.json`, `.flow-trust.json` and `.memory-ratified.json` are likewise local-only.
+`.spaces.json`, `.settings.json`, `.pool-ledger.json`. On a machine, `.sync-base.json` and
+`.memory-ratified.json` likewise sit beside the tree and stay local, while `.sessions-state.json`
+and `.flow-trust.json` live in `~/.local/state/mycelium/` and are local-only by construction.
 
 ## Normative pages
 
 A page carrying `type: standard` is normative: it says what a repository must do, rather than
-recording what an agent observed. `~/.mycelium/.memory-ratified.json` records, per page, the
+recording what an agent observed. `~/.local/share/mycelium/.memory-ratified.json` records, per page, the
 checksum a human accepted on this machine and the day they accepted it. `internal/memory/
 ratify.go` compares the two and reports one of four standings — `ratified`, `not ratified`,
 `CHANGED`, `MISSING`.
@@ -155,10 +160,10 @@ unreachable without membership.
 
 ## Sync
 
-`mycelium sync` is a three-way reconcile against `~/.mycelium/.sync-base.json`, the manifest of
+`mycelium sync` is a three-way reconcile against `~/.local/share/mycelium/.sync-base.json`, the manifest of
 what both sides agreed on last time. Local edits push, remote edits pull, deletions
 propagate both ways, and a genuine edit-versus-edit conflict keeps the losing version at
-`~/.mycelium/.conflicts/<path>` rather than dropping it. Conflict markers are never written
+`~/.local/share/mycelium/.conflicts/<path>` rather than dropping it. Conflict markers are never written
 into a page. `mycelium push` and `mycelium pull` force one direction.
 
 The wire format is checksums and file bodies: `GET /api/sync/tree` returns a path,
@@ -211,7 +216,7 @@ add writes nothing.
 ## Session tracking
 
 `internal/sessions` tails Claude Code transcripts under `~/.claude/projects/*/*.jsonl`,
-keeping per-file byte offsets in `~/.mycelium/.sessions-state.json`. User and assistant lines
+keeping per-file byte offsets in `~/.local/state/mycelium/.sessions-state.json`. User and assistant lines
 are heartbeats; token usage is deduped by `requestId`, because a streamed response repeats
 identical usage lines.
 

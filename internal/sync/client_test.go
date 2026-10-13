@@ -91,6 +91,29 @@ func TestSyncSkipsRunArtifacts(t *testing.T) {
 	}
 }
 
+// Machine-local state resolves inside the data directory whenever DATA_DIR is
+// set, which is how the container is configured. A dotfile rule does not reach
+// it — "state/.sessions-state.json" starts with an s — so scan offsets, trust
+// pins, the daemon log and flow run artifacts would otherwise be published to
+// every machine as remote edits worth pulling.
+func TestSyncSkipsMachineLocalState(t *testing.T) {
+	for rel, want := range map[string]bool{
+		"state/.sessions-state.json":    true,
+		"state/.flow-trust.json":        true,
+		"state/runs/flow/x.json":        true,
+		"state/daemon.log":              true,
+		"memory/state.md":               false,
+		"memory/conventions/state/x.md": false,
+	} {
+		if got := syncSkip(rel); got != want {
+			t.Fatalf("syncSkip(%q) = %v, want %v", rel, got, want)
+		}
+	}
+	if !skipWalkDir("state") {
+		t.Error("state must be pruned from the walk, not read file by file")
+	}
+}
+
 // A .tmp file is what consolidate stages a page under before renaming it into
 // place. The rename closes the window here, but a crash inside it leaves the
 // fragment in memory/ forever, and syncing it would publish half a page to

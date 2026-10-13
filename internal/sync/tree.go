@@ -9,7 +9,13 @@ import (
 
 // syncSkip reports whether a path is excluded from sync: the tokens file,
 // hidden dotfiles, conflict backups, logs, half-written pages, flow run
-// artifacts and installed packages never travel.
+// artifacts, machine-local state and installed packages never travel.
+//
+// state/ is the machine-local state directory, which resolves inside the data
+// directory when DATA_DIR is set. Without this rule a container would publish
+// its scan offsets, trust pins and daemon log into the tree every other
+// machine reconciles against, and each of those files would look like a remote
+// edit worth pulling.
 //
 // The .tmp suffix is what consolidate's writeFileAtomic stages a page under
 // before renaming it into place. The rename closes the window on this machine,
@@ -27,6 +33,7 @@ func syncSkip(rel string) bool {
 		strings.HasPrefix(rel, ".") ||
 		strings.HasPrefix(rel, "runs/") ||
 		strings.HasPrefix(rel, "local/") ||
+		strings.HasPrefix(rel, "state/") ||
 		inPackageDir(rel) ||
 		strings.HasSuffix(rel, conflictExt) ||
 		strings.HasSuffix(rel, tempExt) ||

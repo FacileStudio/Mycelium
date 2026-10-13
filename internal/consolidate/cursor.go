@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/FacileStudio/Mycelium/internal/config"
 )
 
 // Position records how far one source has been consolidated: the last
@@ -25,9 +27,10 @@ type Cursor struct {
 	path    string
 }
 
-// CursorPath is where the watermark file lives under the data dir.
+// CursorPath is where the watermark file lives, inside the state directory
+// that belongs to dataDir.
 func CursorPath(dataDir string) string {
-	return filepath.Join(dataDir, ".consolidate-cursor.json")
+	return filepath.Join(config.StateDirFor(dataDir), ".consolidate-cursor.json")
 }
 
 // LoadCursor reads the watermark file, returning an empty cursor when none
@@ -72,6 +75,9 @@ func (c *Cursor) PositionFor(source string) (Position, bool) {
 func (c *Cursor) Save() error {
 	data, err := json.MarshalIndent(c, "", "  ")
 	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(c.path), 0o700); err != nil {
 		return err
 	}
 	tmp := c.path + ".tmp"

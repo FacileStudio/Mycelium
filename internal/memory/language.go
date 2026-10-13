@@ -8,7 +8,7 @@ import (
 
 // The wiki is English-only, by decision rather than by default: retrieval is
 // measured on one language and a French page is unreachable from the English
-// query an agent actually writes. See ~/.mycelium/rules/20-memory.md.
+// query an agent actually writes. See rules/20-memory.md in the store.
 //
 // This is the transport-side half of that rule. It warns, and never blocks:
 // sync pulls as well as pushes, so refusing on French would lock a machine out

@@ -17,7 +17,7 @@ after a day, a gap of 1440x. Sync on ruche had been failing for roughly twenty h
 `mycelium doctor` printed a tick beside `last sync: 19h43m36s ago`. Nothing surfaced it: not the
 session recap, not the health check, only reading `journalctl` by hand.
 
-Separately, the operating loop is prose in `~/.mycelium/rules/20-memory.md` that agents skim. The
+Separately, the operating loop is prose in `~/.local/share/mycelium/rules/20-memory.md` that agents skim. The
 session that produced this plan ran the start gate, received `401 Unauthorized`, and carried on
 regardless. The instruction looked like a gate and was not one.
 
@@ -41,7 +41,7 @@ Do not relitigate these. Each was settled with the user on 2026-08-25.
 - **MCP is stdio, not a route.** The 2026-07-28 spec says a server "intending ... to be run
   locally SHOULD ... use the stdio transport to limit access to just the MCP client". Two of the
   three tools cannot be remote at all: `run_flow` executes `sh -c` on the calling machine, and
-  the trust pin lives per machine in `~/.mycelium/.flow-trust.json`. The server already exposes
+  the trust pin lives per machine in `~/.local/state/mycelium/.flow-trust.json`. The server already exposes
   `/api/flows` and `/api/flows/{name}` and pointedly no run endpoint. This is the documented
   exception to "MCP belongs in the API as a route", which stands for the other suite apps.
 - **Track E is cut.** A filesystem watcher needs a long-lived process; `daemon.Run()` is oneshot
@@ -117,12 +117,12 @@ an untrusted flow returns an actionable execution error rather than an exit code
     `~/.codex/`, `~/.config/opencode/`, and Claude's own. `[agents-md-standard]`
 16. `internal/adapter/adapter.go` — add a capability marker to `Input` so a rule can render for
     a tool-capable agent or a CLI-only one.
-17. `~/.mycelium/rules/20-memory.md`, `30-flows.md` — fence the CLI-versus-tool sentences with a
+17. `~/.local/share/mycelium/rules/20-memory.md`, `30-flows.md` — fence the CLI-versus-tool sentences with a
     comment marker, reusing the `<!-- lang:fr -->` precedent already in this corpus. An agent is
     told to call `search_memory` **or** to run `mycelium memory search`, never both.
-18. `~/.mycelium/rules/20-memory.md` — remove the manual sync, both the start gate and the
+18. `~/.local/share/mycelium/rules/20-memory.md` — remove the manual sync, both the start gate and the
     post-write step. **Only after D has landed.**
-19. `~/.mycelium/memory/conventions/mycelium-agent-surface.md` — mark the "sync as an explicit
+19. `~/.local/share/mycelium/memory/conventions/mycelium-agent-surface.md` — mark the "sync as an explicit
     act" clause `[SUPERSEDED by: nacelle sync-gate hook, 2026-08-23]`. Leave the rest: the
     domain-versus-storage line and the five rules are still right.
 
@@ -162,7 +162,7 @@ nacelle session through the `mcp:` list in `~/.nacelle.yml`.
 - `internal/adapter/{adapter,claude,codex,opencode,gemini}.go` — MCP declaration, capability marker
 - `cmd/claim.go` — server-authoritative when online
 - `go.mod` — one dependency
-- `~/.mycelium/rules/{20-memory,30-flows}.md` and the agent-surface convention — outside the repo
+- `~/.local/share/mycelium/rules/{20-memory,30-flows}.md` and the agent-surface convention — outside the repo
 - nacelle: `tools/mycelium*.go` deleted, `tui/` switch removed
 
 ## Exit criteria

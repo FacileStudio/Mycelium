@@ -4,9 +4,10 @@
 //
 // Stdio is not a default here, it is the only transport that can work. run_flow
 // executes "sh -c" on the calling machine, and the pin deciding whether it may
-// lives in ~/.mycelium/.flow-trust.json, which is per machine on purpose. The
-// 2026-07-28 spec agrees: a server "intending ... to be run locally SHOULD ...
-// use the stdio transport to limit access to just the MCP client".
+// lives in the machine's state directory
+// (~/.local/state/mycelium/.flow-trust.json), which is per machine on purpose.
+// The 2026-07-28 spec agrees: a server "intending ... to be run locally SHOULD
+// ... use the stdio transport to limit access to just the MCP client".
 //
 // Every tool declares its annotations explicitly, and every one of them is a
 // hint the client may ignore: the spec requires clients to "consider tool

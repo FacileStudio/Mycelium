@@ -139,7 +139,7 @@ func TestEveryToolAdvertisesAnObjectInputAndOutputSchema(t *testing.T) {
 
 // TestPublishArtifactWithInlineContent points MYCELIUM_URL at a port nothing
 // listens on, and that is the point: publish_artifact syncs what it records,
-// and LoadMyceliumConfig reads ~/.mycelium.yml rather than DATA_DIR, so the
+// and LoadMyceliumConfig reads the config file rather than DATA_DIR, so the
 // token is the developer's own. Naming a real server here published a "# Test"
 // artifact into the production store on every `go test ./...`, three of them
 // on 2026-08-29 before anyone noticed. The URL is built from the configured

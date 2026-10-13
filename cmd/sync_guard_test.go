@@ -39,8 +39,8 @@ func captureStderr(t *testing.T, run func()) string {
 }
 
 // syncHarness points the CLI at a throwaway server and a throwaway data
-// directory. Nothing here may reach ~/.mycelium: a reconcile against an empty
-// server emptied it on 2026-08-25 and it came back one commit at a time.
+// directory. Nothing here may reach the real store: a reconcile against an
+// empty server emptied it on 2026-08-25 and it came back one commit at a time.
 func syncHarness(t *testing.T) (string, string) {
 	t.Helper()
 	serverDir := t.TempDir()
@@ -48,6 +48,7 @@ func syncHarness(t *testing.T) (string, string) {
 	ts := httptest.NewServer(server.New(serverDir, "").Handler())
 	t.Cleanup(ts.Close)
 	t.Setenv("HOME", t.TempDir())
+	t.Setenv("XDG_CONFIG_HOME", filepath.Join(t.TempDir(), ".config"))
 	t.Setenv("DATA_DIR", clientDir)
 	t.Setenv(config.URLEnv, ts.URL)
 	t.Setenv(config.TokenEnv, "")

@@ -7,12 +7,14 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/FacileStudio/Mycelium/internal/config"
 )
 
 const stateName = ".sessions-state.json"
 
 func statePath(dataDir string) string {
-	return filepath.Join(dataDir, stateName)
+	return filepath.Join(config.StateDirFor(dataDir), stateName)
 }
 
 // LoadState restores the scanner's resume point, or a fresh empty state when
@@ -44,7 +46,11 @@ func SaveState(dataDir string, state *ScanState) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(statePath(dataDir), data, 0o600)
+	path := statePath(dataDir)
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		return err
+	}
+	return os.WriteFile(path, data, 0o600)
 }
 
 func machineDir(dataDir, machine string) string {

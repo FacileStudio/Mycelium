@@ -12,8 +12,8 @@ must not block them.
 In:
 
 - `mycelium flow run|list|show|runs|trust`
-- YAML flow files under `~/.mycelium/flows/`, synced like every other tree
-- One JSON run artifact per execution under `~/.mycelium/runs/`, never synced
+- YAML flow files under `~/.local/share/mycelium/flows/`, synced like every other tree
+- One JSON run artifact per execution under `~/.local/state/mycelium/runs/`, never synced
 - Trust-on-first-use so synced content cannot silently execute
 
 Out (deliberately):
@@ -29,7 +29,7 @@ Out (deliberately):
 
 ## File format
 
-`~/.mycelium/flows/<name>.yml`:
+`~/.local/share/mycelium/flows/<name>.yml`:
 
 ```yaml
 name: deploy-check
@@ -54,7 +54,7 @@ Rules:
 
 ## Run artifact
 
-`~/.mycelium/runs/<flow>/<rfc3339-nano>.json`, mode 0600, directory 0700:
+`~/.local/state/mycelium/runs/<flow>/<rfc3339-nano>.json`, mode 0600, directory 0700:
 
 ```json
 {
@@ -102,7 +102,7 @@ belong in v0, not a follow-up.
 
 ### 1. Trust on first use
 
-`~/.mycelium/.flow-trust.json` maps flow name to sha256 of its bytes. `flow run`
+`~/.local/state/mycelium/.flow-trust.json` maps flow name to sha256 of its bytes. `flow run`
 hashes the file first and refuses to execute when the hash is absent or
 differs, naming the `flow trust` command to accept it.
 
@@ -151,7 +151,7 @@ So `run:` holds an invocation, never logic:
 ```yaml
 steps:
   - name: sync-check
-    run: bun ~/.mycelium/skills/scripts/sync-check.ts
+    run: bun ~/.local/share/mycelium/skills/scripts/sync-check.ts
 ```
 
 Anything with branching, JSON or error handling goes in a TypeScript file run

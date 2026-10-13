@@ -6,7 +6,7 @@ extraction, and supersede-candidates as a first-class output.
 
 ## Goal
 
-A daemon stage reads recent episodes from `~/.mycelium/events/`, extracts
+A daemon stage reads recent episodes from `~/.local/share/mycelium/events/`, extracts
 candidate findings, consolidates them against existing memory pages, and
 writes passing candidates directly into `memory/` (create or supersede) —
 fully automatic, no user interaction, no cloud tokens.
@@ -68,7 +68,7 @@ consensus.
    unreachable paths. `[filet]`
 
 4. **`internal/consolidate/gate.go`** (new) — the storage gate, executable.
-   Four checks mirroring `~/.mycelium/rules/20-memory.md`: changes future
+   Four checks mirroring `~/.local/share/mycelium/rules/20-memory.md`: changes future
    behavior / non-obvious / grounded (has episode refs = provenance) / no
    secrets (reuse the secrets-clause patterns from `internal/flow`). Returns
    typed `Rejection{Reason}` — never just a bool. Exit: each rule has a
@@ -98,7 +98,7 @@ consensus.
    operations. `[filet]`
 
 7. **`internal/consolidate/cursor.go`** (new) — idempotency. Watermark file
-   under `config.DataDir()` (e.g. `.consolidate-cursor.json`: per-source
+   under `config.StateDirFor(dataDir)` (e.g. `.consolidate-cursor.json`: per-source
    last-processed timestamp + hash of last line). Crash-safe: advance only
    after successful write phase. No manual override flag — reprocessing is
    what `sync --force` culture exists to avoid; deleting the cursor file is
@@ -182,8 +182,8 @@ No DB migrations (file-based state), no new Go deps beyond what
 
 ---
 
-Checked against: suite conventions via `~/.mycelium/memory/conventions/`
+Checked against: suite conventions via `~/.local/share/mycelium/memory/conventions/`
 (mycelium-agent-surface, facile-cli-standard), SPEC.md steps 1–11 outputs
 (chunk parsing, freshness, hybrid ranking, ollama client), ROADMAP §B6 +
 exit criteria, repo AGENTS/filet caps, storage-gate rules in
-`~/.mycelium/rules/20-memory.md`.
+`~/.local/share/mycelium/rules/20-memory.md`.

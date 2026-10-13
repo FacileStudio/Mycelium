@@ -10,7 +10,13 @@ import (
 )
 
 // Init creates the directory skeleton and seed files a fresh install needs.
+// The state directory is created too: logs, stamps, scan offsets, cursors and
+// trust pins all live there, and a fresh install must be able to write them
+// before anything else runs.
 func Init() error {
+	if err := os.MkdirAll(config.StateDir(), 0700); err != nil {
+		return err
+	}
 	dirs := []string{
 		"memory", "memory/bugs", "memory/tools", "memory/projects",
 		"memory/conventions", "memory/standards", "memory/syntheses",

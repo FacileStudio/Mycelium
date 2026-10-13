@@ -87,7 +87,7 @@ var sessionsScanCmd = &cobra.Command{
 		}
 		machine := cfg.Machine
 		if machine == "" {
-			return fmt.Errorf("machine not set — run 'mycelium login <url>' or set machine in ~/.mycelium.yml")
+			return fmt.Errorf("machine not set — run 'mycelium login <url>' or set machine in %s", config.ConfigPath())
 		}
 		scan := sessions.Scan
 		if sessionsScanAll {

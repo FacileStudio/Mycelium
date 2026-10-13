@@ -62,7 +62,7 @@ func (r Rejection) Error() string {
 // rejection per failed rule, in rule order. An empty slice means the
 // candidate may enter memory/.
 //
-// The rules mirror ~/.mycelium/rules/20-memory.md:
+// The rules mirror rules/20-memory.md in the store:
 //
 //  1. behavior — the text plausibly changes how a future agent acts
 //  2. obvious  — not trivially rediscoverable from code or command output

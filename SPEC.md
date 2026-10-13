@@ -7,7 +7,7 @@ Written 2026-08-22.
 
 ## Goal
 
-Give `~/.mycelium` a history so a page can be diffed, blamed and reverted, and make memory age
+Give `~/.local/share/mycelium` a history so a page can be diffed, blamed and reverted, and make memory age
 honestly so a stale claim stops outranking the fact that replaced it — without changing anything
 an agent has to know.
 
@@ -100,7 +100,7 @@ page without; `go test ./internal/memory/` green; `filet check .` exit 0.
 
 **Done 2026-08-23.** The gate has a fourth condition and all 8 agent configs carry it.
 
-`~/.mycelium/rules/` (the shared rules, not this repo), and this repo's `AGENTS.md` if it restates
+`~/.local/share/mycelium/rules/` (the shared rules, not this repo), and this repo's `AGENTS.md` if it restates
 the gate
 
 The recommended write gate has four conditions and mycelium's has three. Add: **secrets never enter
@@ -189,7 +189,7 @@ no runtime dependencies. Requiring a git binary for core memory regresses both.
 sync path, on both `internal/sync/tree.go` and `internal/server/sync_api.go`. Syncing a `.git`
 directory through a file syncer is a documented corruption mode.
 
-**Exit**: `~/.mycelium/.git` exists after `mycelium init`; `git log` in that directory shows commits;
+**Exit**: `~/.local/share/mycelium/.git` exists after `mycelium init`; `git log` in that directory shows commits;
 `mycelium sync` produces exactly one commit per run; `events/` never appears in `git status`.
 
 ### 5. Commit on the write and sync paths  `[filet]`
@@ -270,7 +270,7 @@ on machines that wrote one before the move, and `doctor` reports through it.
 
 `writeConflictCopy()` writes `<path>.conflict` beside the page. A conflict as an event is domain
 and `doctor` already reports it; a file called `foo.md.conflict` in the tree is storage leaking
-into an agent's view. Write under `~/.mycelium/.conflicts/<path>` instead. Already excluded from
+into an agent's view. Write under `~/.local/share/mycelium/.conflicts/<path>` instead. Already excluded from
 sync, so this is local clutter only.
 
 Once step 4 lands, most stop being written: today's reconcile compares checksums and has no
@@ -388,7 +388,7 @@ step 10 shipped with nothing measuring them. What exists now:
 
 | Set | Cases | Today | Job |
 |---|---|---|---|
-| `~/.mycelium/eval/golden.json` | 76 | recall 1.000, MRR 0.978 | live corpus, regression only |
+| `~/.local/share/mycelium/eval/golden.json` | 76 | recall 1.000, MRR 0.978 | live corpus, regression only |
 | `testdata/golden-fixture.json` | 48 | recall 1.000, MRR 0.979 | CI gate, regression only |
 | the same 48 under page-level `Search` | 48 | recall 1.000, MRR 0.983 | `GET /api/memory/search` still ships it |
 | `testdata/golden-fixture-hard.json` | 60 | recall 1.000, MRR 0.853 | grade on MRR |
@@ -454,7 +454,7 @@ fails it is dropped with a reason.
 | `internal/daemon/daemon.go` | modify — consolidation stage (12) |
 | `internal/consolidate/` | **new package** (12) |
 | `go.mod` | add `github.com/go-git/go-git/v5` |
-| `~/.mycelium/rules/` | secrets clause (2) — outside this repo |
+| `~/.local/share/mycelium/rules/` | secrets clause (2) — outside this repo |
 
 ## Exit criteria
 
@@ -518,7 +518,7 @@ one-time one.
 `internal/memory/ratify.go`, `cmd/memory_ratify.go`, `cmd/doctor.go` (one check line),
 `cmd/memory.go` (search marking), `internal/sync/tree_test.go` (the store never syncs).
 
-**Store.** `~/.mycelium/.memory-ratified.json`, `{page: {checksum, machine, date}}`, keyed by path
+**Store.** `~/.local/share/mycelium/.memory-ratified.json`, `{page: {checksum, machine, date}}`, keyed by path
 relative to `memory/`. A dotfile, so `syncSkip` already excludes it. Atomic temp-and-rename at
 0600. A corrupt store is an error, never an empty map: "nothing is known" and "nothing is
 ratified" look identical downstream and only one of them is a problem.

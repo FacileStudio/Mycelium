@@ -54,7 +54,7 @@ func stablePath(resolved string) string {
 }
 
 func logPath() string {
-	return filepath.Join(config.DataDir(), "daemon.log")
+	return filepath.Join(config.StateDir(), "daemon.log")
 }
 
 // Run starts the background sync loop as the current process: it enables the
@@ -140,7 +140,11 @@ func runConsolidation(now time.Time) {
 }
 
 func appendDaemonLog(now time.Time, format string, args ...any) {
-	f, err := os.OpenFile(logPath(), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o600)
+	path := logPath()
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		return
+	}
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o600)
 	if err != nil {
 		return
 	}
@@ -149,7 +153,7 @@ func appendDaemonLog(now time.Time, format string, args ...any) {
 }
 
 func installStampPath() string {
-	return filepath.Join(config.DataDir(), ".last-install")
+	return filepath.Join(config.StateDir(), ".last-install")
 }
 
 func installDue(now time.Time) bool {
@@ -162,6 +166,9 @@ func installDue(now time.Time) bool {
 
 func markInstalled(now time.Time) {
 	path := installStampPath()
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		return
+	}
 	if f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY, 0o600); err == nil {
 		f.Close()
 	}

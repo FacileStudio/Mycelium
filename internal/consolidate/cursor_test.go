@@ -2,7 +2,6 @@ package consolidate
 
 import (
 	"os"
-	"path/filepath"
 	"testing"
 	"time"
 )
@@ -61,10 +60,10 @@ func TestCursorSaveAtomicShape(t *testing.T) {
 	if err := c.Save(); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := os.Stat(filepath.Join(dir, ".consolidate-cursor.json")); err != nil {
+	if _, err := os.Stat(CursorPath(dir)); err != nil {
 		t.Fatalf("cursor file missing after save: %v", err)
 	}
-	if _, err := os.Stat(filepath.Join(dir, ".consolidate-cursor.json.tmp")); !os.IsNotExist(err) {
+	if _, err := os.Stat(CursorPath(dir) + ".tmp"); !os.IsNotExist(err) {
 		t.Fatalf("tmp file should not survive save: %v", err)
 	}
 }

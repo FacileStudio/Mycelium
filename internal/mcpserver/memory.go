@@ -94,7 +94,7 @@ func searchServer(ctx context.Context, query string, limit int) ([]memory.Search
 		return nil, false, err
 	}
 	if !cfg.SemanticEnabled() {
-		return nil, false, errors.New("vector search is off (set vector_search: true in ~/.mycelium.yml)")
+		return nil, false, errors.New("vector search is off (set vector_search: true in " + config.ConfigPath() + ")")
 	}
 	if cfg.ServerURL() == "" || cfg.AuthToken() == "" {
 		return nil, false, errors.New("no server configured")

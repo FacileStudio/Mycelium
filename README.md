@@ -12,7 +12,7 @@ Live at [mycelium.facile.studio](https://mycelium.facile.studio).
    rules ─┐
   skills ─┼─▶  mycelium install  ─▶  CLAUDE.md · ~/.codex/AGENTS.md · GEMINI.md · …
  machine ─┘       + pi extension  ─▶  ~/.pi/agent/ (auto-discovered)
-                  + canonical events ─▶  ~/.mycelium/events/<agent>/ (JSONL)
+                  + canonical events ─▶  ~/.local/share/mycelium/events/<agent>/ (JSONL)
                          (one source of truth, many native configs)
 
   memory  ◀──▶  mycelium sync  ◀──▶  Mycelium server  ◀──▶  every other machine
@@ -24,7 +24,7 @@ and fans it out. The agents stay thin; the brain is shared.
 
 ## What it does
 
-- Stores memory, rules, and skills as plain markdown under `~/.mycelium`, with no database
+- Stores memory, rules, and skills as plain markdown under `~/.local/share/mycelium`, with no database
 - Generates native config for `claude`, `codex`, `gemini`, `cursor`, `copilot`, `hermes`,
   `opencode`, and `agents` (the cross-vendor `~/.agents/` standard path)
   and ships a pi extension that integrates Pi into the same session tracking
@@ -44,7 +44,7 @@ and fans it out. The agents stay thin; the brain is shared.
 
 | Layer | Tech |
 |---|---|
-| CLI | Go 1.26, cobra, YAML config at `~/.mycelium.yml` |
+| CLI | Go 1.26, cobra, YAML config at `~/.config/mycelium/config.yml` |
 | API | Go 1.26, chi, [tronc](https://github.com/FacileStudio/tronc) 0.8.0, no database |
 | Client | SvelteKit 2, Svelte 5 (runes), Tailwind CSS 4, `adapter-static` |
 | Storage | Plain markdown files on disk |
@@ -72,7 +72,7 @@ brew install FacileStudio/tap/mycelium
 Then set up this machine:
 
 ```sh
-mycelium init                                  # scaffold ~/.mycelium
+mycelium init                                  # scaffold ~/.local/share/mycelium
 mycelium login https://mycelium.facile.studio  # opens a browser to authorize this machine
 mycelium sync                                  # pull the shared brain
 mycelium install --all                         # generate config for every agent
@@ -92,7 +92,7 @@ bridges Pi into Mycelium's session tracking:
 # It is auto-discovered on next pi start (no install needed)
 
 # Mycelium's canonical event store collects events from every agent:
-ls ~/.mycelium/events/pi/  # monthly JSONL shards
+ls ~/.local/share/mycelium/events/pi/  # monthly JSONL shards
 mycelium sessions scan     # folds events into sealed blocks
 mycelium sessions          # show sessions from all agents
 ```
@@ -122,14 +122,14 @@ mise run check
 
 ## Configuration
 
-The CLI reads `~/.mycelium.yml`, written by `mycelium login`. The server reads its
+The CLI reads `~/.config/mycelium/config.yml`, written by `mycelium login`. The server reads its
 configuration from the environment, once, at startup.
 
 | Variable | What it does |
 |---|---|
 | `APP_ENV` | `development`, `staging`, or `production` |
 | `PASSWORD` | Shared password for `mycelium login --password` |
-| `DATA_DIR` | Where the markdown tree lives, default `~/.mycelium` |
+| `DATA_DIR` | Where the markdown tree lives, default `~/.local/share/mycelium` |
 | `OIDC_ISSUER` | Issuer URL of the identity provider; setting it makes the client credentials required |
 | `SSO_ONLY` | Disables password login, requires `OIDC_ISSUER` |
 
@@ -143,7 +143,7 @@ cmd/         One file per command (init, login, sync, install, serve, sessions, 
 internal/
   adapter/   One file per agent (agents, claude, codex, gemini, cursor, copilot, hermes, opencode)
   cell/      Local store: scaffold and read the markdown tree
-  config/    ~/.mycelium.yml and the data directory paths
+  config/    ~/.config/mycelium/config.yml and the data directory paths
   daemon/    Background sync service (launchd / systemd)
   env/       Server configuration, loaded and validated once at startup
   memory/    Memory search and index

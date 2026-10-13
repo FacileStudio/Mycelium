@@ -25,9 +25,9 @@ const (
 )
 
 // TrustPath returns the file pinning each flow name to the checksum this
-// machine accepted. It is a dotfile, so sync never carries it and trust stays
-// per machine.
-func TrustPath() string { return filepath.Join(config.DataDir(), trustFile) }
+// machine accepted. It lives in the machine's state directory rather than in
+// the synced store, so trust stays per machine.
+func TrustPath() string { return filepath.Join(config.StateDir(), trustFile) }
 
 // TrustedChecksum returns the checksum pinned for a flow, or an empty string
 // when the flow was never trusted. A store that cannot be parsed is an error:

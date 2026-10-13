@@ -1,11 +1,25 @@
 package memory
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/FacileStudio/Mycelium/internal/config"
 )
 
 type ranker func(dir, query string) ([]SearchResult, error)
+
+// wikiDir points the retrieval measurements at this machine's real wiki. It
+// resolves through config so the XDG layout is honoured, and reports false
+// when there is nothing to measure against.
+func wikiDir() (string, bool) {
+	dir := config.MemoryDir()
+	if _, err := os.Stat(dir); err != nil {
+		return "", false
+	}
+	return dir, true
+}
 
 func measure(t *testing.T, dir string, cases []EvalCase, rank ranker) (float64, float64) {
 	t.Helper()

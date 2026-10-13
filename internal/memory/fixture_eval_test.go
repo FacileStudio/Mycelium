@@ -80,7 +80,7 @@ func loadFixtureSet(t *testing.T, file string, min int) []EvalCase {
 }
 
 // TestFixtureRetrieval is the eval that always runs. The live-wiki tests score
-// ~/.mycelium/memory, which made the gate depend on mutable data outside the
+// the real wiki on disk, which made the gate depend on mutable data outside the
 // repository: the 2026-08-19 reset deleted every page they named, so all of them
 // skipped and CI, which has no wiki at all, never ran them even before that.
 // Ranking regressions had nothing left to trip over.

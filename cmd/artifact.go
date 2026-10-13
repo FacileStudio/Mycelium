@@ -26,7 +26,7 @@ var artifactAddCmd = &cobra.Command{
 	Use:   "add [file]",
 	Short: "Record a markdown or HTML artifact and open it",
 	Long: "Record a markdown or HTML artifact and open it.\n\n" +
-		"The document is copied into ~/.mycelium/artifacts/ and synced across machines. " +
+		"The document is copied into " + artifacts.Dir(config.DataDir()) + " and synced across machines. " +
 		"Markdown files (.md) are formatted with YAML frontmatter, and HTML files (.html) " +
 		"are preserved for standalone viewing.\n\n" +
 		"The identifier comes from the title with a date prefix to prevent collisions:\n\n" +

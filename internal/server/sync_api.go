@@ -143,14 +143,17 @@ func (s *Server) resolveSyncPath(root, rel string) (string, bool) {
 }
 
 // syncSkip fences everything the file sync must never touch: server state
-// (tokens, dotfiles), conflict backups, and the spaces subtree — space content
-// is reachable only through its own scoped root, never via the common tree.
+// (tokens, dotfiles), conflict backups, machine-local state — which resolves
+// inside the data directory when DATA_DIR is set, as it is in the container —
+// and the spaces subtree, which is reachable only through its own scoped root,
+// never via the common tree.
 func syncSkip(rel string) bool {
 	return rel == "tokens.json" ||
 		rel == "devices.json" ||
 		rel == "login-codes.json" ||
 		strings.HasPrefix(rel, ".") ||
 		strings.HasPrefix(rel, "runs/") ||
+		strings.HasPrefix(rel, "state/") ||
 		inPackageDir(rel) ||
 		strings.HasSuffix(rel, ".conflict") ||
 		strings.HasSuffix(rel, ".tmp") ||

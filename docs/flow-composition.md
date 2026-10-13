@@ -18,7 +18,7 @@ steps:
 ```
 
 A **model** is TypeScript run by `bun`, living at
-`~/.mycelium/extensions/models/<type>.ts` (the leading `@` is dropped, so
+`~/.local/share/mycelium/extensions/models/<type>.ts` (the leading `@` is dropped, so
 `@acme/http-check` is `acme/http-check.ts`). It answers two verbs:
 
 - `describe` — print the schema as JSON on stdout

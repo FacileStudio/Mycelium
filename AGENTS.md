@@ -6,7 +6,7 @@ Shared agent memory — manage wiki, rules, and skills across AI coding agents a
 
 - **Language**: Go 1.26
 - **CLI framework**: cobra (spf13/cobra)
-- **Config**: YAML (`~/.mycelium.yml`) for the CLI, environment for the server (`internal/env`)
+- **Config**: YAML (`~/.config/mycelium/config.yml`) for the CLI, environment for the server (`internal/env`)
 - **Server chassis**: [tronc](https://github.com/FacileStudio/tronc) — chi router with the
   suite's middleware stack, error envelope, structured logger, health probes, SPA handler
 - **Release**: GoReleaser + GitHub Actions (tag-triggered), Homebrew tap via FacileStudio/homebrew-tap
@@ -52,7 +52,7 @@ git tag v0.x.x && git push --tags
 │   ├── sync.go install.go diff.go daemon.go
 │   └── memory.go rules.go skills.go serve.go
 ├── internal/
-│   ├── config/         # ~/.mycelium.yml + paths
+│   ├── config/         # ~/.config/mycelium/config.yml + paths
 │   ├── cell/           # local store: read rules/skills/machine, scaffold
 │   ├── adapter/        # one file per agent (agents, claude, codex, gemini, cursor, copilot, hermes, opencode)
 │   ├── memory/         # memory search + index
@@ -96,10 +96,10 @@ git tag v0.x.x && git push --tags
 ## Conventions
 
 - No inline comments in code
-- Client config is YAML at `~/.mycelium.yml`; data lives under `~/.mycelium` (or `$DATA_DIR`)
+- Client config is YAML at `~/.config/mycelium/config.yml`; data lives under `~/.local/share/mycelium` (or `$DATA_DIR`), machine-local state under `~/.local/state/mycelium` (see [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir/latest))
 - Storage is plain markdown files synced over HTTP to a Mycelium server; auth is a Bearer token per machine, obtained via `mycelium login <url>`
 - Each adapter is a pure function `(rules + skills + machine) -> agent config`, self-registers via `init()` in `internal/adapter/`, and writes the format its agent expects
-- Sync is a three-way reconcile against a local base manifest (`~/.mycelium/.sync-base.json`): local edits push, remote edits pull, deletes propagate both ways, and a genuine edit-vs-edit conflict keeps the losing version under `~/.mycelium/.conflicts/<path>` (never silent loss, never a marker inside the page). `mycelium push`/`pull` force one direction
+- Sync is a three-way reconcile against a local base manifest (`~/.local/share/mycelium/.sync-base.json`): local edits push, remote edits pull, deletes propagate both ways, and a genuine edit-vs-edit conflict keeps the losing version under `~/.local/share/mycelium/.conflicts/<path>` (never silent loss, never a marker inside the page). `mycelium push`/`pull` force one direction
 - The copy-paste master prompt shown in the dashboard lives in `apps/client/src/lib/agentPrompt.ts`
 
 ## Spaces + SSO (v0.6)
@@ -107,12 +107,12 @@ git tag v0.x.x && git push --tags
 - Suite-consistent spaces: the existing tree is the **Common** scope — the instance owner's private data, NOT a shared bucket (no migration). Admins and machine tokens reach it; every other signed-in user is denied and sees only spaces they belong to. This is deliberately Nuage's rule, not Sablier's (where `space_id IS NULL` has no owner filter, so any user reads everyone's 'personal' data); each space lives under `spaces/<uuid>/{memory,rules,skills,sessions}` server-side with membership roles owner/admin/member in `.spaces.json`. A caller-supplied `space_id` (query param on all content + sync routes) is untrusted input — every route funnels through the `spaceAccess` membership guard, and the common tree fences out `spaces/` so space content is unreachable without membership
 - SSO via registre (`sso.facile.studio`, and mycelium is its first consumer): env-driven (`OIDC_ISSUER/CLIENT_ID/CLIENT_SECRET/REDIRECT_URL/SUCCESS_URL`, `SSO_ONLY`) using go-oidc/v3; callback upserts the user by email (`.users.json`, first user becomes admin), mints a 30-day session token (name `session:<email>`, sha256 at rest), and hands it to the SPA via URL fragment on `/auth/callback`. Unset issuer = feature dormant, password login unchanged
 - Token scopes: `admin` (settings/tokens/devices), `user` (OIDC non-admin sessions: spaces + content), `sync` (machines: content + sync only). Sessions expire; machine tokens don't
-- CLI: `mycelium spaces list|use <name>`, `space:` in ~/.mycelium.yml, sync sends `space_id` — switching spaces resets `.sync-base.json` so the three-way merge doesn't read the tree switch as mass deletions
+- CLI: `mycelium spaces list|use <name>`, `space:` in ~/.config/mycelium/config.yml, sync sends `space_id` — switching spaces resets `.sync-base.json` so the three-way merge doesn't read the tree switch as mass deletions
 
 ## Session tracking
 
-- `internal/sessions` tails Claude Code transcripts (`~/.claude/projects/*/*.jsonl`) with per-file byte offsets kept in `~/.mycelium/.sessions-state.json` (never synced). Heartbeats are user/assistant lines; token usage is deduped by `requestId` (streamed responses repeat identical usage lines)
-- Sessionization is gap-based (15 min gap joins, no padding, isolated heartbeat = 0 duration); a block idle >30 min is sealed and appended to `~/.mycelium/sessions/<machine>/<YYYY-MM>.jsonl`. Shards are append-only and single-writer per machine, so they ride the normal file sync with zero conflict risk
+- `internal/sessions` tails Claude Code transcripts (`~/.claude/projects/*/*.jsonl`) with per-file byte offsets kept in `~/.local/state/mycelium/.sessions-state.json` (never synced). Heartbeats are user/assistant lines; token usage is deduped by `requestId` (streamed responses repeat identical usage lines)
+- Sessionization is gap-based (15 min gap joins, no padding, isolated heartbeat = 0 duration); a block idle >30 min is sealed and appended to `~/.local/share/mycelium/sessions/<machine>/<YYYY-MM>.jsonl`. Shards are append-only and single-writer per machine, so they ride the normal file sync with zero conflict risk
 - Block IDs are deterministic (`sha256(machine|agent|project|start)`), so full rescans (`mycelium sessions scan --all`) and re-emits deduplicate downstream
 - Live presence: each scan republishes `sessions/<machine>/live.json` (open blocks + heartbeat) which rides the normal sync, so every machine and the dashboard can see work in progress. Liveness is **computed at read time**, never stored — a sleeping machine would otherwise advertise itself as working forever. A block is live when its last event is inside the 15 min gap timeout AND the machine's heartbeat is inside `StaleAfter` (3 daemon ticks); `mycelium sessions live` and `GET /api/sessions/live` surface active / idle / machine-offline
 - The daemon ticks every 60s so liveness stays fresh, but regenerating agent configs is write-heavy, so `install` is gated to every 5 min by the `.last-install` stamp
