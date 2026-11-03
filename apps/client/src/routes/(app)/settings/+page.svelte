@@ -42,6 +42,7 @@
 	<ProfileCard
 		name={me?.name || me?.email || 'admin'}
 		email={me?.email}
+		avatar={me?.avatar_url || undefined}
 		role={me?.admin ? 'admin' : undefined}
 		{meta}
 	/>
@@ -49,7 +50,7 @@
 	<SettingsSection
 		title="Account"
 		description={me
-			? 'Managed by Facile SSO — change your name or email at porte.facile.studio.'
+			? 'Managed by Facile SSO. Change your name, email or picture at sso.facile.studio/account.'
 			: 'This instance is running on a shared password, so there is no account to manage.'}
 	>
 		<SettingsRow

@@ -49,9 +49,10 @@ type ExchangeRequest struct {
 }
 
 type MeResponse struct {
-	Email string `json:"email"`
-	Name  string `json:"name"`
-	Admin bool   `json:"admin"`
+	Email     string `json:"email"`
+	Name      string `json:"name"`
+	Admin     bool   `json:"admin"`
+	AvatarURL string `json:"avatar_url"`
 }
 
 type DeviceStartRequest struct {
@@ -347,6 +348,7 @@ type User struct {
 	Email     string `json:"email"`
 	Name      string `json:"name"`
 	Admin     bool   `json:"admin"`
+	AvatarURL string `json:"avatar_url"`
 	CreatedAt string `json:"created_at"`
 }
 
@@ -379,10 +381,11 @@ type UpdateSpaceRequest struct {
 }
 
 type MemberResponse struct {
-	Email    string `json:"email"`
-	Name     string `json:"name"`
-	Role     string `json:"role"`
-	JoinedAt string `json:"joined_at"`
+	Email     string `json:"email"`
+	Name      string `json:"name"`
+	AvatarURL string `json:"avatar_url"`
+	Role      string `json:"role"`
+	JoinedAt  string `json:"joined_at"`
 }
 
 type SpaceMembersResponse struct {

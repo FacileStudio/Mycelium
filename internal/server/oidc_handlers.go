@@ -142,6 +142,7 @@ func (s *Server) oidcIdentity(w http.ResponseWriter, r *http.Request, rt *oidcRu
 		Email             string `json:"email"`
 		Name              string `json:"name"`
 		PreferredUsername string `json:"preferred_username"`
+		Picture           string `json:"picture"`
 	}
 	if err := idToken.Claims(&claims); err != nil || claims.Email == "" {
 		s.oidcFailureRedirect(w, r)
@@ -152,7 +153,7 @@ func (s *Server) oidcIdentity(w http.ResponseWriter, r *http.Request, rt *oidcRu
 		name = claims.PreferredUsername
 	}
 
-	user := s.upsertUser(claims.Email, name)
+	user := s.upsertUser(claims.Email, name, claims.Picture)
 	scope := scopeUser
 	if user.Admin {
 		scope = scopeAdmin

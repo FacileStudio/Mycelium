@@ -54,13 +54,14 @@ func stubIdP(t *testing.T, clientID, email string) *httptest.Server {
 	mux.HandleFunc("/token", func(w http.ResponseWriter, _ *http.Request) {
 		now := time.Now()
 		idToken := signJWT(t, key, map[string]any{
-			"iss":   server.URL,
-			"aud":   clientID,
-			"sub":   "stub-subject",
-			"iat":   now.Unix(),
-			"exp":   now.Add(time.Hour).Unix(),
-			"email": email,
-			"name":  "Yann",
+			"iss":     server.URL,
+			"aud":     clientID,
+			"sub":     "stub-subject",
+			"iat":     now.Unix(),
+			"exp":     now.Add(time.Hour).Unix(),
+			"email":   email,
+			"name":    "Yann",
+			"picture": stubPicture,
 		})
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]any{
@@ -72,6 +73,8 @@ func stubIdP(t *testing.T, clientID, email string) *httptest.Server {
 	})
 	return server
 }
+
+const stubPicture = "https://sso.example/avatars/stub-subject"
 
 func signJWT(t *testing.T, key *rsa.PrivateKey, claims map[string]any) string {
 	t.Helper()
@@ -165,8 +168,12 @@ func TestTheCLIFlowEndToEnd(t *testing.T) {
 	if status != http.StatusOK || body["token"] == "" {
 		t.Fatalf("exchange: %d %v", status, body)
 	}
-	if status, _ := doJSON(t, ts, jsonCall{Method: "GET", Path: "/api/auth/me", Token: body["token"], Payload: nil}); status != http.StatusOK {
+	status, me := doJSON(t, ts, jsonCall{Method: "GET", Path: "/api/auth/me", Token: body["token"], Payload: nil})
+	if status != http.StatusOK {
 		t.Fatalf("the exchanged token does not authenticate: %d", status)
+	}
+	if me["avatar_url"] != stubPicture {
+		t.Fatalf("the picture claim was not stored: %q", me["avatar_url"])
 	}
 	if replay, _ := doJSON(t, ts, jsonCall{Method: "POST", Path: "/api/auth/oidc/exchange", Token: "", Payload: map[string]string{"code": code}}); replay != http.StatusUnauthorized {
 		t.Fatalf("replaying the code answered %d, want 401", replay)

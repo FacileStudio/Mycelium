@@ -18,6 +18,7 @@ type User struct {
 	Email     string `json:"email"`
 	Name      string `json:"name"`
 	Admin     bool   `json:"admin"`
+	AvatarURL string `json:"avatar_url"`
 	CreatedAt string `json:"created_at"`
 }
 
@@ -50,8 +51,9 @@ func (s *Server) saveUsers(users map[string]User) error {
 }
 
 // upsertUser creates or refreshes a user keyed by email. The first user ever
-// seen becomes admin, mirroring the Nuage bootstrap convention.
-func (s *Server) upsertUser(email, name string) User {
+// seen becomes admin, mirroring the Nuage bootstrap convention. The picture is
+// written on every sign-in, so the stored URL always follows the provider.
+func (s *Server) upsertUser(email, name, picture string) User {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	users := s.loadUsers()
@@ -66,6 +68,7 @@ func (s *Server) upsertUser(email, name string) User {
 	if name != "" {
 		user.Name = name
 	}
+	user.AvatarURL = pictureURL(picture)
 	users[email] = user
 	if err := s.saveUsers(users); err != nil {
 		s.Log.Error("users: save failed", slog.Any("error", err))
@@ -138,7 +141,7 @@ func (s *Server) authMe(w http.ResponseWriter, r *http.Request) {
 		user, ok := s.loadUsers()[id.Email]
 		s.mu.RUnlock()
 		if ok {
-			httpjson.WriteJSON(w, http.StatusOK, map[string]any{"email": user.Email, "name": user.Name, "admin": user.Admin})
+			httpjson.WriteJSON(w, http.StatusOK, map[string]any{"email": user.Email, "name": user.Name, "admin": user.Admin, "avatar_url": user.AvatarURL})
 			return
 		}
 		httpjson.WriteJSON(w, http.StatusOK, map[string]any{"email": id.Email, "name": "", "admin": id.Scope == scopeAdmin})

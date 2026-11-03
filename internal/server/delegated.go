@@ -88,7 +88,7 @@ func (s *Server) authDelegated(w http.ResponseWriter, r *http.Request, raw strin
 		return Identity{}, false
 	}
 	email := strings.TrimSpace(claims.Email)
-	s.ensureDelegatedUser(email, claims.Name)
+	s.ensureDelegatedUser(email, claims.Name, subjectPictureURL(s.OIDC.Issuer, claims.Subject))
 	return Identity{Email: email, Scope: scopeDelegated, Delegated: true, Actor: claims.Actor}, true
 }
 
@@ -110,15 +110,22 @@ func delegatedScopeAllows(method string, scopes []string) bool {
 // ensureDelegatedUser records a caller seen first through a delegated token,
 // as the OIDC callback would, except that it never bootstraps an admin: the
 // first account on an instance is made by a person signing in, not by a
-// service acting for one.
-func (s *Server) ensureDelegatedUser(email, name string) {
+// service acting for one. It is also the only place a stored account meets
+// its Registre subject, so an account with no picture yet is backfilled here
+// with the subject's picture URL instead of waiting for a browser sign-in.
+func (s *Server) ensureDelegatedUser(email, name, picture string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	users := s.loadUsers()
-	if _, ok := users[email]; ok {
+	user, ok := users[email]
+	if ok && (user.AvatarURL != "" || picture == "") {
 		return
 	}
-	users[email] = User{Email: email, Name: name, CreatedAt: time.Now().UTC().Format(time.RFC3339)}
+	if !ok {
+		user = User{Email: email, Name: name, CreatedAt: time.Now().UTC().Format(time.RFC3339)}
+	}
+	user.AvatarURL = picture
+	users[email] = user
 	if err := s.saveUsers(users); err != nil {
 		s.Log.Error("users: save failed", slog.Any("error", err))
 	}

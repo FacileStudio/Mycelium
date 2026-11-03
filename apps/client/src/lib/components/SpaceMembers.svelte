@@ -1,5 +1,6 @@
 <script lang="ts">
 	import {
+		Avatar,
 		Badge,
 		Button,
 		Card,
@@ -104,7 +105,17 @@
 		<tbody>
 			{#each members as member (member.email)}
 				<tr>
-					<td class="font-medium text-fc-fg">{member.email}</td>
+					<td class="font-medium text-fc-fg">
+						<span class="flex items-center gap-3">
+							<Avatar
+								src={member.avatar_url || undefined}
+								name={member.name || member.email}
+								alt=""
+								size="sm"
+							/>
+							{member.email}
+						</span>
+					</td>
 					<td class="text-fc-fg-muted">{member.name}</td>
 					<td>
 						{#if isOwner}

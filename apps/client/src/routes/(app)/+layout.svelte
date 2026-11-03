@@ -117,7 +117,10 @@
 	const onSettings = $derived(page.url.pathname.startsWith('/settings'));
 
 	const routeKey = $derived(onSettings ? '/settings' : page.url.pathname);
-	const user = $derived.by(() => ({ name: me?.name || me?.email || 'user' }));
+	const user = $derived.by(() => ({
+		name: me?.name || me?.email || 'user',
+		avatar: me?.avatar_url || undefined
+	}));
 	const switcherSpaces = $derived(getSpaces().map((s) => ({ id: s.id, name: s.name })));
 
 	const mobilePages = $derived(navPages.filter((p) => !MOBILE_HIDDEN.includes(p.href)));

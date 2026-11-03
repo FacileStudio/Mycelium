@@ -27,7 +27,7 @@ func (s *Server) spacesMembers(w http.ResponseWriter, r *http.Request) {
 	s.mu.RUnlock()
 	out := []MemberResponse{}
 	for email, role := range space.Members {
-		out = append(out, MemberResponse{Email: email, Name: users[email].Name, Role: role, JoinedAt: space.CreatedAt})
+		out = append(out, MemberResponse{Email: email, Name: users[email].Name, AvatarURL: users[email].AvatarURL, Role: role, JoinedAt: space.CreatedAt})
 	}
 	sort.Slice(out, func(i, j int) bool { return out[i].Email < out[j].Email })
 	httpjson.WriteJSON(w, http.StatusOK, map[string]any{"members": out})

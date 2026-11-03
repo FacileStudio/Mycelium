@@ -231,6 +231,7 @@ export interface AuthUser {
 	email: string;
 	name: string;
 	admin: boolean;
+	avatar_url?: string;
 }
 
 export type SpaceRole = 'owner' | 'admin' | 'member';
@@ -247,6 +248,7 @@ export interface Space {
 export interface SpaceMember {
 	email: string;
 	name: string;
+	avatar_url?: string;
 	role: SpaceRole;
 	joined_at: string;
 }
@@ -255,6 +257,7 @@ export interface UserInfo {
 	email: string;
 	name: string;
 	admin: boolean;
+	avatar_url?: string;
 }
 
 export interface FlowStepSummary {

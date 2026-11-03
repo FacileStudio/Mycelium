@@ -132,6 +132,23 @@ func TestDelegatedWritesOwnSpace(t *testing.T) {
 	}
 }
 
+func TestDelegatedCallBackfillsThePicture(t *testing.T) {
+	f := newDelegatedFixture(t, "mycelium")
+	expect(t, f, apiCall{Method: "GET", Path: "/api/spaces", Token: f.ro}, http.StatusOK)
+	want := f.issuer.url + "/avatars/registre-subject"
+	if got := f.srv.loadUsers()[delegatedEmail].AvatarURL; got != want {
+		t.Fatalf("picture after a delegated call: %q, want %q", got, want)
+	}
+	session, err := f.srv.mintSessionToken(delegatedEmail, scopeAdmin)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rec := expect(t, f, apiCall{Method: "GET", Path: "/api/spaces/" + f.own + "/members", Token: session}, http.StatusOK)
+	if !strings.Contains(rec.Body.String(), `"avatar_url":"`+want+`"`) {
+		t.Fatalf("members must carry the picture: %s", rec.Body.String())
+	}
+}
+
 func TestDelegatedReadScopeCannotWrite(t *testing.T) {
 	f := newDelegatedFixture(t, "mycelium")
 	expect(t, f, apiCall{Method: "PUT", Path: "/api/sync/files/memory/new.md?space_id=" + f.own, Token: f.ro, Body: "hello"}, http.StatusForbidden)

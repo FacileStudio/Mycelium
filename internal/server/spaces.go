@@ -42,10 +42,11 @@ type SpaceResponse struct {
 
 // MemberResponse is one member of a space.
 type MemberResponse struct {
-	Email    string `json:"email"`
-	Name     string `json:"name"`
-	Role     string `json:"role"`
-	JoinedAt string `json:"joined_at"`
+	Email     string `json:"email"`
+	Name      string `json:"name"`
+	AvatarURL string `json:"avatar_url"`
+	Role      string `json:"role"`
+	JoinedAt  string `json:"joined_at"`
 }
 
 func validRole(role string) bool {
