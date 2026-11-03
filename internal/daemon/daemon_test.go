@@ -8,11 +8,13 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/FacileStudio/Mycelium/internal/config"
 )
 
 func TestDetectAgents(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 	os.MkdirAll(filepath.Join(home, ".claude"), 0755)
 	os.MkdirAll(filepath.Join(home, ".codex"), 0755)
 
@@ -24,7 +26,7 @@ func TestDetectAgents(t *testing.T) {
 
 func TestDetectAgentsWithoutGeneratedFiles(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 	os.MkdirAll(filepath.Join(home, ".claude"), 0755)
 
 	got := DetectAgents()
@@ -41,7 +43,7 @@ func TestDetectAgentsWithoutGeneratedFiles(t *testing.T) {
 // what makes the daemon refresh the tree after the first install.
 func TestDetectAgentsFindsTheAgentsStandardDirectory(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 	os.MkdirAll(filepath.Join(home, ".agents"), 0755)
 
 	got := DetectAgents()
@@ -58,7 +60,7 @@ func TestDetectAgentsFindsTheAgentsStandardDirectory(t *testing.T) {
 // reason unrelated to what they were testing.
 func TestDetectAgentsOrderFollowsTheMarkerList(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 	for _, dir := range []string{".codex", ".claude", ".agents"} {
 		os.MkdirAll(filepath.Join(home, dir), 0755)
 	}
@@ -141,7 +143,7 @@ func TestInstallDueRespectsRefreshWindow(t *testing.T) {
 
 func TestRunConsolidationLogsDisabledStage(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 	t.Setenv("DATA_DIR", home)
 	os.WriteFile(filepath.Join(home, ".mycelium.yml"), []byte("consolidate:\n  enabled: false\n"), 0o600)
 

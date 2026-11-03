@@ -316,3 +316,15 @@ func copyFile(from, to string) error {
 	}
 	return dst.Close()
 }
+
+// IsolateHome points HOME and every XDG base directory inside home for the
+// rest of a test. Setting HOME alone is not isolation: XDG_CONFIG_HOME, which
+// developer machines and CI runners both set, wins over HOME, so a test that
+// only moved HOME would read and overwrite the real config.
+func IsolateHome(t testing.TB, home string) {
+	t.Helper()
+	t.Setenv("HOME", home)
+	t.Setenv("XDG_CONFIG_HOME", filepath.Join(home, ".config"))
+	t.Setenv("XDG_DATA_HOME", filepath.Join(home, ".local", "share"))
+	t.Setenv("XDG_STATE_HOME", filepath.Join(home, ".local", "state"))
+}

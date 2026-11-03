@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/FacileStudio/Mycelium/internal/config"
 	"github.com/FacileStudio/Mycelium/internal/daemon"
 )
 
@@ -83,7 +84,7 @@ func TestLastSyncAgeSplitsOnWhoIsSyncing(t *testing.T) {
 func TestSyncRecapIsSilentUntilSyncStops(t *testing.T) {
 	home := t.TempDir()
 	data := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 	t.Setenv("DATA_DIR", data)
 	installDaemonMarker(t, home)
 
@@ -107,7 +108,7 @@ func TestSyncRecapIsSilentUntilSyncStops(t *testing.T) {
 func TestSyncRecapStaysQuietWithoutADaemon(t *testing.T) {
 	home := t.TempDir()
 	data := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 	t.Setenv("DATA_DIR", data)
 
 	writeSyncBase(t, data, syncStaleAfter(true)+time.Minute)

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/FacileStudio/Mycelium/internal/config"
 	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
@@ -13,7 +14,7 @@ import (
 func dataDir(t *testing.T) string {
 	t.Helper()
 	dir := t.TempDir()
-	t.Setenv("HOME", dir)
+	config.IsolateHome(t, dir)
 	for _, sub := range []string{"memory", "rules", "events/lucy", "usage", "runs"} {
 		if err := os.MkdirAll(filepath.Join(dir, "store", sub), 0o755); err != nil {
 			t.Fatal(err)

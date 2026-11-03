@@ -18,7 +18,7 @@ import (
 // reports no error anywhere.
 func TestAgentsWritesTheStandardPaths(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 
 	out, err := (&Agents{}).Generate(Input{
 		Rules:  []cell.NamedFile{{Name: "r", Content: "RULE BODY"}},
@@ -57,7 +57,7 @@ func TestAgentsWritesTheStandardPaths(t *testing.T) {
 // editing.
 func TestAgentsAnnouncesItselfAsGenerated(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 
 	out, err := (&Agents{}).Generate(Input{Rules: []cell.NamedFile{{Name: "r", Content: "RULE"}}})
 	if err != nil {
@@ -82,7 +82,7 @@ func TestAgentsAnnouncesItselfAsGenerated(t *testing.T) {
 
 func TestAgentsTargetPathIsTheStandardBase(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 
 	paths := (&Agents{}).TargetPaths()
 	want := filepath.Join(home, ".agents", "AGENTS.md")

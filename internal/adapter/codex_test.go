@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/FacileStudio/Mycelium/internal/cell"
+	"github.com/FacileStudio/Mycelium/internal/config"
 )
 
 func TestCodexEmitsSkillFilesNotInline(t *testing.T) {
@@ -60,7 +61,7 @@ func readCodexHooks(t *testing.T, home string) map[string]any {
 
 func TestCodexInstallHooksCreatesFile(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 
 	written, added, err := (&Codex{}).InstallHooks()
 	if err != nil {
@@ -80,7 +81,7 @@ func TestCodexInstallHooksCreatesFile(t *testing.T) {
 
 func TestCodexInstallHooksPreservesExistingHerdrHook(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 	dir := filepath.Join(home, ".codex")
 	os.MkdirAll(dir, 0o755)
 	existing := `{
@@ -142,7 +143,7 @@ func TestCodexInstallHooksPreservesExistingHerdrHook(t *testing.T) {
 
 func TestCodexInstallHooksIdempotent(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 
 	if _, _, err := (&Codex{}).InstallHooks(); err != nil {
 		t.Fatal(err)
@@ -163,7 +164,7 @@ func TestCodexInstallHooksIdempotent(t *testing.T) {
 
 func TestCodexInstallHooksLeavesCorruptFileAlone(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 	dir := filepath.Join(home, ".codex")
 	os.MkdirAll(dir, 0o755)
 	os.WriteFile(filepath.Join(dir, "hooks.json"), []byte("{not json"), 0o644)

@@ -6,7 +6,6 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
-	"path/filepath"
 	"strconv"
 	"testing"
 
@@ -62,7 +61,7 @@ func TestThePasteLoginURLCarriesNoPort(t *testing.T) {
 // The environment is the only credential channel a CI job has, and it must not
 // be able to write itself into the config file.
 func TestTheEnvironmentOverridesTheConfigFile(t *testing.T) {
-	t.Setenv("HOME", t.TempDir())
+	config.IsolateHome(t, t.TempDir())
 	t.Setenv(config.TokenEnv, "")
 	t.Setenv(config.URLEnv, "")
 	t.Setenv(config.URLEnvAlt, "")
@@ -108,10 +107,7 @@ func TestTheEnvironmentOverridesTheConfigFile(t *testing.T) {
 // hurry on a borrowed machine is most likely to be in.
 func TestLogoutClearsTheTokenAndKeepsEverythingElse(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
-	t.Setenv("XDG_CONFIG_HOME", filepath.Join(home, ".config"))
-	t.Setenv("XDG_DATA_HOME", filepath.Join(home, ".local", "share"))
-	t.Setenv("XDG_STATE_HOME", filepath.Join(home, ".local", "state"))
+	config.IsolateHome(t, home)
 	t.Setenv(config.TokenEnv, "")
 
 	revoked := make(chan string, 2)

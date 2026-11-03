@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/FacileStudio/Mycelium/internal/config"
 )
 
 func readSettings(t *testing.T, home string) map[string]any {
@@ -23,7 +25,7 @@ func readSettings(t *testing.T, home string) map[string]any {
 
 func TestInstallHooksCreatesSettings(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 
 	written, added, err := (&Claude{}).InstallHooks()
 	if err != nil {
@@ -51,7 +53,7 @@ func TestInstallHooksCreatesSettings(t *testing.T) {
 
 func TestInstallHooksKeepsUserStatusLine(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 	dir := filepath.Join(home, ".claude")
 	os.MkdirAll(dir, 0o755)
 	existing := `{"statusLine":{"type":"command","command":"my-own-prompt"}}`
@@ -72,7 +74,7 @@ func TestInstallHooksKeepsUserStatusLine(t *testing.T) {
 
 func TestInstallHooksReportsStatusLineOnly(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 	dir := filepath.Join(home, ".claude")
 	os.MkdirAll(dir, 0o755)
 	existing := `{"hooks":{"SessionStart":[{"hooks":[{"type":"command","command":"mycelium recap --hook"}]}]}}`
@@ -92,7 +94,7 @@ func TestInstallHooksReportsStatusLineOnly(t *testing.T) {
 
 func TestInstallHooksPreservesExisting(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 	dir := filepath.Join(home, ".claude")
 	os.MkdirAll(dir, 0o755)
 	existing := `{"model":"opus","hooks":{"PreToolUse":[{"matcher":"Bash","hooks":[{"type":"command","command":"echo hi"}]}]}}`
@@ -116,7 +118,7 @@ func TestInstallHooksPreservesExisting(t *testing.T) {
 
 func TestInstallHooksIdempotent(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 
 	if _, _, err := (&Claude{}).InstallHooks(); err != nil {
 		t.Fatal(err)
@@ -140,7 +142,7 @@ func TestInstallHooksIdempotent(t *testing.T) {
 // declaration in the separate ~/.claude.json down with it.
 func TestInstallHooksLeavesCorruptFileAlone(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 	dir := filepath.Join(home, ".claude")
 	os.MkdirAll(dir, 0o755)
 	os.WriteFile(filepath.Join(dir, "settings.json"), []byte("{not json"), 0o644)

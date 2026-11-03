@@ -16,17 +16,11 @@ import (
 
 // isolate points every path at temporary directories. Nothing in this file may
 // reach the real store: the tests write flow files and trust pins, and one of
-// them would execute a step if the gate it checks ever broke. The XDG bases are
-// set too, because the config path reads XDG_CONFIG_HOME before HOME, so HOME
-// alone would not contain it on a machine that has XDG_CONFIG_HOME set.
+// them would execute a step if the gate it checks ever broke.
 func isolate(t *testing.T) {
 	t.Helper()
-	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, t.TempDir())
 	t.Setenv("DATA_DIR", t.TempDir())
-	t.Setenv("XDG_CONFIG_HOME", filepath.Join(home, ".config"))
-	t.Setenv("XDG_DATA_HOME", filepath.Join(home, ".local", "share"))
-	t.Setenv("XDG_STATE_HOME", filepath.Join(home, ".local", "state"))
 }
 
 // writeFlow puts a one-step flow on disk. The step is "true" so that a broken

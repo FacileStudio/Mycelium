@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/FacileStudio/Mycelium/internal/cell"
+	"github.com/FacileStudio/Mycelium/internal/config"
 )
 
 // installInput is the input every adapter is exercised with here, fenced so
@@ -44,7 +45,7 @@ func TestASecondInstallIsByteIdenticalForEveryAdapter(t *testing.T) {
 	for _, a := range All() {
 		t.Run(a.Name(), func(t *testing.T) {
 			home := t.TempDir()
-			t.Setenv("HOME", home)
+			config.IsolateHome(t, home)
 			t.Chdir(home)
 
 			first, err := a.Generate(installInput())
@@ -80,7 +81,7 @@ func TestASecondInstallLeavesTheFilesOnDiskUntouched(t *testing.T) {
 	for _, a := range All() {
 		t.Run(a.Name(), func(t *testing.T) {
 			home := t.TempDir()
-			t.Setenv("HOME", home)
+			config.IsolateHome(t, home)
 			t.Chdir(home)
 
 			out, err := a.Generate(installInput())

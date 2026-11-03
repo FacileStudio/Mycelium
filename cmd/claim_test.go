@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -20,8 +19,7 @@ func claimFixture(t *testing.T, serverURL string) string {
 	t.Helper()
 	dir := t.TempDir()
 	t.Setenv("DATA_DIR", dir)
-	t.Setenv("HOME", t.TempDir())
-	t.Setenv("XDG_CONFIG_HOME", filepath.Join(t.TempDir(), ".config"))
+	config.IsolateHome(t, t.TempDir())
 	t.Setenv(config.URLEnv, serverURL)
 	t.Setenv(config.TokenEnv, "tok")
 	claimProject, claimMachine, claimAgent, claimBranch, claimBody = "Mycelium", "lucy", "claude", "main", ""

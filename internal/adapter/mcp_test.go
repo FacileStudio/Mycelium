@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/FacileStudio/Mycelium/internal/config"
 )
 
 // mcpFixture writes existing content to a temp file and returns its path. An
@@ -167,7 +169,7 @@ func TestAnUnreadableConfigIsLeftAloneAndDowngradesTheAgent(t *testing.T) {
 
 func TestMCPHealthNamesTheConfigItRefusedToTouch(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 	if err := os.WriteFile(filepath.Join(home, ".claude.json"), []byte("{not json"), 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -185,7 +187,7 @@ func TestMCPHealthNamesTheConfigItRefusedToTouch(t *testing.T) {
 
 func TestMCPHealthSeparatesDeclaredFromNotYetInstalled(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 	declared := `{"mcpServers":{"mycelium":{"command":"/usr/local/bin/mycelium","args":["mcp"]}}}`
 	if err := os.WriteFile(filepath.Join(home, ".claude.json"), []byte(declared), 0o600); err != nil {
 		t.Fatal(err)

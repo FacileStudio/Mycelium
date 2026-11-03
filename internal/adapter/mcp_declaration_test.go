@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/FacileStudio/Mycelium/internal/config"
 )
 
 // declaredServers reads the server names an adapter left in a config file.
@@ -21,7 +23,7 @@ func declaredServers(t *testing.T, path, key string) map[string]any {
 // install writes a config a Gemini session can actually spawn.
 func TestGeminiDeclaresTheServerInItsSettingsFile(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 
 	out, err := (&Gemini{}).Generate(installInput())
 	if err != nil {
@@ -45,7 +47,7 @@ func TestGeminiDeclaresTheServerInItsSettingsFile(t *testing.T) {
 // command is a single argv array.
 func TestOpencodeDeclaresTheServerInItsOwnShape(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 
 	out, err := (&Opencode{}).Generate(installInput())
 	if err != nil {
@@ -76,7 +78,7 @@ func TestOpencodeDeclaresTheServerInItsOwnShape(t *testing.T) {
 // sibling would leave two configs with no way to know which one wins.
 func TestOpencodeDeclaresNothingBesideAJsoncConfig(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 	dir := filepath.Join(home, ".config", "opencode")
 	os.MkdirAll(dir, 0o755)
 	os.WriteFile(filepath.Join(dir, "opencode.jsonc"), []byte("{\n  // mine\n}"), 0o644)
@@ -98,7 +100,7 @@ func TestOpencodeDeclaresNothingBesideAJsoncConfig(t *testing.T) {
 // file is written by InstallHooks rather than returned in Output.Files.
 func TestClaudeDeclaresTheServerInItsUserConfig(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 
 	if _, _, err := (&Claude{}).InstallHooks(); err != nil {
 		t.Fatal(err)
@@ -115,7 +117,7 @@ func TestClaudeDeclaresTheServerInItsUserConfig(t *testing.T) {
 // no changes.
 func TestClaudeReplacesAStaleEntryRatherThanJoiningIt(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 	stale := `{"numStartups":41,"mcpServers":{
 		"jardin":{"command":"/home/yann/.local/bin/jardin","args":["mcp"]},
 		"figma":{"command":"figma-mcp","args":["--stdio"]}
@@ -144,7 +146,7 @@ func TestClaudeReplacesAStaleEntryRatherThanJoiningIt(t *testing.T) {
 // and a race against a running session.
 func TestASecondClaudeInstallTouchesNothing(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 
 	if _, _, err := (&Claude{}).InstallHooks(); err != nil {
 		t.Fatal(err)
@@ -179,7 +181,7 @@ func TestOnlyConfirmedAssistantsGetADeclaration(t *testing.T) {
 	for _, name := range []string{"codex", "cursor", "copilot", "hermes", "agents"} {
 		t.Run(name, func(t *testing.T) {
 			home := t.TempDir()
-			t.Setenv("HOME", home)
+			config.IsolateHome(t, home)
 			t.Chdir(home)
 
 			a, err := Get(name)
@@ -223,7 +225,7 @@ func TestEachAgentIsToldAboutTheDoorItActuallyHas(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			home := t.TempDir()
-			t.Setenv("HOME", home)
+			config.IsolateHome(t, home)
 
 			out, err := tc.adapter.Generate(installInput())
 			if err != nil {

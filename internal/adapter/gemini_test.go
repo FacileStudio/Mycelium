@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/FacileStudio/Mycelium/internal/cell"
+	"github.com/FacileStudio/Mycelium/internal/config"
 )
 
 // TestGeminiWritesSkillsAsFiles pins the one property that keeps GEMINI.md
@@ -20,7 +21,7 @@ import (
 // number of installed skills, and nothing fails.
 func TestGeminiWritesSkillsAsFiles(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("HOME", home)
+	config.IsolateHome(t, home)
 
 	out, err := (&Gemini{}).Generate(Input{
 		Rules:  []cell.NamedFile{{Name: "r", Content: "RULE BODY"}},

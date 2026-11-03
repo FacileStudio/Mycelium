@@ -106,10 +106,7 @@ func TestMigrateLegacyLayoutLeavesAnExplicitDataDirAlone(t *testing.T) {
 
 func setLegacyLayout(t *testing.T, home string) {
 	t.Helper()
-	t.Setenv("HOME", home)
-	t.Setenv("XDG_CONFIG_HOME", filepath.Join(home, ".config"))
-	t.Setenv("XDG_DATA_HOME", filepath.Join(home, ".local", "share"))
-	t.Setenv("XDG_STATE_HOME", filepath.Join(home, ".local", "state"))
+	IsolateHome(t, home)
 	t.Setenv(dataDirOverride, "")
 	t.Setenv(stateDirEnv, "")
 }
