@@ -22,7 +22,7 @@
 	},
 	"dependencies": {
 		"@facile/journal": "github:FacileStudio/Journal#ts",
-		"@facile/muse": "github:FacileStudio/muse#v0.7.0",
+		"@facile/muse": "github:FacileStudio/muse#v0.7.3",
 		"gsap": "^3.15.0",
 		"highlight.js": "^11.11.1",
 		"iconify-icon": "^3.0.2",
