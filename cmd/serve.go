@@ -110,6 +110,7 @@ var serveCmd = &cobra.Command{
 
 		emitter := server.NewEmitter(srv)
 		go emitter.Run(cmd.Context())
+		go srv.RunRegistreSync(cmd.Context())
 
 		router := srv.Handler()
 		clientDir := spa.DirFromEnv()

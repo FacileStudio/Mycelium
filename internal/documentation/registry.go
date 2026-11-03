@@ -8,6 +8,7 @@ var (
 	notFound        = Error{Status: 404, Code: "not_found", Description: "No such record."}
 	badRequest      = Error{Status: 400, Code: "invalid_argument", Description: "Invalid JSON body or query."}
 	internalError   = Error{Status: 500, Code: "internal", Description: "Unexpected server error."}
+	managed         = Error{Status: 409, Code: "conflict", Description: "Registre manages this; the message links to it."}
 )
 
 var (
@@ -157,13 +158,13 @@ var Registry = Response{Modules: []Module{
 		Routes: []Route{
 			{Method: "GET", Path: "/spaces", Summary: "List spaces the caller belongs to", Auth: "bearer", ResponseBody: SpacesListResponse{}, Errors: anyToken},
 			{Method: "POST", Path: "/spaces", Summary: "Create a space", Auth: "bearer", RequestBody: CreateSpaceRequest{}, ResponseBody: SpaceResponse{}, Status: http.StatusCreated, Errors: append(anyToken, badRequest)},
-			{Method: "PUT", Path: "/spaces/{id}", Summary: "Update a space", Auth: "bearer", PathParams: []Field{spaceParam}, RequestBody: UpdateSpaceRequest{}, ResponseBody: SpaceResponse{}, Errors: append(anyToken, badRequest, notFound)},
-			{Method: "DELETE", Path: "/spaces/{id}", Summary: "Delete a space", Auth: "bearer", PathParams: []Field{spaceParam}, Status: http.StatusNoContent, Errors: append(anyToken, forbidden, notFound)},
+			{Method: "PUT", Path: "/spaces/{id}", Summary: "Update a space", Description: "Refused for a space linked to Registre.", Auth: "bearer", PathParams: []Field{spaceParam}, RequestBody: UpdateSpaceRequest{}, ResponseBody: SpaceResponse{}, Errors: append(anyToken, badRequest, notFound, managed)},
+			{Method: "DELETE", Path: "/spaces/{id}", Summary: "Delete a space", Auth: "bearer", PathParams: []Field{spaceParam}, Status: http.StatusNoContent, Errors: append(anyToken, forbidden, notFound, managed)},
 			{Method: "GET", Path: "/spaces/{id}/members", Summary: "List a space's members", Auth: "bearer", PathParams: []Field{spaceParam}, ResponseBody: SpaceMembersResponse{}, Errors: append(anyToken, notFound)},
-			{Method: "POST", Path: "/spaces/{id}/members", Summary: "Add a member", Auth: "bearer", PathParams: []Field{spaceParam}, RequestBody: AddMemberRequest{}, ResponseBody: MemberResponse{}, Status: http.StatusCreated, Errors: append(anyToken, badRequest, forbidden, notFound)},
-			{Method: "PUT", Path: "/spaces/{id}/members/{email}", Summary: "Change a member's role", Auth: "bearer", PathParams: []Field{spaceParam, memberParam}, RequestBody: UpdateMemberRequest{}, ResponseBody: MemberResponse{}, Errors: append(anyToken, badRequest, forbidden, notFound)},
-			{Method: "DELETE", Path: "/spaces/{id}/members/{email}", Summary: "Remove a member", Auth: "bearer", PathParams: []Field{spaceParam, memberParam}, Status: http.StatusNoContent, Errors: append(anyToken, forbidden, notFound)},
-			{Method: "POST", Path: "/spaces/{id}/leave", Summary: "Leave a space", Auth: "bearer", PathParams: []Field{spaceParam}, Status: http.StatusNoContent, Errors: append(anyToken, notFound)},
+			{Method: "POST", Path: "/spaces/{id}/members", Summary: "Add a member", Auth: "bearer", PathParams: []Field{spaceParam}, RequestBody: AddMemberRequest{}, ResponseBody: MemberResponse{}, Status: http.StatusCreated, Errors: append(anyToken, badRequest, forbidden, notFound, managed)},
+			{Method: "PUT", Path: "/spaces/{id}/members/{email}", Summary: "Change a member's role", Auth: "bearer", PathParams: []Field{spaceParam, memberParam}, RequestBody: UpdateMemberRequest{}, ResponseBody: MemberResponse{}, Errors: append(anyToken, badRequest, forbidden, notFound, managed)},
+			{Method: "DELETE", Path: "/spaces/{id}/members/{email}", Summary: "Remove a member", Auth: "bearer", PathParams: []Field{spaceParam, memberParam}, Status: http.StatusNoContent, Errors: append(anyToken, forbidden, notFound, managed)},
+			{Method: "POST", Path: "/spaces/{id}/leave", Summary: "Leave a space", Auth: "bearer", PathParams: []Field{spaceParam}, Status: http.StatusNoContent, Errors: append(anyToken, notFound, managed)},
 		},
 	},
 	{
@@ -180,6 +181,13 @@ var Registry = Response{Modules: []Module{
 		Description: "The file transfer the CLI runs. Paths are wiki-relative and may contain slashes, so these routes take a trailing wildcard rather than a named parameter.",
 		Routes: []Route{
 			{Method: "GET", Path: "/sync/tree", Summary: "List every file and its hash", Description: "The client diffs this against its own tree to decide what to move.", Auth: "bearer", QueryParams: []Field{{Name: "space_id", Type: "string", Description: "Space ID."}}, ResponseBody: []FileEntry{}, Errors: anyToken},
+		},
+	},
+	{
+		Name:        "registre",
+		Description: "Registre owns shared spaces. This instance pulls its snapshot at boot, every five minutes, and shortly after a nudge.",
+		Routes: []Route{
+			{Method: "POST", Path: "/registre/sync", Summary: "Nudge a pull of Registre's space snapshot", Description: "Unauthenticated and body-less: it only schedules the authenticated pull sooner.", Status: http.StatusAccepted},
 		},
 	},
 }}

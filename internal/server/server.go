@@ -50,6 +50,7 @@ type Server struct {
 	emitter            *Emitter
 	oidc               oidcRuntime
 	delegated          delegatedVerifier
+	registre           registreRuntime
 
 	// Semantic is the vector half of memory search. Nil leaves it dormant:
 	// the server starts, search answers lexically, and nothing enqueues.
@@ -198,6 +199,7 @@ func (s *Server) mountSyncRoutes(r chi.Router) {
 	r.Get("/sync/files/*", s.auth(false, s.syncGetFile))
 	r.Put("/sync/files/*", s.auth(false, s.syncPutFile))
 	r.Delete("/sync/files/*", s.auth(false, s.syncDeleteFile))
+	r.Post("/registre/sync", s.directorySyncer().Handler().ServeHTTP)
 }
 
 // dataDirCheck is the one dependency Mycelium has: a writable data directory. A

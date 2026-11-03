@@ -21,6 +21,7 @@ import type {
 	SessionStats,
 	SessionTimeline,
 	Space,
+	SpacesDirectory,
 	SpaceMember,
 	SpaceRole,
 	TokenInfo,
@@ -110,6 +111,11 @@ export const backend = {
 	logout: () => request<void>('POST', '/auth/logout'),
 
 	spacesList: () => request<{ spaces: Space[] }>('GET', '/spaces').then((r) => r.spaces ?? []),
+	spacesDirectory: () =>
+		request<SpacesDirectory>('GET', '/spaces').then((r) => ({
+			spaces: r.spaces ?? [],
+			registre_url: r.registre_url ?? ''
+		})),
 	spaceCreate: (name: string, description: string) => request<Space>('POST', '/spaces', { name, description }),
 	spaceUpdate: (id: string, name: string, description: string) =>
 		request<Space>('PUT', `/spaces/${id}`, { name, description }),

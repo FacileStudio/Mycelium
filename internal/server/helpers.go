@@ -1,6 +1,8 @@
 package server
 
 import (
+	"encoding/json"
+	"errors"
 	"io"
 	"net"
 	"net/http"
@@ -89,4 +91,25 @@ func listNamesWithExt(dir, ext string) []string {
 	}
 	sort.Strings(names)
 	return names
+}
+
+// readStore decodes one JSON store file. A missing file is an empty store; an
+// unreadable or corrupt one is an error, so a caller that writes the store
+// back never replaces data it failed to read with an empty map.
+func readStore[T any](path string) (map[string]T, error) {
+	store := make(map[string]T)
+	data, err := os.ReadFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return store, nil
+	}
+	if err != nil {
+		return store, err
+	}
+	if err := json.Unmarshal(data, &store); err != nil {
+		return make(map[string]T), err
+	}
+	if store == nil {
+		store = make(map[string]T)
+	}
+	return store, nil
 }

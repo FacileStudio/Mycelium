@@ -28,6 +28,7 @@ func TestRegistryIsComplete(t *testing.T) {
 		"/auth/oidc",
 		"/auth/oidc/callback",
 		"/spaces/{id}/leave",
+		"/registre/sync",
 	); len(issues) > 0 {
 		t.Errorf("incomplete documentation routes: %v", issues)
 	}

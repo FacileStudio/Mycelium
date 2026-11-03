@@ -26,6 +26,7 @@ type Space struct {
 	Name        string            `json:"name"`
 	Description string            `json:"description"`
 	Members     map[string]string `json:"members"`
+	RegistreID  string            `json:"registre_space_id,omitempty"`
 	CreatedAt   string            `json:"created_at"`
 	UpdatedAt   string            `json:"updated_at"`
 }
@@ -36,6 +37,7 @@ type SpaceResponse struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Role        string `json:"role"`
+	RegistreID  string `json:"registre_space_id,omitempty"`
 	CreatedAt   string `json:"created_at"`
 	UpdatedAt   string `json:"updated_at"`
 }
@@ -70,14 +72,9 @@ func (s *Server) spaceDir(id string) string {
 }
 
 func (s *Server) loadSpaces() map[string]*Space {
-	spaces := make(map[string]*Space)
-	data, err := os.ReadFile(s.spacesPath())
+	spaces, err := readStore[*Space](s.spacesPath())
 	if err != nil {
-		return spaces
-	}
-	if err := json.Unmarshal(data, &spaces); err != nil {
 		s.Log.Error("spaces: corrupt store", slog.String("path", s.spacesPath()), slog.Any("error", err))
-		return make(map[string]*Space)
 	}
 	return spaces
 }
@@ -116,7 +113,7 @@ func (s *Server) spaceAccess(id Identity, spaceID string) (*Space, string, bool)
 func spaceResponse(space *Space, role string) SpaceResponse {
 	return SpaceResponse{
 		ID: space.ID, Name: space.Name, Description: space.Description,
-		Role: role, CreatedAt: space.CreatedAt, UpdatedAt: space.UpdatedAt,
+		Role: role, RegistreID: space.RegistreID, CreatedAt: space.CreatedAt, UpdatedAt: space.UpdatedAt,
 	}
 }
 

@@ -27,14 +27,9 @@ func (s *Server) usersPath() string {
 }
 
 func (s *Server) loadUsers() map[string]User {
-	users := make(map[string]User)
-	data, err := os.ReadFile(s.usersPath())
+	users, err := readStore[User](s.usersPath())
 	if err != nil {
-		return users
-	}
-	if err := json.Unmarshal(data, &users); err != nil {
 		s.Log.Error("users: corrupt store", slog.String("path", s.usersPath()), slog.Any("error", err))
-		return make(map[string]User)
 	}
 	return users
 }

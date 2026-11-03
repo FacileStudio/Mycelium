@@ -25,6 +25,7 @@
 	let members: SpaceMember[] = $state([]);
 	let users: UserInfo[] = $state([]);
 	let loading = $state(true);
+	let registreURL = $state('');
 
 	let editOpen = $state(false);
 	let draftName = $state('');
@@ -35,6 +36,9 @@
 	let leaveOpen = $state(false);
 	let deleteOpen = $state(false);
 
+	const managed = $derived(registreURL !== '');
+	const linkedID = $derived(space?.registre_space_id ?? '');
+	const manageHref = $derived(linkedID ? `${registreURL}/${encodeURIComponent(linkedID)}` : registreURL);
 	const isOwner = $derived(space?.role === 'owner');
 	const canManage = $derived(space?.role === 'owner' || space?.role === 'admin');
 	const candidates = $derived(users.filter((u) => !members.some((m) => m.email === u.email)));
@@ -43,9 +47,10 @@
 		const spaceId = id;
 		loading = true;
 		Promise.all([
-			backend.spacesList().then((list) => {
-				setSpaces(list);
-				space = list.find((s) => s.id === spaceId) ?? null;
+			backend.spacesDirectory().then((d) => {
+				setSpaces(d.spaces);
+				registreURL = d.registre_url;
+				space = d.spaces.find((s) => s.id === spaceId) ?? null;
 			}),
 			backend.spaceMembers(spaceId).then((m) => (members = m)),
 			backend
@@ -144,13 +149,20 @@
 			</div>
 
 			<div class="flex shrink-0 flex-wrap items-center gap-2">
-				{#if canManage}
+				{#if managed}
+					<Button variant="outline" icon={icons.arrow} href={manageHref} target="_blank" rel="noopener">
+						Manage in Registre
+					</Button>
+				{/if}
+				{#if canManage && !linkedID}
 					<Button variant="outline" icon={icons.edit} onclick={openEdit}>Edit</Button>
 				{/if}
-				<Button variant="ghost" icon={icons.logout} onclick={() => (leaveOpen = true)}>
-					Leave
-				</Button>
-				{#if isOwner}
+				{#if !managed}
+					<Button variant="ghost" icon={icons.logout} onclick={() => (leaveOpen = true)}>
+						Leave
+					</Button>
+				{/if}
+				{#if isOwner && !linkedID}
 					<Button variant="ghost-danger" icon={icons.remove} onclick={() => (deleteOpen = true)}>
 						Delete
 					</Button>
@@ -163,8 +175,8 @@
 			spaceName={space.name}
 			{members}
 			{candidates}
-			{isOwner}
-			{canManage}
+			isOwner={isOwner && !managed}
+			canManage={canManage && !managed}
 			onChanged={refreshMembers}
 		/>
 	{/if}

@@ -241,8 +241,14 @@ export interface Space {
 	name: string;
 	description: string;
 	role: SpaceRole;
+	registre_space_id?: string;
 	created_at: string;
 	updated_at: string;
+}
+
+export interface SpacesDirectory {
+	spaces: Space[];
+	registre_url: string;
 }
 
 export interface SpaceMember {

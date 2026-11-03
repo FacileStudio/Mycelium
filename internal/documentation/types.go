@@ -362,12 +362,14 @@ type SpaceResponse struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Role        string `json:"role"`
+	RegistreID  string `json:"registre_space_id,omitempty"`
 	CreatedAt   string `json:"created_at"`
 	UpdatedAt   string `json:"updated_at"`
 }
 
 type SpacesListResponse struct {
-	Spaces []SpaceResponse `json:"spaces"`
+	Spaces      []SpaceResponse `json:"spaces"`
+	RegistreURL string          `json:"registre_url"`
 }
 
 type CreateSpaceRequest struct {

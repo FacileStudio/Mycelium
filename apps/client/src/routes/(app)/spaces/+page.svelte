@@ -8,6 +8,7 @@
 	const roleTone = { owner: 'owner', admin: 'admin', member: 'neutral' } as const;
 
 	let spaces: Space[] = $state([]);
+	let registreURL = $state('');
 	let createOpen = $state(false);
 	let creating = $state(false);
 	let draftName = $state('');
@@ -16,10 +17,11 @@
 
 	$effect(() => {
 		backend
-			.spacesList()
-			.then((s) => {
-				spaces = s;
-				setSpaces(s);
+			.spacesDirectory()
+			.then((d) => {
+				spaces = d.spaces;
+				registreURL = d.registre_url;
+				setSpaces(d.spaces);
 			})
 			.catch((e) => toast.danger(e instanceof Error ? e.message : 'Could not load spaces.'));
 	});
@@ -59,19 +61,35 @@
 		<div class="flex min-w-0 flex-col gap-2">
 			<h1 class="text-fc-2xl font-semibold text-fc-fg">Spaces</h1>
 			<p class="text-fc-sm text-fc-fg-muted">
-				Shared memory trees. Invite teammates and scope memory, rules and skills per space.
+				{registreURL
+					? 'Shared memory trees. Members and roles are managed in Registre, for every Facile app at once.'
+					: 'Shared memory trees. Invite teammates and scope memory, rules and skills per space.'}
 			</p>
 		</div>
-		<Button icon={icons.plus} onclick={openCreate}>New space</Button>
+		{#if registreURL}
+			<Button icon={icons.arrow} href={registreURL} target="_blank" rel="noopener">
+				Manage in Registre
+			</Button>
+		{:else}
+			<Button icon={icons.plus} onclick={openCreate}>New space</Button>
+		{/if}
 	</div>
 
 	{#if spaces.length === 0}
 		<EmptyState
 			icon={icons.usersGroup}
 			title="No spaces yet"
-			description="Create one to share a memory tree with the people you work with."
+			description={registreURL
+				? 'Spaces are shared across the Facile suite. Create one in Registre and it appears here.'
+				: 'Create one to share a memory tree with the people you work with.'}
 		>
-			<Button variant="outline" icon={icons.plus} onclick={openCreate}>New space</Button>
+			{#if registreURL}
+				<Button variant="outline" icon={icons.arrow} href={registreURL} target="_blank" rel="noopener">
+					Manage in Registre
+				</Button>
+			{:else}
+				<Button variant="outline" icon={icons.plus} onclick={openCreate}>New space</Button>
+			{/if}
 		</EmptyState>
 	{:else}
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 [&>*]:min-w-0">

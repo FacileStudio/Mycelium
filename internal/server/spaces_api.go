@@ -27,7 +27,7 @@ func (s *Server) spacesList(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	sort.Slice(out, func(i, j int) bool { return out[i].Name < out[j].Name })
-	httpjson.WriteJSON(w, http.StatusOK, map[string]any{"spaces": out})
+	httpjson.WriteJSON(w, http.StatusOK, map[string]any{"spaces": out, "registre_url": s.registreSpacesURL("")})
 }
 
 func (s *Server) spacesCreate(w http.ResponseWriter, r *http.Request) {
@@ -61,8 +61,8 @@ func (s *Server) spacesCreate(w http.ResponseWriter, r *http.Request) {
 		httpjson.WriteError(w, apierrors.Internal("internal error", err))
 		return
 	}
-	for _, d := range []string{"memory", "rules", "skills", "sessions"} {
-		os.MkdirAll(filepath.Join(s.spaceDir(space.ID), d), 0o755)
+	if err := s.makeSpaceDirs(space.ID); err != nil {
+		s.Log.Error("spaces: create directories failed", slog.Any("error", err))
 	}
 	httpjson.WriteJSON(w, http.StatusCreated, spaceResponse(space, roleOwner))
 }
@@ -75,6 +75,9 @@ func (s *Server) spacesUpdate(w http.ResponseWriter, r *http.Request) {
 	space, role, ok := s.spaceAccess(id, r.PathValue("id"))
 	if !ok {
 		httpjson.WriteError(w, apierrors.NotFound("not found"))
+		return
+	}
+	if s.refuseManaged(w, space, false) {
 		return
 	}
 	if role != roleOwner && role != roleAdmin {
@@ -115,6 +118,9 @@ func (s *Server) spacesDelete(w http.ResponseWriter, r *http.Request) {
 	space, role, ok := s.spaceAccess(id, r.PathValue("id"))
 	if !ok {
 		httpjson.WriteError(w, apierrors.NotFound("not found"))
+		return
+	}
+	if s.refuseManaged(w, space, false) {
 		return
 	}
 	if role != roleOwner {

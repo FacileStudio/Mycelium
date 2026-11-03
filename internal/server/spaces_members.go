@@ -69,6 +69,9 @@ func (s *Server) spacesMemberAdd(w http.ResponseWriter, r *http.Request) {
 		httpjson.WriteError(w, apierrors.NotFound("not found"))
 		return
 	}
+	if s.refuseManaged(w, space, true) {
+		return
+	}
 	if role != roleOwner && role != roleAdmin {
 		httpjson.WriteError(w, apierrors.Forbidden("forbidden"))
 		return
@@ -106,6 +109,9 @@ func (s *Server) spacesMemberUpdate(w http.ResponseWriter, r *http.Request) {
 	space, role, ok := s.spaceAccess(id, r.PathValue("id"))
 	if !ok {
 		httpjson.WriteError(w, apierrors.NotFound("not found"))
+		return
+	}
+	if s.refuseManaged(w, space, true) {
 		return
 	}
 	if role != roleOwner {
@@ -150,6 +156,9 @@ func (s *Server) spacesMemberRemove(w http.ResponseWriter, r *http.Request) {
 		httpjson.WriteError(w, apierrors.NotFound("not found"))
 		return
 	}
+	if s.refuseManaged(w, space, true) {
+		return
+	}
 	if role != roleOwner && role != roleAdmin {
 		httpjson.WriteError(w, apierrors.Forbidden("forbidden"))
 		return
@@ -165,6 +174,9 @@ func (s *Server) spacesLeave(w http.ResponseWriter, r *http.Request) {
 	space, _, ok := s.spaceAccess(id, r.PathValue("id"))
 	if !ok {
 		httpjson.WriteError(w, apierrors.NotFound("not found"))
+		return
+	}
+	if s.refuseManaged(w, space, true) {
 		return
 	}
 	if id.Email == "" {
