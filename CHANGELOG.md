@@ -8,7 +8,40 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
-## [0.36.0] — 2026-09-12
+## [0.36.0] — 2026-11-03
+
+### Added
+
+- **Registre owns shared spaces.** The server imports every space with more
+  than one member into Registre once, retrying with backoff, then applies
+  Registre's snapshot at boot, every five minutes, and after a nudge on
+  `POST /api/registre/sync`. Members are resolved by email; unknown people are
+  provisioned as non-admin users. Renaming or deleting a linked space, and any
+  membership change, now answers 409 with the Registre link, and the dashboard
+  shows a "Manage in Registre" button.
+- **Delegated suite tokens.** Setting `OIDC_MACHINE_AUDIENCE` turns on a second
+  bearer path: a Registre token-exchange JWT, verified offline and mapped to the
+  user by email. A delegated identity reaches only an explicit route allowlist,
+  needs `mycelium.read` for GET and `mycelium.write` otherwise, and is refused
+  the common tree. Unset, auth is unchanged.
+- **Profile pictures for every person.** The server stores the OIDC `picture`
+  claim at sign-in and exposes it as `avatar_url` on `/auth/me`, `/users` and
+  space members. The sidebar, mobile nav, profile card and members table render
+  it, falling back to the initial.
+
+### Changed
+
+- **Config, data and state move to XDG directories.** `~/.mycelium.yml` becomes
+  `~/.config/mycelium/config.yml`, `~/.mycelium` becomes
+  `~/.local/share/mycelium`, and logs, stamps and offsets move to
+  `~/.local/state/mycelium`. The first path lookup migrates an existing install
+  in place, idempotently, and stands down when `DATA_DIR` names an explicit
+  store. The legacy config is still read when the new one is absent, so an
+  unmigrated machine does not log out.
+- **Spaces use the share-circle icon** across the dashboard.
+- **The client markdown renderer and command wiring are split up.**
+  `MarkdownMuse` is broken into smaller components and helpers, and formatting
+  helpers are consolidated in `format.ts`. The client bumps muse to v0.7.3.
 
 ### Removed
 
@@ -19,8 +52,19 @@ records what shipped rather than what was written down at the time.
 
 ### Fixed
 
+- **Every CLI command is registered again.** Builds from source shipped 13 of
+  26 commands: `doctor`, `memory`, `status`, `init`, `flow`, `rules`,
+  `sessions`, `daemon`, `mcp`, `claim`, `logout`, `diff`, `recap` and `usage`
+  answered "unknown command". All `newXxxCmd` constructors are now called in one
+  place.
 - **The fire-and-forget artifact sync in the MCP server is explicit.** A failed
   sync after recording an artifact no longer looks like an ignored error.
+- **`antenne-client` points at a revision that still exists**, so a clean
+  module download no longer fails.
+- **Tests no longer touch the real config.** Tests that moved `HOME` left
+  `XDG_CONFIG_HOME` alone, so on any machine that sets it, one test wrote its
+  fixture into the real config and another read it. Tests now isolate all XDG
+  bases.
 
 ## [0.35.0] — 2026-09-10
 
