@@ -134,7 +134,7 @@
 				<span
 					class="flex size-10 shrink-0 items-center justify-center rounded-fc-md bg-fc-surface text-fc-fg"
 				>
-					<iconify-icon icon={icons.usersGroup} width="20" height="20" class="block"
+					<iconify-icon icon={icons.space} width="20" height="20" class="block"
 					></iconify-icon>
 				</span>
 				<div class="min-w-0">

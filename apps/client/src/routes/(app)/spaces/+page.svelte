@@ -77,7 +77,7 @@
 
 	{#if spaces.length === 0}
 		<EmptyState
-			icon={icons.usersGroup}
+			icon={icons.space}
 			title="No spaces yet"
 			description={registreURL
 				? 'Spaces are shared across the Facile suite. Create one in Registre and it appears here.'
@@ -96,7 +96,7 @@
 			{#each spaces as space (space.id)}
 				<EntityCard
 					href="/spaces/{space.id}"
-					icon={icons.usersGroup}
+					icon={icons.space}
 					title={space.name}
 					meta={space.description || 'No description'}
 					mono={false}

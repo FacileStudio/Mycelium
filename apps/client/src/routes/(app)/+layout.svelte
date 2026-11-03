@@ -40,7 +40,7 @@
 		},
 		{ label: 'Machines', href: '/machines', icon: icons.server },
 		{ label: 'Sessions', href: '/sessions', icon: icons.history },
-		{ label: 'Spaces', href: '/spaces', icon: icons.usersGroup }
+		{ label: 'Spaces', href: '/spaces', icon: icons.space }
 	];
 
 	$effect(() => {
