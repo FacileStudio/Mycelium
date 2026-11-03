@@ -45,6 +45,7 @@ deliberate — a half-configured server is worse than one that refuses to boot.
 | `OIDC_CLIENT_SECRET` | conditional | — | Required once `OIDC_ISSUER` is set |
 | `OIDC_REDIRECT_URL` | conditional | — | Required once `OIDC_ISSUER` is set. Points at `/api/auth/oidc/callback` |
 | `OIDC_SUCCESS_URL` | no | `<request base>/auth/callback` | Where the callback sends the browser, with the session in the URL fragment |
+| `OIDC_MACHINE_AUDIENCE` | no | — | The `aud` a delegated suite JWT must carry, `mycelium` in production. Setting it lets a Registre token-exchange JWT reach the delegated allowlist (see [architecture](architecture.md#authentication)). Unset, only Mycelium's own tokens authenticate. Requires `OIDC_ISSUER` |
 | `JOURNAL_URL` | no | — | Journal ingest URL. Log shipping needs both this and the token |
 | `JOURNAL_TOKEN` | no | — | Per-app Journal key |
 | `OLLAMA_URL` | no | — | Ollama base URL. Setting it turns semantic search on and makes the three below readable |
@@ -68,6 +69,7 @@ suite spellings — `ALLOWED_ORIGINS`, `DOMAINS`, `DOMAIN`, `CORS_ORIGINS`,
 - `SSO_ONLY=true` and `OIDC_ISSUER` is unset — no caller could authenticate at all.
 - `OIDC_ISSUER` is set but any of `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`,
   `OIDC_REDIRECT_URL` is missing.
+- `OIDC_MACHINE_AUDIENCE` is set but `OIDC_ISSUER` is not.
 - `APP_ENV=production` with neither `PASSWORD` nor `OIDC_ISSUER` — otherwise every request
   is served as admin.
 - `EMBED_MODEL`, `VECTOR_STORE` or `QDRANT_URL` is set without `OLLAMA_URL` — they would do

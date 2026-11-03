@@ -143,6 +143,29 @@ Three ways in:
 When neither `PASSWORD` nor `OIDC_ISSUER` is set, every request is served as `admin` and the
 server logs a warning at startup. `APP_ENV=production` refuses to start in that state.
 
+### Delegated suite tokens
+
+With `OIDC_MACHINE_AUDIENCE` set, a bearer that is not one of Mycelium's own tokens is tried
+as a JWT. porte's offline verifier (`porte/oidc/jwt`) checks the signature against the
+issuer's JWKS, `iss` = `OIDC_ISSUER`, `aud` = `OIDC_MACHINE_AUDIENCE` and expiry. Registre
+mints these by RFC 8693 token exchange, so Bulle can act for a signed-in user. The `email`
+claim names the user; a token without one is refused. A caller with no `.users.json` record
+gets a non-admin one, never the first-user admin bootstrap.
+
+The identity carries scope `delegated`, which is never `admin`, `user` or `sync`. It reaches
+only this allowlist, matched on the chi route pattern; every other route answers 403:
+
+| Method | Route |
+|---|---|
+| `GET`, `POST` | `/api/spaces` |
+| `POST` | `/api/memory/search` |
+| `GET` | `/api/sync/tree` |
+| `GET`, `PUT`, `DELETE` | `/api/sync/files/*` |
+
+`GET` needs `mycelium.read` or `mycelium.write`; any other method needs `mycelium.write`.
+The common tree is refused whatever the user's admin flag, so every content route needs a
+`space_id` the user is a member of.
+
 ## Spaces
 
 The tree directly under `DATA_DIR` is the **common** scope: the instance owner's private

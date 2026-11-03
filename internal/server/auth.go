@@ -32,6 +32,8 @@ type Identity struct {
 	Email     string
 	Scope     string
 	TokenHash string
+	Delegated bool
+	Actor     string
 }
 
 // identityFrom pulls the authenticated Identity out of a request context.
@@ -57,22 +59,34 @@ func (s *Server) auth(adminOnly bool, next http.HandlerFunc) http.HandlerFunc {
 			httpjson.WriteError(w, apierrors.Unauthorized("unauthorized"))
 			return
 		}
-		hash := hashToken(strings.TrimPrefix(header, "Bearer "))
-		info, ok := s.touchToken(hash)
+		id, ok := s.authenticate(w, r, strings.TrimPrefix(header, "Bearer "), adminOnly)
 		if !ok {
-			httpjson.WriteError(w, apierrors.Unauthorized("unauthorized"))
 			return
 		}
-		scope := s.effectiveScope(info)
-		if adminOnly && scope != scopeAdmin {
-			httpjson.WriteError(w, apierrors.Forbidden("forbidden"))
-			return
-		}
-		ctx := context.WithValue(r.Context(), identityKey, Identity{
-			Email: info.UserEmail, Scope: scope, TokenHash: hash,
-		})
-		next(w, r.WithContext(ctx))
+		next(w, r.WithContext(context.WithValue(r.Context(), identityKey, id)))
 	}
+}
+
+// authenticate resolves a bearer to the caller. Mycelium's own tokens are
+// looked up first; only a bearer that is none of them, and only when
+// OIDC_MACHINE_AUDIENCE is set, is tried as a delegated suite JWT. Writes its
+// own error response on failure.
+func (s *Server) authenticate(w http.ResponseWriter, r *http.Request, raw string, adminOnly bool) (Identity, bool) {
+	hash := hashToken(raw)
+	info, ok := s.touchToken(hash)
+	if !ok && s.delegationEnabled(raw) {
+		return s.authDelegated(w, r, raw, adminOnly)
+	}
+	if !ok {
+		httpjson.WriteError(w, apierrors.Unauthorized("unauthorized"))
+		return Identity{}, false
+	}
+	scope := s.effectiveScope(info)
+	if adminOnly && scope != scopeAdmin {
+		httpjson.WriteError(w, apierrors.Forbidden("forbidden"))
+		return Identity{}, false
+	}
+	return Identity{Email: info.UserEmail, Scope: scope, TokenHash: hash}, true
 }
 
 // touchToken resolves a token hash, evicting it first if it has expired, and
@@ -129,6 +143,9 @@ func (s *Server) effectiveScope(info TokenInfo) string {
 // pre-multi-user tokens carry no email), and every other signed-in user is
 // denied until an admin adds them to a space.
 func (s *Server) commonAllowed(id Identity) bool {
+	if id.Delegated {
+		return false
+	}
 	if id.Scope == scopeAdmin {
 		return true
 	}

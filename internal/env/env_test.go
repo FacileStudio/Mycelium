@@ -55,3 +55,11 @@ func TestJournalBrowserURLValidation(t *testing.T) {
 		}
 	}
 }
+
+func TestMachineAudienceRequiresIssuer(t *testing.T) {
+	t.Setenv("OIDC_ISSUER", "")
+	t.Setenv("OIDC_MACHINE_AUDIENCE", "mycelium")
+	if _, err := loadOIDC(); err == nil || !strings.Contains(err.Error(), "requires OIDC_ISSUER") {
+		t.Fatalf("got %v, want a refusal naming OIDC_ISSUER", err)
+	}
+}

@@ -49,6 +49,7 @@ type Server struct {
 	limits             serverLimits
 	emitter            *Emitter
 	oidc               oidcRuntime
+	delegated          delegatedVerifier
 
 	// Semantic is the vector half of memory search. Nil leaves it dormant:
 	// the server starts, search answers lexically, and nothing enqueues.

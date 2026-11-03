@@ -43,6 +43,10 @@ type OIDC struct {
 	ClientSecret string
 	RedirectURL  string
 	SuccessURL   string
+
+	// MachineAudience is the aud a delegated suite JWT must carry to be
+	// accepted as a bearer. Empty leaves the delegated path off.
+	MachineAudience string
 }
 
 // Config is the server configuration.
@@ -107,21 +111,8 @@ func Load() (Config, error) {
 		JournalBrowserKey: troncenv.String("JOURNAL_BROWSER_KEY", ""),
 	}
 
-	if issuer := troncenv.String("OIDC_ISSUER", ""); issuer != "" {
-		oidc := OIDC{Issuer: issuer, SuccessURL: troncenv.String("OIDC_SUCCESS_URL", "")}
-		for _, required := range []struct {
-			key   string
-			field *string
-		}{
-			{"OIDC_CLIENT_ID", &oidc.ClientID},
-			{"OIDC_CLIENT_SECRET", &oidc.ClientSecret},
-			{"OIDC_REDIRECT_URL", &oidc.RedirectURL},
-		} {
-			if *required.field, err = troncenv.Required(required.key); err != nil {
-				return Config{}, err
-			}
-		}
-		cfg.OIDC = &oidc
+	if cfg.OIDC, err = loadOIDC(); err != nil {
+		return Config{}, err
 	}
 
 	if cfg.Embedding, err = loadEmbedding(); err != nil {
@@ -129,6 +120,36 @@ func Load() (Config, error) {
 	}
 
 	return cfg, cfg.validate()
+}
+
+// loadOIDC reads the identity provider configuration. OIDC_ISSUER is the
+// switch: unset leaves SSO dormant, and OIDC_MACHINE_AUDIENCE without it is
+// refused because there is no issuer to verify delegated tokens against.
+func loadOIDC() (*OIDC, error) {
+	issuer := troncenv.String("OIDC_ISSUER", "")
+	audience := troncenv.String("OIDC_MACHINE_AUDIENCE", "")
+	if issuer == "" {
+		if audience != "" {
+			return nil, fmt.Errorf("env: OIDC_MACHINE_AUDIENCE requires OIDC_ISSUER, otherwise there is no issuer to verify delegated tokens against")
+		}
+		return nil, nil
+	}
+	oidc := OIDC{Issuer: issuer, SuccessURL: troncenv.String("OIDC_SUCCESS_URL", ""), MachineAudience: audience}
+	for _, required := range []struct {
+		key   string
+		field *string
+	}{
+		{"OIDC_CLIENT_ID", &oidc.ClientID},
+		{"OIDC_CLIENT_SECRET", &oidc.ClientSecret},
+		{"OIDC_REDIRECT_URL", &oidc.RedirectURL},
+	} {
+		value, err := troncenv.Required(required.key)
+		if err != nil {
+			return nil, err
+		}
+		*required.field = value
+	}
+	return &oidc, nil
 }
 
 // loadEmbedding reads the semantic-search configuration. An empty OLLAMA_URL
