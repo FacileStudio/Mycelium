@@ -81,9 +81,6 @@
 				<div class="flex min-w-0 flex-col gap-1">
 					<div class="flex min-w-0 flex-wrap items-center gap-2">
 						<h1 class="min-w-0 truncate text-fc-2xl font-bold text-fc-fg">{detail.title}</h1>
-						<Badge tone={detail.expired ? 'danger' : detail.expires ? 'neutral' : 'success'}>
-							{detail.expires ? (detail.expired ? 'Expired' : 'Expires ' + new Date(detail.expires).toLocaleDateString()) : 'Pinned'}
-						</Badge>
 						<Badge tone="neutral">
 							{detail.format === 'html' ? 'HTML' : 'Markdown'}
 						</Badge>
@@ -105,7 +102,11 @@
 							<span class="truncate">{detail.machine}</span>
 						</span>
 						<span class="shrink-0" aria-hidden="true">•</span>
-						<span class="shrink-0">{formatDate(detail.created)}</span>
+						<span class="shrink-0">Created {formatDate(detail.created)}</span>
+						{#if detail.updated && detail.updated !== detail.created}
+							<span class="shrink-0" aria-hidden="true">•</span>
+							<span class="shrink-0">Updated {formatDate(detail.updated)}</span>
+						{/if}
 					</p>
 				</div>
 

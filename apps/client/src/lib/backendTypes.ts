@@ -25,8 +25,7 @@ export interface ArtifactSummary {
 	machine: string;
 	format?: 'markdown' | 'html';
 	created: string;
-	expires?: string;
-	expired: boolean;
+	updated: string;
 }
 
 export type ReportSummary = ArtifactSummary;

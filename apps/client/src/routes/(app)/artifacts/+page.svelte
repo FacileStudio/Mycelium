@@ -37,21 +37,6 @@
 			return iso;
 		}
 	}
-
-	function formatExpiry(art: ArtifactSummary): string {
-		if (!art.expires) return 'Pinned';
-		if (art.expired) return 'Expired';
-		try {
-			const exp = new Date(art.expires).getTime();
-			const now = Date.now();
-			const diffDays = Math.ceil((exp - now) / (1000 * 60 * 60 * 24));
-			if (diffDays <= 0) return 'Expiring today';
-			if (diffDays === 1) return 'Expires tomorrow';
-			return `Expires in ${diffDays}d`;
-		} catch {
-			return 'Temporary';
-		}
-	}
 </script>
 
 <div class="flex flex-col gap-8">
@@ -99,9 +84,6 @@
 						>
 							{#snippet trailing()}
 								<div class="flex min-w-0 flex-wrap items-center justify-end gap-1.5">
-									<Badge tone={art.expired ? 'danger' : art.expires ? 'neutral' : 'success'}>
-										{formatExpiry(art)}
-									</Badge>
 									<Badge tone="neutral">
 										{art.format === 'html' ? 'HTML' : 'MD'}
 									</Badge>
@@ -117,7 +99,7 @@
 									></iconify-icon>
 									{art.machine || 'unknown'}
 								</span>
-								<span class="shrink-0">{formatDate(art.created)}</span>
+								<span class="shrink-0">Updated {formatDate(art.updated || art.created)}</span>
 							{/snippet}
 						</EntityCard>
 					{/each}
