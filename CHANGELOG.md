@@ -8,6 +8,27 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [Unreleased]
+
+### Added
+
+- `POST /api/artifacts` creates a markdown artifact and `PUT /api/artifacts/{id}` rewrites
+  one in place, keeping its id and created time. Both honour `space_id`, accept markdown
+  only, and cap content at 1 MB and the title at 200 characters.
+- Artifacts record an `updated` time, shown in the CLI listing and the dashboard.
+
+### Changed
+
+- **Artifacts are permanent.** Nothing expires or sweeps them. Old files that carry
+  `expires:` load unchanged and are never deleted. The API shapes lose `expires` and
+  `expired`, and `publish_artifact` loses its `keep` input.
+- A lookup by exact artifact id wins over a fuzzy slug match.
+
+### Removed
+
+- `mycelium artifact sweep`, and the sweep `artifact list` ran first. `--expires` on
+  `artifact add` is still accepted, hidden, and does nothing, so old scripts keep working.
+
 ## [0.37.0] — 2026-11-06
 
 ### Added

@@ -60,7 +60,13 @@ skills/          reusable agent skills
 machines/        per-machine context blocks
 sessions/        <machine>/<YYYY-MM>.jsonl sealed session blocks, plus live.json
 usage/           <machine>/current.json latest snapshot, <YYYY-MM>.jsonl history
+artifacts/       <YYYY>/<MM>/<id>.md or .html rendered documents
 ```
+
+Artifacts are permanent. Their metadata rides in the file (YAML frontmatter for markdown,
+`mycelium-*` meta tags for HTML): `title`, `machine`, `created` and `updated`. Nothing sweeps
+them; an old file that still carries `expires` loads unchanged and the field is ignored.
+`PUT /api/artifacts/{id}` rewrites a file in place, so its path and `created` never move.
 
 `mycelium init` creates the directories and seeds `overview.md`, `index.md`, and `log.md`.
 

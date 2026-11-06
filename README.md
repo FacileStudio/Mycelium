@@ -36,6 +36,8 @@ and fans it out. The agents stay thin; the brain is shared.
 - Reports subscription limits per machine, straight from Claude Code, no credential needed
 - Serves a SvelteKit dashboard for browsing and editing the whole brain from a browser, with
   charts on the Memory, Machines and Sessions pages
+- Keeps permanent markdown and HTML artifacts that sync like the rest of the tree, written from
+  the CLI, the `publish_artifact` MCP tool, or `POST /api/artifacts`
 - Authorizes new machines from the browser, with per-machine scoped tokens hashed at rest
 - Publishes sealed sessions to the Antenne as `agent_session.created` events, and subscription
   windows crossing their threshold as `usage_alert.created`
