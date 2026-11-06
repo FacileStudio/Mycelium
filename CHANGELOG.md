@@ -8,7 +8,7 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
-## [Unreleased]
+## [0.38.0] — 2026-11-06
 
 ### Added
 
@@ -16,6 +16,8 @@ records what shipped rather than what was written down at the time.
   one in place, keeping its id and created time. Both honour `space_id`, accept markdown
   only, and cap content at 1 MB and the title at 200 characters.
 - Artifacts record an `updated` time, shown in the CLI listing and the dashboard.
+- Delegated suite tokens (Bulle) can list, read, create, update and delete artifacts in
+  their own spaces, never in the common tree.
 
 ### Changed
 
