@@ -30,13 +30,18 @@ const (
 // for a delegated identity, because commonAllowed refuses it and every one of
 // them resolves its tree through scopeRoot.
 var delegatedRoutes = map[string]bool{
-	"GET /api/spaces":          true,
-	"POST /api/spaces":         true,
-	"POST /api/memory/search":  true,
-	"GET /api/sync/tree":       true,
-	"GET /api/sync/files/*":    true,
-	"PUT /api/sync/files/*":    true,
-	"DELETE /api/sync/files/*": true,
+	"GET /api/spaces":            true,
+	"POST /api/spaces":           true,
+	"POST /api/memory/search":    true,
+	"GET /api/sync/tree":         true,
+	"GET /api/sync/files/*":      true,
+	"PUT /api/sync/files/*":      true,
+	"DELETE /api/sync/files/*":   true,
+	"GET /api/artifacts":         true,
+	"POST /api/artifacts":        true,
+	"GET /api/artifacts/{id}":    true,
+	"PUT /api/artifacts/{id}":    true,
+	"DELETE /api/artifacts/{id}": true,
 }
 
 // delegatedVerifier verifies suite tokens minted by Registre's token exchange

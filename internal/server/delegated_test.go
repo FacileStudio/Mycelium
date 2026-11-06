@@ -132,6 +132,25 @@ func TestDelegatedWritesOwnSpace(t *testing.T) {
 	}
 }
 
+func TestDelegatedManagesArtifactsInOwnSpaceOnly(t *testing.T) {
+	f := newDelegatedFixture(t, "mycelium")
+	q := "?space_id=" + f.own
+	rec := expect(t, f, apiCall{Method: "POST", Path: "/api/artifacts" + q, Token: f.rw, Body: `{"title":"Plan","content":"# Plan\n\nbody\n","machine":"bulle"}`}, http.StatusCreated)
+	var art struct {
+		ID string `json:"id"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &art); err != nil || art.ID == "" {
+		t.Fatalf("create answered %s: %v", rec.Body.String(), err)
+	}
+	expect(t, f, apiCall{Method: "GET", Path: "/api/artifacts" + q, Token: f.ro}, http.StatusOK)
+	expect(t, f, apiCall{Method: "GET", Path: "/api/artifacts/" + art.ID + q, Token: f.ro}, http.StatusOK)
+	expect(t, f, apiCall{Method: "PUT", Path: "/api/artifacts/" + art.ID + q, Token: f.rw, Body: `{"content":"# Plan\n\nnew\n"}`}, http.StatusOK)
+	expect(t, f, apiCall{Method: "PUT", Path: "/api/artifacts/" + art.ID + q, Token: f.ro, Body: `{"content":"x"}`}, http.StatusForbidden)
+	expect(t, f, apiCall{Method: "GET", Path: "/api/artifacts", Token: f.ro}, http.StatusForbidden)
+	expect(t, f, apiCall{Method: "GET", Path: "/api/artifacts?space_id=" + f.foreign, Token: f.ro}, http.StatusForbidden)
+	expect(t, f, apiCall{Method: "DELETE", Path: "/api/artifacts/" + art.ID + q, Token: f.rw}, http.StatusNoContent)
+}
+
 func TestDelegatedCallBackfillsThePicture(t *testing.T) {
 	f := newDelegatedFixture(t, "mycelium")
 	expect(t, f, apiCall{Method: "GET", Path: "/api/spaces", Token: f.ro}, http.StatusOK)
