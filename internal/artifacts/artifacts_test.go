@@ -37,8 +37,8 @@ func TestAddRoundTripsItsMetadataHTML(t *testing.T) {
 	if back.Title != "Suite drift" || back.Machine != "ruche" {
 		t.Fatalf("metadata lost: %+v", back)
 	}
-	if !back.Created.Equal(now) || !back.Expires.Equal(now.Add(DefaultTTL)) {
-		t.Fatalf("times lost: created %v expires %v", back.Created, back.Expires)
+	if !back.Created.Equal(now) || !back.Updated.Equal(now) {
+		t.Fatalf("times lost: created %v updated %v", back.Created, back.Updated)
 	}
 }
 
@@ -107,31 +107,55 @@ func TestReAddingReplacesInPlaceWithoutStackingTags(t *testing.T) {
 	}
 }
 
-func TestSweepTakesExpiredAndLeavesPinned(t *testing.T) {
+func TestOldExpiredArtifactStillListsAndIsKept(t *testing.T) {
 	dir := t.TempDir()
-	now := time.Date(2026, 8, 26, 10, 0, 0, 0, time.UTC)
-	stale := writeSource(t, dir, "stale.html", "<title>Stale</title>")
-	kept := writeSource(t, dir, "kept.html", "<title>Kept</title>")
+	month := filepath.Join(Dir(dir), "2025", "01")
+	if err := os.MkdirAll(month, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	body := "---\ntitle: \"Old plan\"\nmachine: \"ruche\"\ncreated: 2025-01-02T10:00:00Z\n" +
+		"expires: 2025-02-01T10:00:00Z\ntype: artifact\n---\n\n# Old plan\n"
+	path := writeSource(t, month, "2025-01-02-old-plan-abc123.md", body)
 
-	staleArt, err := Add(dir, Request{Source: stale, Expires: now.Add(-time.Hour)}, now)
-	if err != nil {
-		t.Fatalf("add stale: %v", err)
+	all, err := List(dir)
+	if err != nil || len(all) != 1 {
+		t.Fatalf("want the old artifact listed, got %d (%v)", len(all), err)
 	}
-	keptArt, err := Add(dir, Request{Source: kept, Pinned: true}, now)
-	if err != nil {
-		t.Fatalf("add kept: %v", err)
+	created := time.Date(2025, 1, 2, 10, 0, 0, 0, time.UTC)
+	if all[0].Title != "Old plan" || !all[0].Created.Equal(created) || !all[0].Updated.Equal(created) {
+		t.Fatalf("old metadata misread: %+v", all[0])
 	}
+	if _, err := os.Stat(path); err != nil {
+		t.Fatalf("an old artifact past its expires line was removed: %v", err)
+	}
+}
 
-	swept, err := Sweep(dir, now)
+func TestUpdateKeepsIDAndCreated(t *testing.T) {
+	dir := t.TempDir()
+	created := time.Date(2026, 8, 27, 12, 0, 0, 0, time.UTC)
+	art, err := AddContent(dir, []byte("# First\n\nv1"), "a.md", Request{Machine: "bulle"}, created)
 	if err != nil {
-		t.Fatalf("sweep: %v", err)
+		t.Fatal(err)
 	}
-	if len(swept) != 1 || swept[0] != staleArt.ID {
-		t.Fatalf("swept the wrong set: %v", swept)
+	later := created.Add(48 * time.Hour)
+
+	got, err := Update(dir, art.ID, "Renamed", []byte("v2 body"), later)
+	if err != nil {
+		t.Fatalf("update: %v", err)
 	}
-	all, _ := List(dir)
-	if len(all) != 1 || all[0].ID != keptArt.ID {
-		t.Fatalf("pinned artifact did not survive: %+v", all)
+	back, err := Find(dir, art.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	raw, _ := os.ReadFile(back.Path)
+	if got.ID != art.ID || back.Path != art.Path || !back.Created.Equal(created) || !back.Updated.Equal(later) {
+		t.Fatalf("update moved the artifact: %+v", back)
+	}
+	if back.Title != "Renamed" || back.Machine != "bulle" || !strings.HasSuffix(string(raw), "v2 body") {
+		t.Fatalf("update lost content or metadata: %+v %q", back, raw)
+	}
+	if _, err := Update(dir, "first", "", []byte("x"), later); err == nil {
+		t.Fatal("update by a fuzzy slug must be refused")
 	}
 }
 

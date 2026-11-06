@@ -13,35 +13,27 @@ import (
 
 const Dirname = "artifacts"
 
-const DefaultTTL = 30 * 24 * time.Hour
-
 const timeFormat = time.RFC3339
 
-// Artifact represents a recorded markdown or HTML document.
+// Artifact represents a recorded markdown or HTML document. Artifacts are
+// permanent: nothing deletes one except an explicit remove.
 type Artifact struct {
 	ID      string    `json:"id"`
 	Title   string    `json:"title"`
 	Path    string    `json:"path"`
 	Machine string    `json:"machine"`
 	Created time.Time `json:"created"`
-	Expires time.Time `json:"expires,omitempty"`
+	Updated time.Time `json:"updated"`
 }
 
 // Report is a backward-compatible alias for Artifact.
 type Report = Artifact
-
-// Expired reports whether the artifact has passed its expiry.
-func (a Artifact) Expired(now time.Time) bool {
-	return !a.Expires.IsZero() && now.After(a.Expires)
-}
 
 // Request holds parameters for adding a new artifact.
 type Request struct {
 	Source  string
 	Title   string
 	Machine string
-	Expires time.Time
-	Pinned  bool
 }
 
 // AddContent registers a new artifact directly from byte content.
@@ -67,8 +59,8 @@ func AddContent(dataDir string, raw []byte, filename string, req Request, now ti
 		Title:   title,
 		Path:    filepath.Join(targetDir, id+ext),
 		Machine: req.Machine,
-		Created: now,
-		Expires: expiryFor(req, now),
+		Created: stored(now),
+		Updated: stored(now),
 	}
 	stamped := stamp(raw, art, ext == ".html")
 	if err := os.WriteFile(art.Path, stamped, 0o644); err != nil {
@@ -86,6 +78,10 @@ func Add(dataDir string, req Request, now time.Time) (Artifact, error) {
 	return AddContent(dataDir, raw, req.Source, req, now)
 }
 
+// stored is t as the file records it: UTC, to the second. Returning anything
+// finer would make a fresh artifact differ from the same one read back.
+func stored(t time.Time) time.Time { return t.UTC().Truncate(time.Second) }
+
 // URL returns the canonical web URL for an artifact given the server URL and artifact ID.
 func URL(serverURL, id string) string {
 	clean := strings.TrimSpace(serverURL)
@@ -93,16 +89,6 @@ func URL(serverURL, id string) string {
 		return ""
 	}
 	return fmt.Sprintf("%s/artifacts/%s", strings.TrimRight(clean, "/"), id)
-}
-
-func expiryFor(req Request, now time.Time) time.Time {
-	if req.Pinned {
-		return time.Time{}
-	}
-	if !req.Expires.IsZero() {
-		return req.Expires
-	}
-	return now.Add(DefaultTTL)
 }
 
 var (

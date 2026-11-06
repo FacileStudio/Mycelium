@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -30,22 +29,18 @@ var artifactAddCmd = &cobra.Command{
 		"Markdown files (.md) are formatted with YAML frontmatter, and HTML files (.html) " +
 		"are preserved for standalone viewing.\n\n" +
 		"The identifier comes from the title with a date prefix to prevent collisions:\n\n" +
+		"Artifacts are permanent: nothing deletes one except mycelium artifact rm.\n\n" +
 		"  mycelium artifact add spec.md\n" +
-		"  mycelium artifact add audit.html --expires 7d\n" +
-		"  mycelium artifact add plan.md --title 'Migration plan' --expires never\n" +
+		"  mycelium artifact add plan.md --title 'Migration plan'\n" +
 		"  mycelium artifact add --title 'Quick note' --body-stdin < report.md",
 	Args:         cobra.MaximumNArgs(1),
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		title, _ := cmd.Flags().GetString("title")
-		expiresStr, _ := cmd.Flags().GetString("expires")
 		noOpen, _ := cmd.Flags().GetBool("no-open")
 		bodyStdin, _ := cmd.Flags().GetBool("body-stdin")
-		expires, pinned, err := parseExpiry(expiresStr)
-		if err != nil {
-			return err
-		}
 		var art artifacts.Artifact
+		var err error
 		fromStdin := bodyStdin || (len(args) == 1 && args[0] == "-")
 		if fromStdin {
 			raw, err := io.ReadAll(os.Stdin)
@@ -55,8 +50,6 @@ var artifactAddCmd = &cobra.Command{
 			art, err = artifacts.AddContent(config.DataDir(), raw, "stdin.md", artifacts.Request{
 				Title:   title,
 				Machine: config.MachineName(),
-				Expires: expires,
-				Pinned:  pinned,
 			}, time.Now())
 			if err != nil {
 				return err
@@ -69,8 +62,6 @@ var artifactAddCmd = &cobra.Command{
 				Source:  args[0],
 				Title:   title,
 				Machine: config.MachineName(),
-				Expires: expires,
-				Pinned:  pinned,
 			}, time.Now())
 			if err != nil {
 				return err
@@ -86,7 +77,6 @@ var artifactListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List the artifacts on this machine, newest first",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		artifacts.Sweep(config.DataDir(), time.Now())
 		all, err := artifacts.List(config.DataDir())
 		if err != nil {
 			return err
@@ -134,44 +124,6 @@ var artifactRmCmd = &cobra.Command{
 		ui.Success("Deleted %s", artifacts.Slug(args[0]))
 		return nil
 	},
-}
-
-var artifactSweepCmd = &cobra.Command{
-	Use:   "sweep",
-	Short: "Delete every artifact whose expiry has passed",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		swept, err := artifacts.Sweep(config.DataDir(), time.Now())
-		if err != nil {
-			return err
-		}
-		if len(swept) == 0 {
-			fmt.Println("Nothing to sweep")
-			return nil
-		}
-		ui.Success("Swept %d expired artifact(s): %s", len(swept), strings.Join(swept, ", "))
-		return nil
-	},
-}
-
-func parseExpiry(raw string) (time.Time, bool, error) {
-	value := strings.ToLower(strings.TrimSpace(raw))
-	switch {
-	case value == "":
-		return time.Time{}, false, nil
-	case value == "never":
-		return time.Time{}, true, nil
-	case strings.HasSuffix(value, "d"):
-		days, err := strconv.Atoi(strings.TrimSuffix(value, "d"))
-		if err != nil || days < 0 {
-			return time.Time{}, false, fmt.Errorf("invalid expiry %q, try 7d or 12h or never", raw)
-		}
-		return time.Now().AddDate(0, 0, days), false, nil
-	}
-	d, err := time.ParseDuration(value)
-	if err != nil {
-		return time.Time{}, false, fmt.Errorf("invalid expiry %q, try 7d or 12h or never", raw)
-	}
-	return time.Now().Add(d), false, nil
 }
 
 func warnExternalRefs(source string) {
@@ -231,13 +183,13 @@ func init() {
 	var artifactNoOpen bool
 	var artifactBodyStdin bool
 	artifactAddCmd.Flags().StringVar(&artifactTitle, "title", "", "Override the document's own title")
-	artifactAddCmd.Flags().StringVar(&artifactExpires, "expires", "",
-		"How long to keep it: 7d, 12h, or never (default 30d)")
+	artifactAddCmd.Flags().StringVar(&artifactExpires, "expires", "", "Ignored: artifacts are permanent")
+	_ = artifactAddCmd.Flags().MarkHidden("expires")
 	artifactAddCmd.Flags().BoolVar(&artifactNoOpen, "no-open", false, "Record it without opening a browser")
 	artifactAddCmd.Flags().BoolVar(&artifactBodyStdin, "body-stdin", false, "Read artifact body from stdin")
 	artifactAddCmd.Flags().BoolVar(&artifactBodyStdin, "stdin", false, "Read artifact body from stdin")
 	var artifactJSON bool
 	artifactListCmd.Flags().BoolVar(&artifactJSON, "json", false, "Print the listing as JSON")
-	artifactCmd.AddCommand(artifactAddCmd, artifactListCmd, artifactOpenCmd, artifactRmCmd, artifactSweepCmd)
+	artifactCmd.AddCommand(artifactAddCmd, artifactListCmd, artifactOpenCmd, artifactRmCmd)
 	rootCmd.AddCommand(artifactCmd)
 }

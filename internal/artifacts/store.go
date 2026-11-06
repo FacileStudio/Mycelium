@@ -1,6 +1,7 @@
 package artifacts
 
 import (
+	"cmp"
 	"fmt"
 	"html"
 	"os"
@@ -23,19 +24,25 @@ func allDirs(dataDir string) []string {
 	return dirs
 }
 
+// applyField sets one metadata field read from a file. Unknown keys, such as
+// the expires line older artifacts still carry, are ignored: artifacts are
+// permanent and that line no longer means anything.
+func applyField(art *Artifact, key, value string) {
+	switch key {
+	case "title":
+		art.Title = value
+	case "machine":
+		art.Machine = value
+	case "created":
+		art.Created, _ = time.Parse(timeFormat, value)
+	case "updated":
+		art.Updated, _ = time.Parse(timeFormat, value)
+	}
+}
+
 func parseHTMLMeta(raw []byte, art *Artifact) {
 	for _, m := range metaPair.FindAllSubmatch(raw, -1) {
-		value := html.UnescapeString(string(m[2]))
-		switch strings.ToLower(string(m[1])) {
-		case "title":
-			art.Title = value
-		case "machine":
-			art.Machine = value
-		case "created":
-			art.Created, _ = time.Parse(timeFormat, value)
-		case "expires":
-			art.Expires, _ = time.Parse(timeFormat, value)
-		}
+		applyField(art, strings.ToLower(string(m[1])), html.UnescapeString(string(m[2])))
 	}
 }
 
@@ -55,17 +62,7 @@ func parseFrontmatter(content string, art *Artifact) {
 			continue
 		}
 		key := strings.ToLower(strings.TrimSpace(line[:colon]))
-		val := strings.Trim(strings.TrimSpace(line[colon+1:]), `"'`)
-		switch key {
-		case "title":
-			art.Title = val
-		case "machine":
-			art.Machine = val
-		case "created":
-			art.Created, _ = time.Parse(timeFormat, val)
-		case "expires":
-			art.Expires, _ = time.Parse(timeFormat, val)
-		}
+		applyField(art, key, strings.Trim(strings.TrimSpace(line[colon+1:]), `"'`))
 	}
 }
 
@@ -90,6 +87,9 @@ func parse(path string, raw []byte) Artifact {
 			art.Created = time.Now()
 		}
 	}
+	if art.Updated.IsZero() {
+		art.Updated = art.Created
+	}
 	return art
 }
 
@@ -99,25 +99,17 @@ func List(dataDir string) ([]Artifact, error) {
 	var out []Artifact
 
 	for _, root := range allDirs(dataDir) {
-		_ = filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
-			if err != nil || d == nil || d.IsDir() {
-				return nil
-			}
-			ext := strings.ToLower(filepath.Ext(d.Name()))
-			if ext != ".md" && ext != ".html" && ext != ".htm" {
-				return nil
-			}
-			id := strings.TrimSuffix(d.Name(), filepath.Ext(d.Name()))
+		walkArtifacts(root, func(path, id string) bool {
 			if seen[id] {
-				return nil
+				return false
 			}
-			raw, readErr := os.ReadFile(path)
-			if readErr != nil {
-				return nil
+			raw, err := os.ReadFile(path)
+			if err != nil {
+				return false
 			}
 			seen[id] = true
 			out = append(out, parse(path, raw))
-			return nil
+			return false
 		})
 	}
 
@@ -142,31 +134,48 @@ func matchesID(base, target, cleanSlug string) bool {
 	return strings.Contains(base, "-"+cleanSlug+"-") || strings.Contains(base, "-"+cleanSlug)
 }
 
-func findInRoot(root, target, cleanSlug string) (string, []byte) {
-	var matchedPath string
-	var matchedRaw []byte
-
+// walkArtifacts calls visit with the path and id of every artifact file under
+// root, and stops as soon as visit returns true.
+func walkArtifacts(root string, visit func(path, base string) bool) {
 	_ = filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
-		if err != nil || d == nil || d.IsDir() || matchedPath != "" {
+		if err != nil || d == nil || d.IsDir() {
 			return nil
 		}
 		ext := strings.ToLower(filepath.Ext(d.Name()))
 		if ext != ".md" && ext != ".html" && ext != ".htm" {
 			return nil
 		}
-		base := strings.TrimSuffix(d.Name(), filepath.Ext(d.Name()))
-		if !matchesID(base, target, cleanSlug) {
-			return nil
-		}
-		raw, readErr := os.ReadFile(path)
-		if readErr == nil {
-			matchedPath = path
-			matchedRaw = raw
+		if visit(path, strings.TrimSuffix(d.Name(), filepath.Ext(d.Name()))) {
+			return filepath.SkipAll
 		}
 		return nil
 	})
+}
 
-	return matchedPath, matchedRaw
+// findInRoot walks one root for the artifact named target. An exact id wins
+// over a fuzzy slug match, so a lookup by full id never lands on a sibling
+// whose name merely contains it.
+func findInRoot(root, target, cleanSlug string) (string, []byte) {
+	var exact, fuzzy string
+	walkArtifacts(root, func(path, base string) bool {
+		if strings.EqualFold(base, target) {
+			exact = path
+			return true
+		}
+		if fuzzy == "" && matchesID(base, target, cleanSlug) {
+			fuzzy = path
+		}
+		return false
+	})
+	matched := cmp.Or(exact, fuzzy)
+	if matched == "" {
+		return "", nil
+	}
+	raw, err := os.ReadFile(matched)
+	if err != nil {
+		return "", nil
+	}
+	return matched, raw
 }
 
 // Find retrieves a single artifact by its ID or title slug.
@@ -196,21 +205,22 @@ func Remove(dataDir, id string) error {
 	return nil
 }
 
-// Sweep deletes all expired artifacts and returns their IDs.
-func Sweep(dataDir string, now time.Time) ([]string, error) {
-	all, err := List(dataDir)
-	if err != nil {
-		return nil, err
+// Update rewrites an artifact in place. The id, path, machine and created time
+// are kept; the body is replaced, the title changes when one is given, and
+// updated is set to now. Only an exact id is accepted.
+func Update(dataDir, id, title string, raw []byte, now time.Time) (Artifact, error) {
+	art, err := Find(dataDir, id)
+	if err != nil || !strings.EqualFold(art.ID, strings.TrimSpace(id)) {
+		return Artifact{}, fmt.Errorf("no artifact named %q", id)
 	}
-	var swept []string
-	for _, art := range all {
-		if !art.Expired(now) {
-			continue
-		}
-		if err := os.Remove(art.Path); err != nil {
-			continue
-		}
-		swept = append(swept, art.ID)
+	if t := strings.TrimSpace(title); t != "" {
+		art.Title = t
 	}
-	return swept, nil
+	art.Updated = stored(now)
+	ext := strings.ToLower(filepath.Ext(art.Path))
+	stamped := stamp(raw, art, ext == ".html" || ext == ".htm")
+	if err := os.WriteFile(art.Path, stamped, 0o644); err != nil {
+		return Artifact{}, fmt.Errorf("failed to write %s: %w", art.Path, err)
+	}
+	return art, nil
 }

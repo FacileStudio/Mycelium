@@ -137,7 +137,7 @@ var Registry = Response{Modules: []Module{
 	},
 	{
 		Name:        "artifacts",
-		Description: "Rendered HTML and markdown artifacts synced across machines.",
+		Description: "Rendered HTML and markdown artifacts synced across machines. Artifacts are permanent: nothing deletes one except DELETE.",
 		Routes: []Route{
 			{Method: "GET", Path: "/artifacts", Summary: "List artifacts", Auth: "bearer", QueryParams: []Field{{Name: "space_id", Type: "string", Description: "Space ID."}}, ResponseBody: []ArtifactSummary{}, Errors: anyToken},
 			{Method: "GET", Path: "/artifacts/{id}", Summary: "Read one artifact", Auth: "bearer", PathParams: []Field{artifactIdParam}, QueryParams: []Field{{Name: "space_id", Type: "string", Description: "Space ID."}}, ResponseBody: ArtifactDetail{}, Errors: append(anyToken, notFound)},

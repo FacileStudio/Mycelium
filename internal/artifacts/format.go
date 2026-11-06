@@ -54,9 +54,7 @@ func frontmatterBlock(art Artifact) string {
 		fmt.Fprintf(&b, "machine: %q\n", art.Machine)
 	}
 	fmt.Fprintf(&b, "created: %s\n", art.Created.UTC().Format(timeFormat))
-	if !art.Expires.IsZero() {
-		fmt.Fprintf(&b, "expires: %s\n", art.Expires.UTC().Format(timeFormat))
-	}
+	fmt.Fprintf(&b, "updated: %s\n", art.Updated.UTC().Format(timeFormat))
 	b.WriteString("type: artifact\n")
 	b.WriteString("---\n\n")
 	return b.String()
@@ -67,9 +65,7 @@ func metaBlock(art Artifact) []byte {
 	fmt.Fprintf(&b, "\n<meta name=\"mycelium-title\" content=\"%s\">", html.EscapeString(art.Title))
 	fmt.Fprintf(&b, "\n<meta name=\"mycelium-machine\" content=\"%s\">", html.EscapeString(art.Machine))
 	fmt.Fprintf(&b, "\n<meta name=\"mycelium-created\" content=\"%s\">", art.Created.UTC().Format(timeFormat))
-	if !art.Expires.IsZero() {
-		fmt.Fprintf(&b, "\n<meta name=\"mycelium-expires\" content=\"%s\">", art.Expires.UTC().Format(timeFormat))
-	}
+	fmt.Fprintf(&b, "\n<meta name=\"mycelium-updated\" content=\"%s\">", art.Updated.UTC().Format(timeFormat))
 	b.WriteString("\n")
 	return []byte(b.String())
 }

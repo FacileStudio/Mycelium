@@ -323,24 +323,24 @@ type ModelInfo struct {
 	Path string `json:"path"`
 }
 
+// ArtifactSummary is one artifact in a listing.
 type ArtifactSummary struct {
 	ID      string `json:"id"`
 	Title   string `json:"title"`
 	Machine string `json:"machine"`
 	Format  string `json:"format"`
 	Created string `json:"created"`
-	Expires string `json:"expires,omitempty"`
-	Expired bool   `json:"expired"`
+	Updated string `json:"updated"`
 }
 
+// ArtifactDetail is one artifact with its file content, frontmatter included.
 type ArtifactDetail struct {
 	ID      string `json:"id"`
 	Title   string `json:"title"`
 	Machine string `json:"machine"`
 	Format  string `json:"format"`
 	Created string `json:"created"`
-	Expires string `json:"expires,omitempty"`
-	Expired bool   `json:"expired"`
+	Updated string `json:"updated"`
 	Content string `json:"content"`
 }
 

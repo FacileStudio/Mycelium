@@ -89,7 +89,7 @@ func publishArtifactTool() *mcp.Tool {
 			"Use it when the answer is structural rather than linear: a comparison across many items, " +
 			"a timeline, a graph, or an extensive overview. Answer in the conversation first and " +
 			"record an artifact as an attachment to that answer, never in place of it. A durable finding belongs " +
-			"in the wiki as memory; an artifact is a rendered presentation, and it expires in 30 days.\n\n" +
+			"in the wiki as memory; an artifact is a rendered presentation, and it is permanent.\n\n" +
 			"The page must carry everything it needs inline. The document's title becomes the artifact's name, " +
 			"so recording the same title replaces it rather than piling up copies.",
 		Annotations: &mcp.ToolAnnotations{
