@@ -8,6 +8,17 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [Unreleased]
+
+### Added
+
+- The landing page shows Facile's plans under "Tarifs", from Ardoise's public catalog. The
+  section is absent while the catalog is empty or unreachable.
+
+### Changed
+
+- `@facile/muse` v0.7.4 to v0.11.0.
+
 ## [0.36.0] — 2026-11-03
 
 ### Added

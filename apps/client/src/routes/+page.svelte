@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import LandingOffers from '$lib/components/LandingOffers.svelte';
 	import { Button, Card, icons } from '@facile/muse';
 	import WordReveal from '$lib/components/motion/WordReveal.svelte';
 	import { TOKEN_KEY } from '$lib/backend';
@@ -263,6 +264,8 @@
 				</div>
 			</section>
 		</main>
+
+		<LandingOffers />
 
 		<footer class="border-t border-fc-border">
 			<div class="mx-auto max-w-fc-lg px-6 py-6 text-center text-fc-sm text-fc-fg-muted">
