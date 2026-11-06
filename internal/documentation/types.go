@@ -344,6 +344,14 @@ type ArtifactDetail struct {
 	Content string `json:"content"`
 }
 
+// ArtifactWriteRequest is the body of POST and PUT /artifacts. Title is
+// optional on PUT; machine is read on create only.
+type ArtifactWriteRequest struct {
+	Title   string `json:"title"`
+	Content string `json:"content"`
+	Machine string `json:"machine,omitempty"`
+}
+
 type User struct {
 	Email     string `json:"email"`
 	Name      string `json:"name"`

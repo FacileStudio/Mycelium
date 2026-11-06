@@ -171,7 +171,9 @@ func (s *Server) mountContentRoutes(r chi.Router) {
 	r.Get("/models/*", s.auth(false, s.modelGet))
 
 	r.Get("/artifacts", s.auth(false, s.artifactsList))
+	r.Post("/artifacts", s.auth(false, s.artifactCreate))
 	r.Get("/artifacts/{id}", s.auth(false, s.artifactGet))
+	r.Put("/artifacts/{id}", s.auth(false, s.artifactUpdate))
 	r.Delete("/artifacts/{id}", s.auth(false, s.artifactDelete))
 }
 

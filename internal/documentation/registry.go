@@ -9,6 +9,8 @@ var (
 	badRequest      = Error{Status: 400, Code: "invalid_argument", Description: "Invalid JSON body or query."}
 	internalError   = Error{Status: 500, Code: "internal", Description: "Unexpected server error."}
 	managed         = Error{Status: 409, Code: "conflict", Description: "Registre manages this; the message links to it."}
+	notMember       = Error{Status: 403, Code: "permission_denied", Description: "Not a member of the space."}
+	tooLarge        = Error{Status: 413, Code: "resource_exhausted", Description: "Content exceeds 1 MB."}
 )
 
 var (
@@ -140,7 +142,9 @@ var Registry = Response{Modules: []Module{
 		Description: "Rendered HTML and markdown artifacts synced across machines. Artifacts are permanent: nothing deletes one except DELETE.",
 		Routes: []Route{
 			{Method: "GET", Path: "/artifacts", Summary: "List artifacts", Auth: "bearer", QueryParams: []Field{{Name: "space_id", Type: "string", Description: "Space ID."}}, ResponseBody: []ArtifactSummary{}, Errors: anyToken},
+			{Method: "POST", Path: "/artifacts", Summary: "Create a markdown artifact", Description: "Markdown only: content that looks like HTML is refused. Content is capped at 1 MB and the title at 200 characters; an empty title is taken from the first heading.", Auth: "bearer", QueryParams: []Field{{Name: "space_id", Type: "string", Description: "Space ID."}}, RequestBody: ArtifactWriteRequest{}, ResponseBody: ArtifactDetail{}, Status: http.StatusCreated, Errors: append(anyToken, badRequest, notMember, tooLarge)},
 			{Method: "GET", Path: "/artifacts/{id}", Summary: "Read one artifact", Auth: "bearer", PathParams: []Field{artifactIdParam}, QueryParams: []Field{{Name: "space_id", Type: "string", Description: "Space ID."}}, ResponseBody: ArtifactDetail{}, Errors: append(anyToken, notFound)},
+			{Method: "PUT", Path: "/artifacts/{id}", Summary: "Rewrite a markdown artifact in place", Description: "Keeps the id and created time, replaces the body, renames when a title is given, and sets updated. Same limits as create; an HTML artifact cannot be updated.", Auth: "bearer", PathParams: []Field{artifactIdParam}, QueryParams: []Field{{Name: "space_id", Type: "string", Description: "Space ID."}}, RequestBody: ArtifactWriteRequest{}, ResponseBody: ArtifactDetail{}, Errors: append(anyToken, badRequest, notMember, tooLarge, notFound)},
 			{Method: "DELETE", Path: "/artifacts/{id}", Summary: "Delete an artifact", Auth: "bearer", PathParams: []Field{artifactIdParam}, QueryParams: []Field{{Name: "space_id", Type: "string", Description: "Space ID."}}, Status: http.StatusNoContent, Errors: append(anyToken, notFound)},
 		},
 	},
