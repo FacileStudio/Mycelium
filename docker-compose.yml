@@ -3,8 +3,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        APP_VERSION: ${APP_VERSION:-}
     restart: unless-stopped
     expose:
     - '8420'
