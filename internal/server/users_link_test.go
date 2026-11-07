@@ -2,7 +2,10 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"os"
+	"path/filepath"
+	"sync"
 	"testing"
 )
 
@@ -114,4 +117,28 @@ func TestErasePersonIsScopedAndIdempotent(t *testing.T) {
 func pathExists(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
+}
+
+func TestConcurrentLinksNeverCorruptTheUsersFile(t *testing.T) {
+	srv := New(t.TempDir(), "")
+	var wg sync.WaitGroup
+	for i := 0; i < 20; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			email := fmt.Sprintf("u%d@example.com", i)
+			_, err := srv.linkIdentity(oidcIdentity{Issuer: "i", Subject: email, Email: email, EmailVerified: true})
+			if err != nil {
+				t.Error(err)
+			}
+		}(i)
+	}
+	wg.Wait()
+	if got := len(srv.loadUsers()); got != 20 {
+		t.Fatalf("users = %d, want 20", got)
+	}
+	matches, _ := filepath.Glob(filepath.Join(srv.DataDir, "*.tmp"))
+	if len(matches) != 0 {
+		t.Fatalf("leftover temp files: %v", matches)
+	}
 }

@@ -74,7 +74,7 @@ func (s *Server) saveTokens() {
 		s.Log.Error("tokens: mkdir failed", slog.Any("error", err))
 		return
 	}
-	if err := os.WriteFile(s.tokensPath(), data, 0o600); err != nil {
+	if err := writeFileAtomic(s.tokensPath(), data, 0o600); err != nil {
 		s.Log.Error("tokens: write failed", slog.Any("error", err))
 	}
 }

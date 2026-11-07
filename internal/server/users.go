@@ -44,7 +44,7 @@ func (s *Server) saveUsers(users map[string]User) error {
 	if err := os.MkdirAll(s.DataDir, 0o755); err != nil {
 		return err
 	}
-	return os.WriteFile(s.usersPath(), data, 0o600)
+	return writeFileAtomic(s.usersPath(), data, 0o600)
 }
 
 func (s *Server) usersList(w http.ResponseWriter, r *http.Request) {

@@ -35,11 +35,7 @@ func (f fileDeletionState) Save(_ context.Context, state []byte) error {
 	if err := os.MkdirAll(filepath.Dir(f.path), 0o755); err != nil {
 		return err
 	}
-	tmp := f.path + ".tmp"
-	if err := os.WriteFile(tmp, state, 0o600); err != nil {
-		return err
-	}
-	return os.Rename(tmp, f.path)
+	return writeFileAtomic(f.path, state, 0o600)
 }
 
 func (s *Server) deletions() *directory.Deletions {

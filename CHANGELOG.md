@@ -50,6 +50,14 @@ records what shipped rather than what was written down at the time.
 - `GET /version`, from the `APP_VERSION` build arg (falls back to `git describe`).
 - CI builds the server and the client and checks the message catalogs.
 
+## [0.38.1] — 2026-11-07
+
+### Security
+
+- The dashboard sanitises rendered artifact markdown with DOMPurify and renders mermaid
+  diagrams in strict mode. Before, raw HTML in an artifact, such as an image with an
+  `onerror` handler written by an agent, ran in the page.
+
 ## [0.38.0] — 2026-11-06
 
 ### Added

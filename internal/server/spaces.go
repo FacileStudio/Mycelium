@@ -87,7 +87,7 @@ func (s *Server) saveSpaces(spaces map[string]*Space) error {
 	if err := os.MkdirAll(s.DataDir, 0o755); err != nil {
 		return err
 	}
-	return os.WriteFile(s.spacesPath(), data, 0o600)
+	return writeFileAtomic(s.spacesPath(), data, 0o600)
 }
 
 // spaceAccess is the guard every space_id-accepting route funnels through: a
