@@ -8,6 +8,13 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [Unreleased]
+
+### Changed
+
+- Web: the API tokens create drawer no longer shows an expiry field and the list no longer shows an Expires column, since Mycelium tokens do not expire.
+- Libraries: `@facile/muse` v0.14.1 to v0.14.2 (the user menu stays inside the viewport).
+
 ## [0.40.0] — 2026-11-07
 
 ### Changed

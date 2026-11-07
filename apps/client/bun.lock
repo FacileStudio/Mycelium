@@ -6,7 +6,7 @@
       "name": "mycelium-client",
       "dependencies": {
         "@facile/journal": "github:FacileStudio/Journal#ts",
-        "@facile/muse": "github:FacileStudio/muse#v0.14.1",
+        "@facile/muse": "github:FacileStudio/muse#v0.14.2",
         "dompurify": "^3.4.14",
         "gsap": "^3.15.0",
         "highlight.js": "^11.11.1",
@@ -88,7 +88,7 @@
 
     "@facile/journal": ["@facile/journal@github:FacileStudio/Journal#186d6d4", {}, "FacileStudio-Journal-186d6d4", "sha512-flNpkoQEl3EeXACjNZ0hL14+9d0UFvrlPlFzKG9aQCB4mvrZmgp47RvpytwlFzD9pvC+EzshrGGkIrgnMVEmZg=="],
 
-    "@facile/muse": ["@facile/muse@github:FacileStudio/muse#54ef217", { "dependencies": { "gsap": "^3.13.0", "tailwind-merge": "^3.5.0" }, "peerDependencies": { "svelte": "^5.0.0", "tailwindcss": "^4.0.0" } }, "FacileStudio-muse-54ef217", "sha512-mnfMPf9UfK08HKUAZqOQDn0oBDRlOHSu1UTJ9c72aEAVUdUmEkvyDE/zArbKX+noTRDaoaCcIwhKLsO4891I8A=="],
+    "@facile/muse": ["@facile/muse@github:FacileStudio/muse#69aca01", { "dependencies": { "gsap": "^3.13.0", "tailwind-merge": "^3.5.0" }, "peerDependencies": { "svelte": "^5.0.0", "tailwindcss": "^4.0.0" } }, "FacileStudio-muse-69aca01", "sha512-wgh+j+Hg+VwxPo0r8kPfbxsCTIkcCXX6y6L5G8YICC4VcXnY8VHJAaQBQEsY+wJNs5om//cLxO8E/BqSfzZxcA=="],
 
     "@iconify/types": ["@iconify/types@2.0.0", "", {}, "sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg=="],
 

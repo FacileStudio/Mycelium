@@ -56,5 +56,5 @@
 		<Alert tone="info">{t('api.adminOnly')}</Alert>
 	</SettingsSection>
 {:else}
-	<TokensSection tokens={items} onCreate={create} onRevoke={revoke} expiryDays={[]} />
+	<TokensSection tokens={items} onCreate={create} onRevoke={revoke} expiry={false} />
 {/if}
