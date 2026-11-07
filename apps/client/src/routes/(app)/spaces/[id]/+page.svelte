@@ -151,12 +151,12 @@
 
 			<div class="flex shrink-0 flex-wrap items-center gap-2">
 				{#if managed}
-					<Button variant="outline" icon={icons.arrow} href={manageHref} target="_blank" rel="noopener">
+					<Button variant="secondary" icon={icons.arrow} href={manageHref} target="_blank" rel="noopener">
 						{t('spaces.manage')}
 					</Button>
 				{/if}
 				{#if canManage && !linkedID}
-					<Button variant="outline" icon={icons.edit} onclick={openEdit}>{t('common.edit')}</Button>
+					<Button variant="secondary" icon={icons.edit} onclick={openEdit}>{t('common.edit')}</Button>
 				{/if}
 				{#if !managed}
 					<Button variant="ghost" icon={icons.logout} onclick={() => (leaveOpen = true)}>

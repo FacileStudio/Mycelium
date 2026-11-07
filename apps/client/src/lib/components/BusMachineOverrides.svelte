@@ -41,7 +41,7 @@
 		description={t('overrides.addHelp')}
 	>
 		<Button
-			variant="outline"
+			variant="secondary"
 			icon={icons.plus}
 			onclick={() => (machineEmails = [...machineEmails, { machine: '', email: '' }])}
 		>
