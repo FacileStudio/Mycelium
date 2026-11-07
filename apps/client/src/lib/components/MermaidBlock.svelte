@@ -46,7 +46,7 @@
 				startOnLoad: false,
 				theme: 'dark',
 				fontFamily: 'inherit',
-				securityLevel: 'loose'
+				securityLevel: 'strict'
 			});
 			const id = `mermaid-svg-${Math.random().toString(36).slice(2, 9)}`;
 			const result = await mermaid.render(id, trimmed);

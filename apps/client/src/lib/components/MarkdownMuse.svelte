@@ -7,7 +7,7 @@ import AlertBlock from './AlertBlock.svelte';
 import MermaidBlock from './MermaidBlock.svelte';
 import ListItem from './ListItem.svelte';
 import { parseAlert, parseBarChart, parseCompare, parseDiff, parseListItem, parseMetrics, stripFrontmatter } from './MarkdownMuseUtils';
-import { richInline, richBlock } from './MarkdownMuseRich';
+import { richInline, richBlock, safeHtml } from './MarkdownMuseRich';
 
 function highlightCode(code: string, lang: string): string {
 	if (!hljs) return code;
@@ -114,7 +114,7 @@ const tokens = $derived(marked.lexer(cleanBody) as Token[]);
 				{/if}
 			{:else}
 				<div class="rounded-fc-lg border-l-4 border-fc-primary bg-fc-surface/60 p-4 text-fc-sm text-fc-fg-muted italic">
-					{@html marked.parse(b.text)}
+					{@html safeHtml(marked.parse(b.text) as string)}
 				</div>
 			{/if}
 
