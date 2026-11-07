@@ -37,7 +37,7 @@
 		</div>
 		<Button
 			type="submit"
-			variant="outline"
+			variant="secondary"
 			icon={icons.search}
 			disabled={searching || query.trim().length === 0}
 		>

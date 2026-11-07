@@ -85,11 +85,11 @@
 				: t('spaces.emptyLocal')}
 		>
 			{#if registreURL}
-				<Button variant="outline" icon={icons.arrow} href={registreURL} target="_blank" rel="noopener">
+				<Button variant="secondary" icon={icons.arrow} href={registreURL} target="_blank" rel="noopener">
 					{t('spaces.manage')}
 				</Button>
 			{:else}
-				<Button variant="outline" icon={icons.plus} onclick={openCreate}>{t('spaces.new')}</Button>
+				<Button variant="secondary" icon={icons.plus} onclick={openCreate}>{t('spaces.new')}</Button>
 			{/if}
 		</EmptyState>
 	{:else}

@@ -100,7 +100,7 @@
 						href="https://github.com/FacileStudio/Mycelium"
 						target="_blank"
 						rel="noopener noreferrer"
-						variant="outline"
+						variant="secondary"
 						size="lg"
 						iconRight={icons.code}
 						class="rounded-fc-md"
@@ -250,7 +250,7 @@
 							href="https://github.com/FacileStudio/Mycelium"
 							target="_blank"
 							rel="noopener noreferrer"
-							variant="outline"
+							variant="secondary"
 							size="lg"
 							iconRight={icons.code}
 							class="rounded-fc-md"

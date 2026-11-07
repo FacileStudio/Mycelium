@@ -24,7 +24,7 @@
 
 	<SettingsSection title={t('api.connect')} description={t('api.connectHelp')} bare>
 		{#snippet actions()}
-			<Button variant="outline" icon={icons.copy} onclick={copyPrompt}>{t('api.copyPrompt')}</Button>
+			<Button variant="secondary" icon={icons.copy} onclick={copyPrompt}>{t('api.copyPrompt')}</Button>
 		{/snippet}
 
 		<pre

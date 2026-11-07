@@ -98,7 +98,7 @@
 			title={t('memory.emptyTitle')}
 			description={t('memory.emptyText')}
 		>
-			<Button variant="outline" icon={icons.plus} onclick={openCreate}>{t('memory.newPage')}</Button>
+			<Button variant="secondary" icon={icons.plus} onclick={openCreate}>{t('memory.newPage')}</Button>
 		</EmptyState>
 	{:else}
 		{#each grouped as [folder, entries] (folder)}
