@@ -94,7 +94,10 @@ var serveCmd = &cobra.Command{
 		}
 
 		srv := server.New(cfg.DataDir, cfg.Password)
-		srv.SSOOnly = cfg.SSOOnly
+		srv.Version = version
+		srv.TrustedProxies = cfg.TrustedProxies
+		srv.CDNProxies = cfg.CDNProxies
+		srv.CDNHeader = cfg.CDNHeader
 		srv.OIDC = cfg.OIDC
 		srv.CORSAllowedOrigins = cfg.CORSAllowedOrigins
 		srv.JournalBrowserURL = cfg.JournalBrowserURL
@@ -111,9 +114,13 @@ var serveCmd = &cobra.Command{
 		emitter := server.NewEmitter(srv)
 		go emitter.Run(cmd.Context())
 		go srv.RunRegistreSync(cmd.Context())
+		go srv.RunDeletions(cmd.Context())
 
-		router := srv.Handler()
 		clientDir := spa.DirFromEnv()
+		if hashes, err := spa.InlineScriptHashes(clientDir); err == nil {
+			srv.ScriptSources = hashes
+		}
+		router := srv.Handler()
 		if spa.Available(clientDir) {
 			router.Handle("/*", spa.Handler(spa.Config{Dir: clientDir}))
 			appLogger.Info("serving client", slog.String("dir", clientDir))

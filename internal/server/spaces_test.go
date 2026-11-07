@@ -276,8 +276,8 @@ func TestAuthMeAndUsers(t *testing.T) {
 
 func TestFirstUserBecomesAdmin(t *testing.T) {
 	srv := New(t.TempDir(), "pw")
-	first := srv.upsertUser("yann@facile.studio", "Yann", "")
-	second := srv.upsertUser("noah@facile.studio", "Noah", "")
+	first := mustLink(t, srv, "yann@facile.studio", "Yann")
+	second := mustLink(t, srv, "noah@facile.studio", "Noah")
 	if !first.Admin || second.Admin {
 		t.Fatalf("first user admin bootstrap broken: first=%v second=%v", first.Admin, second.Admin)
 	}

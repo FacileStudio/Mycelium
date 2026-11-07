@@ -186,8 +186,8 @@ func (s *Server) scopeRoot(w http.ResponseWriter, r *http.Request) (string, bool
 
 func (s *Server) authConfig(w http.ResponseWriter, r *http.Request) {
 	body := map[string]any{
-		"password_auth":  s.Password != "" && !s.SSOOnly,
-		"sso_only":       s.SSOOnly,
+		"password_auth":  s.Password != "" && s.OIDC == nil,
+		"sso_only":       s.OIDC != nil,
 		"oidc_enabled":   s.OIDC != nil,
 		"device_enabled": true,
 	}

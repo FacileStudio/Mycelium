@@ -13,6 +13,7 @@ import (
 
 	apierrors "github.com/FacileStudio/tronc/errors"
 
+	"github.com/FacileStudio/Mycelium/internal/env"
 	"github.com/FacileStudio/tronc/httpjson"
 )
 
@@ -50,7 +51,7 @@ func (s *Server) oidcStart(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true, SameSite: http.SameSiteLaxMode,
 		Secure: strings.HasPrefix(s.successURL(r, cfg), "https://"),
 	})
-	http.Redirect(w, r, rt.config.AuthCodeURL(pending.State), http.StatusFound)
+	http.Redirect(w, r, rt.config.AuthCodeURL(pending.State, uiLocalesOption(r)...), http.StatusFound)
 }
 
 func (s *Server) oidcCallback(w http.ResponseWriter, r *http.Request) {
@@ -63,7 +64,7 @@ func (s *Server) oidcCallback(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	user, scope, ok := s.oidcIdentity(w, r, rt)
+	user, scope, ok := s.oidcIdentity(w, r, rt, cfg)
 	if !ok {
 		return
 	}
@@ -120,7 +121,7 @@ func (s *Server) pendingOIDCFlow(w http.ResponseWriter, r *http.Request) (oidcFl
 // page. JSON belongs to POST /api/auth/oidc/exchange, where the caller really
 // is a program. A refusal must cost what the acceptance costs, and neither the
 // reason nor the status may reveal which step failed.
-func (s *Server) oidcIdentity(w http.ResponseWriter, r *http.Request, rt *oidcRuntime) (User, string, bool) {
+func (s *Server) oidcIdentity(w http.ResponseWriter, r *http.Request, rt *oidcRuntime, cfg *env.OIDC) (User, string, bool) {
 	token, err := rt.config.Exchange(r.Context(), r.URL.Query().Get("code"))
 	if err != nil {
 		s.Log.Error("oidc: exchange failed", slog.Any("error", err))
@@ -138,22 +139,17 @@ func (s *Server) oidcIdentity(w http.ResponseWriter, r *http.Request, rt *oidcRu
 		s.oidcFailureRedirect(w, r)
 		return User{}, "", false
 	}
-	var claims struct {
-		Email             string `json:"email"`
-		Name              string `json:"name"`
-		PreferredUsername string `json:"preferred_username"`
-		Picture           string `json:"picture"`
-	}
-	if err := idToken.Claims(&claims); err != nil || claims.Email == "" {
+	ident, ok := identityFromToken(idToken, cfg.Issuer)
+	if !ok {
 		s.oidcFailureRedirect(w, r)
 		return User{}, "", false
 	}
-	name := claims.Name
-	if name == "" {
-		name = claims.PreferredUsername
+	user, err := s.linkIdentity(ident)
+	if err != nil {
+		s.Log.Warn("oidc: login refused", slog.Any("error", err))
+		s.oidcFailureRedirect(w, r)
+		return User{}, "", false
 	}
-
-	user := s.upsertUser(claims.Email, name, claims.Picture)
 	scope := scopeUser
 	if user.Admin {
 		scope = scopeAdmin

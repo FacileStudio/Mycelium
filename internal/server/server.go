@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"net/netip"
 	"os"
 	"path/filepath"
 	"sync"
@@ -36,7 +37,11 @@ type serverLimits struct {
 type Server struct {
 	DataDir            string
 	Password           string
-	SSOOnly            bool
+	Version            string
+	TrustedProxies     []netip.Prefix
+	CDNProxies         []netip.Prefix
+	CDNHeader          string
+	ScriptSources      []string
 	OIDC               *env.OIDC
 	CORSAllowedOrigins []string
 	JournalBrowserURL  string
@@ -51,6 +56,7 @@ type Server struct {
 	oidc               oidcRuntime
 	delegated          delegatedVerifier
 	registre           registreRuntime
+	erasure            deletionRuntime
 
 	// Semantic is the vector half of memory search. Nil leaves it dormant:
 	// the server starts, search answers lexically, and nothing enqueues.
@@ -85,8 +91,14 @@ func (s *Server) Handler() *chi.Mux {
 	router := httpx.NewRouter(httpx.Config{
 		Logger: s.Log,
 		CORS:   middleware.CORSConfig{AllowedOrigins: s.CORSAllowedOrigins},
+
+		TrustedProxies: s.TrustedProxies,
+		CDNProxies:     s.CDNProxies,
+		CDNHeader:      s.CDNHeader,
+		Security:       s.securityConfig(),
 	})
 	health.Mount(router, s.dataDirCheck())
+	router.Get("/version", s.versionHandler)
 	apiref.Mount(router, docs.Reference())
 
 	router.Route("/api", func(r chi.Router) {
@@ -114,7 +126,7 @@ func (s *Server) Handler() *chi.Mux {
 
 func (s *Server) mountAuthRoutes(r chi.Router) {
 	r.Get("/auth/config", s.authConfig)
-	if !s.SSOOnly {
+	if s.OIDC == nil {
 		r.Post("/auth/login", s.login)
 	}
 	r.Get("/auth/oidc", s.oidcStart)
@@ -202,6 +214,7 @@ func (s *Server) mountSyncRoutes(r chi.Router) {
 	r.Put("/sync/files/*", s.auth(false, s.syncPutFile))
 	r.Delete("/sync/files/*", s.auth(false, s.syncDeleteFile))
 	r.Post("/registre/sync", s.directorySyncer().Handler().ServeHTTP)
+	r.Post("/registre/deletions", s.deletionsHandler)
 }
 
 // dataDirCheck is the one dependency Mycelium has: a writable data directory. A

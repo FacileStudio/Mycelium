@@ -61,12 +61,6 @@ func writeFile(dir, name string, body io.Reader) error {
 }
 
 func clientIP(r *http.Request) string {
-	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-		if i := strings.IndexByte(xff, ','); i >= 0 {
-			return strings.TrimSpace(xff[:i])
-		}
-		return strings.TrimSpace(xff)
-	}
 	host, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
 		return r.RemoteAddr
@@ -112,4 +106,12 @@ func readStore[T any](path string) (map[string]T, error) {
 		store = make(map[string]T)
 	}
 	return store, nil
+}
+
+func (s *Server) versionHandler(w http.ResponseWriter, _ *http.Request) {
+	version := s.Version
+	if version == "" {
+		version = "dev"
+	}
+	httpjson.WriteJSON(w, http.StatusOK, map[string]string{"version": version})
 }

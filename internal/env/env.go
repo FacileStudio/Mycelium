@@ -60,7 +60,6 @@ type Config struct {
 
 	DataDir           string
 	Password          string
-	SSOOnly           bool
 	OIDC              *OIDC
 	Embedding         *Embedding
 	JournalBrowserURL string
@@ -79,11 +78,6 @@ func Load() (Config, error) {
 	}
 	if port < 1 || port > 65535 {
 		return Config{}, fmt.Errorf("env: PORT must be a valid TCP port, got %d", port)
-	}
-
-	ssoOnly, err := troncenv.Bool("SSO_ONLY", false)
-	if err != nil {
-		return Config{}, err
 	}
 
 	trustedProxies, err := troncenv.TrustedProxies()
@@ -106,7 +100,6 @@ func Load() (Config, error) {
 		},
 		DataDir:           config.DataDir(),
 		Password:          troncenv.String("PASSWORD", ""),
-		SSOOnly:           ssoOnly,
 		JournalBrowserURL: strings.TrimSuffix(troncenv.String("JOURNAL_BROWSER_URL", ""), "/"),
 		JournalBrowserKey: troncenv.String("JOURNAL_BROWSER_KEY", ""),
 	}
@@ -185,9 +178,6 @@ func loadEmbedding() (*Embedding, error) {
 // validate rejects the combinations that leave the server with no working way
 // to tell callers apart.
 func (c Config) validate() error {
-	if c.SSOOnly && c.OIDC == nil {
-		return fmt.Errorf("env: SSO_ONLY=true requires OIDC_ISSUER, otherwise no caller can authenticate at all")
-	}
 	if c.IsProduction() && c.Password == "" && c.OIDC == nil {
 		return fmt.Errorf("env: APP_ENV=production requires PASSWORD or OIDC_ISSUER, otherwise every request is served as admin")
 	}
