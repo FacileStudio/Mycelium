@@ -18,6 +18,7 @@
 		hours,
 		periodDelta
 	} from '$lib/metrics';
+	import { t } from '$lib/i18n/index.svelte';
 
 	let {
 		rows,
@@ -28,7 +29,7 @@
 		rows: SessionStatRow[];
 		timeline: SessionTimeline | null;
 		by: string;
-		bucketUnit: string;
+		bucketUnit: 'hour' | 'day' | 'week' | 'month';
 	} = $props();
 
 	/* Eight bars is where a horizontal chart stops being readable in a card; the table below
@@ -44,7 +45,7 @@
 	const totalCost = $derived(rows.reduce((sum, r) => sum + r.cost_total, 0));
 
 	const ranked = $derived([...rows].sort((a, b) => b.seconds - a.seconds).slice(0, CHART_ROWS));
-	const chartSeries = $derived([{ name: 'Active time', data: ranked.map((r) => hours(r.seconds)) }]);
+	const chartSeries = $derived([{ name: t('machines.activeTime'), data: ranked.map((r) => hours(r.seconds)) }]);
 	const chartLabels = $derived(ranked.map((r) => r.key));
 
 	/* The donut keeps to muse's six-slot ceiling; the table below still lists every row. */
@@ -77,10 +78,10 @@
 </script>
 
 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 [&>*]:min-w-0">
-	<StatCard label="Active time" value={formatDuration(totalSeconds)} delta={timeDelta}>
+	<StatCard label={t('machines.activeTime')} value={formatDuration(totalSeconds)} delta={timeDelta}>
 		<Sparkline data={secondsPerBucket.map(hours)} class="mt-3" showLast />
 	</StatCard>
-	<StatCard label="Sessions" value={totalSessions} delta={sessionsDelta}>
+	<StatCard label={t('overview.sessions')} value={totalSessions} delta={sessionsDelta}>
 		<Sparkline
 			data={sessionsPerBucket}
 			class="mt-3"
@@ -88,16 +89,16 @@
 			valueFormat={(n) => `${n}`}
 		/>
 	</StatCard>
-	<StatCard label="Cache read" value={formatTokens(totalCacheRead)} delta={cacheDelta}>
+	<StatCard label={t('overview.cacheRead')} value={formatTokens(totalCacheRead)} delta={cacheDelta}>
 		<Sparkline data={cachePerBucket} class="mt-3" color="var(--color-fc-chart-5)" />
 	</StatCard>
-	<StatCard label="Tokens out" value={formatTokens(totalTokensOut)} delta={tokensDelta}>
+	<StatCard label={t('machines.tokensOut')} value={formatTokens(totalTokensOut)} delta={tokensDelta}>
 		<Sparkline data={tokensPerBucket} class="mt-3" color="var(--color-fc-chart-2)" />
 	</StatCard>
-	<StatCard label="Tokens in" value={formatTokens(totalTokensIn)} delta={tokensInDelta}>
+	<StatCard label={t('history.tokensIn')} value={formatTokens(totalTokensIn)} delta={tokensInDelta}>
 		<Sparkline data={tokensInPerBucket} class="mt-3" color="var(--color-fc-chart-4)" />
 	</StatCard>
-	<StatCard label="Est. cost" value={formatCost(totalCost)} delta={costDelta}>
+	<StatCard label={t('history.cost')} value={formatCost(totalCost)} delta={costDelta}>
 		<Sparkline
 			data={costPerBucket}
 			class="mt-3"
@@ -111,7 +112,7 @@
 	<div class="grid gap-4 lg:grid-cols-3 [&>*]:min-w-0">
 		<Card class="flex flex-col gap-4 lg:col-span-2">
 			<p class="text-fc-sm font-medium text-fc-fg">
-				Active time per {bucketUnit}, by {by}
+				{t('overview.perBucketBy', { unit: t(bucketUnit === 'month' ? 'machines.unit.month' : 'machines.unit.day'), group: t(`group.${by}` as 'group.project').toLowerCase() })}
 			</p>
 			<LineChart
 				series={trendSeries}
@@ -124,10 +125,10 @@
 			/>
 		</Card>
 		<Card class="flex flex-col gap-4">
-			<p class="text-fc-sm font-medium text-fc-fg">Share by {by}</p>
+			<p class="text-fc-sm font-medium text-fc-fg">{t('overview.shareBy', { group: t(`group.${by}` as 'group.project').toLowerCase() })}</p>
 			<DonutChart
 				data={shareSlices}
-				centerLabel="Active"
+				centerLabel={t('machines.active')}
 				centerValue={formatDuration(totalSeconds)}
 				valueFormat={(n) => `${n} h`}
 				class="flex-1"
@@ -138,7 +139,7 @@
 
 <Card class="flex flex-col gap-4">
 	<p class="text-fc-sm font-medium text-fc-fg">
-		Active time by {by}
+		{t('overview.activeBy', { group: t(`group.${by}` as 'group.project').toLowerCase() })}
 	</p>
 	<BarChart
 		series={chartSeries}

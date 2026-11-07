@@ -2,6 +2,8 @@
 	import { Card, LineChart, icons, type ChartSeries } from '@facile/muse';
 	import type { UsageHistory, UsageSnapshot, UsageWindow } from '$lib/backend';
 	import { formatAge, formatCountdown, formatSpan } from '$lib/format';
+	import { formatDate, formatNumber } from '$lib/i18n/format';
+	import { t } from '$lib/i18n/index.svelte';
 
 	let {
 		snapshots = [],
@@ -31,7 +33,7 @@
 	}
 
 	function pctText(pct: number): string {
-		return `${pct.toFixed(pct < 10 ? 1 : 0)}%`;
+		return formatNumber(pct / 100, { style: 'percent', maximumFractionDigits: pct < 10 ? 1 : 0 });
 	}
 
 	/*
@@ -48,25 +50,25 @@
 	 * value wins; `resets_at` is only the fallback for a payload that predates the field.
 	 */
 	function resetText(limit: UsageWindow, pct: number): string {
-		if (limit.expired) return `${pctText(pct)} when last seen · window has since reset`;
+		if (limit.expired) return t('usage.expired', { pct: pctText(pct) });
 		if (limit.resets_in_seconds !== undefined && limit.resets_in_seconds !== null) {
-			return `resets in ${formatSpan(limit.resets_in_seconds)}`;
+			return t('usage.resetsIn', { span: formatSpan(limit.resets_in_seconds) });
 		}
-		if (limit.resets_at) return `resets in ${formatCountdown(limit.resets_at)}`;
-		return 'reset time unknown';
+		if (limit.resets_at) return t('usage.resetsIn', { span: formatCountdown(limit.resets_at) });
+		return t('usage.resetUnknown');
 	}
 
 	function meterLabel(limit: UsageWindow, pct: number): string {
 		const name = limit.label || limit.key;
 		if (limit.expired) {
-			return `${name}: ${pctText(pct)} when last seen, window has since reset`;
+			return t('usage.meterExpired', { name, pct: pctText(pct) });
 		}
-		return `${name} used`;
+		return t('usage.meterUsed', { name });
 	}
 
 	function snapshotAge(snapshot: UsageSnapshot): string {
 		if (snapshot.age_seconds !== undefined && snapshot.age_seconds !== null) {
-			return snapshot.age_seconds < 60 ? 'just now' : `${formatSpan(snapshot.age_seconds)} ago`;
+			return snapshot.age_seconds < 60 ? t('time.justNow') : t('usage.ago', { span: formatSpan(snapshot.age_seconds) });
 		}
 		return formatAge(snapshot.updated_at);
 	}
@@ -84,19 +86,19 @@
 	function clockLabel(iso: string): string {
 		const d = new Date(iso);
 		if (isNaN(d.getTime())) return iso;
-		return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+		return formatDate(d, { hour: '2-digit', minute: '2-digit' });
 	}
 </script>
 
 <div class="flex flex-col gap-4">
 	{#if snapshots.length === 0}
 		<Card class="flex flex-col gap-2">
-			<p class="text-fc-sm font-medium text-fc-fg">Plan usage</p>
+			<p class="text-fc-sm font-medium text-fc-fg">{t('usage.plan')}</p>
 			<p class="text-fc-sm text-fc-fg-muted">
-				Nothing recorded yet. A machine reports its subscription windows once <code
+				{t('usage.none')} <code
 					class="rounded-fc-xs bg-fc-surface px-1.5 py-0.5 font-fc-mono text-fc-xs"
 					>mycelium install claude</code
-				> has wired the status line and an agent session has made its first request.
+				> {t('usage.noneAfter')}
 			</p>
 		</Card>
 	{:else}
@@ -123,13 +125,12 @@
 					{#if snapshot.stale}
 						<!-- A gap is the normal shape of this data, not a fault: no warning colour. -->
 						<p class="text-fc-xs text-fc-fg-muted">
-							Last reported {snapshotAge(snapshot)}. The status line only reports while Claude Code
-							is running, so a gap means nobody reported — not that nothing was used.
+							{t('usage.lastReported', { age: snapshotAge(snapshot) })}
 						</p>
 					{/if}
 
 					{#if snapshot.windows.length === 0}
-						<p class="text-fc-sm text-fc-fg-muted">No window reported.</p>
+						<p class="text-fc-sm text-fc-fg-muted">{t('usage.noWindow')}</p>
 					{:else}
 						<div class="flex flex-col gap-3">
 							{#each snapshot.windows as limit (limit.key)}
@@ -176,7 +177,7 @@
 
 		{#if hasHistory}
 			<Card class="flex flex-col gap-4">
-				<p class="text-fc-sm font-medium text-fc-fg">Burn-down</p>
+				<p class="text-fc-sm font-medium text-fc-fg">{t('usage.burnDown')}</p>
 				<LineChart
 					series={historySeries}
 					labels={history?.labels ?? []}

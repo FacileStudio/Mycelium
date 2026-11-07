@@ -13,6 +13,7 @@
 	import { backend, TOKEN_KEY, type AuthUser, type MyceliumStatus, type Space } from '$lib/backend';
 	import { getActiveSpaceId, getSpaces, setActiveSpaceId, setSpaces } from '$lib/space.svelte';
 	import { setContext } from 'svelte';
+	import { setSessionLocale, t } from '$lib/i18n/index.svelte';
 
 	let { children } = $props();
 	let status: MyceliumStatus | null = $state(null);
@@ -23,25 +24,25 @@
 
 	const MOBILE_HIDDEN = ['/machines', '/spaces'];
 
-	const links = [
-		{ label: 'Memory', href: '/memory', icon: icons.folder },
+	const links = $derived([
+		{ label: t('nav.memory'), href: '/memory', icon: icons.folder },
 		{
-			label: 'Instructions',
+			label: t('nav.instructions'),
 			href: '/rules',
 			icon: icons.shield,
 			activeMatch: ['/rules', '/skills']
 		},
-		{ label: 'Automation', href: '/flows', icon: icons.plug, activeMatch: ['/flows', '/models'] },
+		{ label: t('nav.automation'), href: '/flows', icon: icons.plug, activeMatch: ['/flows', '/models'] },
 		{
-			label: 'Artifacts',
+			label: t('nav.artifacts'),
 			href: '/artifacts',
 			icon: 'solar:file-smile-linear',
 			activeMatch: ['/artifacts', '/reports']
 		},
-		{ label: 'Machines', href: '/machines', icon: icons.server },
-		{ label: 'Sessions', href: '/sessions', icon: icons.history },
-		{ label: 'Spaces', href: '/spaces', icon: icons.space }
-	];
+		{ label: t('nav.machines'), href: '/machines', icon: icons.server },
+		{ label: t('nav.sessions'), href: '/sessions', icon: icons.history },
+		{ label: t('nav.spaces'), href: '/spaces', icon: icons.space }
+	]);
 
 	$effect(() => {
 		const token = localStorage.getItem(TOKEN_KEY);
@@ -56,6 +57,7 @@
 	async function initSession() {
 		try {
 			me = await backend.authMe();
+			setSessionLocale(me.locale ?? null);
 		} catch {
 			goto('/login');
 			return;
@@ -118,7 +120,7 @@
 
 	const routeKey = $derived(onSettings ? '/settings' : page.url.pathname);
 	const user = $derived.by(() => ({
-		name: me?.name || me?.email || 'user',
+		name: me?.name || me?.email || t('nav.user'),
 		avatar: me?.avatar_url || undefined
 	}));
 	const switcherSpaces = $derived(getSpaces().map((s) => ({ id: s.id, name: s.name })));
@@ -147,7 +149,7 @@
 				activeSpaceId={getActiveSpaceId()}
 				onSpaceSelect={pickSpace}
 				manageSpacesHref="/spaces"
-				personalSpaceLabel={me?.admin ? 'Personal' : null}
+				personalSpaceLabel={me?.admin ? t('nav.personal') : null}
 				{user}
 				userHref="/settings"
 				userActive={onSettings}
@@ -168,7 +170,7 @@
 							activeId={getActiveSpaceId()}
 							onSelect={pickSpace}
 							manageHref="/spaces"
-							personalLabel={me?.admin ? 'Personal' : null}
+							personalLabel={me?.admin ? t('nav.personal') : null}
 						/>
 					</div>
 				{/if}
@@ -185,6 +187,6 @@
 	</div>
 {:else}
 	<div class="flex h-dvh w-full items-center justify-center bg-fc-page">
-		<Spinner label="Loading" />
+		<Spinner label={t('common.loading')} />
 	</div>
 {/if}

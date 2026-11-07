@@ -8,6 +8,7 @@
 		canonicaliseDeviceCode,
 		deviceCodeDigits
 	} from '$lib/deviceCode';
+	import { t } from '$lib/i18n/index.svelte';
 
 	/*
 	 * What the page is doing, as one value.
@@ -73,10 +74,10 @@
 	function entryHint(count: number, dropped: string[]): string {
 		if (dropped.length > 0) {
 			const list = dropped.join(', ');
-			return `${list} ${dropped.length === 1 ? 'is' : 'are'} not used in device codes, so nothing was added.`;
+			return t(dropped.length === 1 ? 'authorize.hintDroppedOne' : 'authorize.hintDroppedMany', { list });
 		}
-		if (count === 0) return `Eight characters, like ${DEVICE_CODE_EXAMPLE}.`;
-		return `${count} of ${DEVICE_CODE_LENGTH} characters.`;
+		if (count === 0) return t('authorize.hintEmpty', { example: DEVICE_CODE_EXAMPLE });
+		return t('authorize.hintCount', { count, total: DEVICE_CODE_LENGTH });
 	}
 
 	/*
@@ -100,7 +101,7 @@
 			ip = info.ip;
 			if (info.status !== 'pending') {
 				phase = 'missing';
-				problem = `This code was already ${info.status}. Run mycelium login again for a fresh one.`;
+				problem = t('authorize.alreadyUsed', { status: statusName(info.status) });
 				return;
 			}
 			phase = 'ready';
@@ -127,11 +128,16 @@
 	 * issued in the ten minutes before it, and the code in the terminal is still on screen
 	 * looking perfectly valid.
 	 */
+	function statusName(status: string): string {
+		const known = ['approved', 'denied', 'expired'];
+		return known.includes(status) ? t(`authorize.status.${status}` as 'authorize.status.approved') : status;
+	}
+
 	function refusal(err: unknown): string {
 		if (err instanceof ApiError && err.status === 403) {
-			return 'Approving a machine needs an admin account, and this session is not one. Ask an admin of this Mycelium to approve it.';
+			return t('authorize.needsAdmin');
 		}
-		return 'This server is not holding that code. It may have expired, been used already, or been issued before the server last restarted. Run mycelium login again for a fresh one.';
+		return t('authorize.unknownCode');
 	}
 
 	/*
@@ -142,7 +148,7 @@
 	function submit(event: SubmitEvent) {
 		event.preventDefault();
 		if (!complete) {
-			problem = `That code is not finished. Device codes are ${DEVICE_CODE_LENGTH} characters, like ${DEVICE_CODE_EXAMPLE}.`;
+			problem = t('authorize.unfinished', { total: DEVICE_CODE_LENGTH, example: DEVICE_CODE_EXAMPLE });
 			return;
 		}
 		lookUp();
@@ -187,7 +193,7 @@
 </script>
 
 <svelte:head>
-	<title>Authorize a machine — Mycelium</title>
+	<title>{t('authorize.title')}</title>
 </svelte:head>
 
 <div class="flex min-h-screen items-center justify-center bg-background px-6 py-12">
@@ -202,23 +208,22 @@
 		{:else if phase === 'approved'}
 			<div class="rounded-xl border border-border bg-card p-6 text-center">
 				<iconify-icon icon="solar:check-circle-bold" width="40" height="40" class="mx-auto block text-fc-success"></iconify-icon>
-				<h1 class="mt-3 text-lg font-semibold">Machine authorized</h1>
+				<h1 class="mt-3 text-lg font-semibold">{t('authorize.approved')}</h1>
 				<p class="mt-1 text-sm text-muted-foreground">
-					<span class="font-medium text-foreground">{machine}</span> can now sync. Return to your
-					terminal — it will finish automatically.
+					<span class="font-medium text-foreground">{machine}</span> {t('authorize.approvedText')}
 				</p>
 			</div>
 		{:else if phase === 'denied'}
 			<div class="rounded-xl border border-border bg-card p-6 text-center">
 				<iconify-icon icon="solar:close-circle-bold" width="40" height="40" class="mx-auto block text-muted-foreground"></iconify-icon>
-				<h1 class="mt-3 text-lg font-semibold">Request denied</h1>
-				<p class="mt-1 text-sm text-muted-foreground">No token was issued.</p>
+				<h1 class="mt-3 text-lg font-semibold">{t('authorize.denied')}</h1>
+				<p class="mt-1 text-sm text-muted-foreground">{t('authorize.deniedText')}</p>
 			</div>
 		{:else}
 			<div class="mb-6 text-center">
-				<h1 class="text-xl font-bold tracking-tight">Authorize a machine</h1>
+				<h1 class="text-xl font-bold tracking-tight">{t('authorize.heading')}</h1>
 				<p class="mt-1.5 text-sm text-muted-foreground">
-					Confirm the code shown in your terminal to let this machine sync.
+					{t('authorize.intro')}
 				</p>
 			</div>
 
@@ -229,18 +234,17 @@
 							<iconify-icon icon="solar:server-square-linear" width="20" height="20" class="block"></iconify-icon>
 						</div>
 						<div>
-							<p class="text-sm text-muted-foreground">Machine requesting access</p>
+							<p class="text-sm text-muted-foreground">{t('authorize.requesting')}</p>
 							<p class="font-semibold">{machine}</p>
 						</div>
 					</div>
 					<div class="mt-3 space-y-1 font-mono text-sm text-muted-foreground">
-						<p>code <span class="text-foreground">{code}</span></p>
-						{#if ip}<p>from <span class="text-foreground">{ip}</span></p>{/if}
+						<p>{t('authorize.code')} <span class="text-foreground">{code}</span></p>
+						{#if ip}<p>{t('authorize.from')} <span class="text-foreground">{ip}</span></p>{/if}
 					</div>
 
 					<p class="mt-4 rounded-md bg-fc-warning/10 px-3 py-2 text-xs text-fc-warning">
-						Only authorize if you just ran <code>mycelium login</code> on this machine. Approving grants
-						it ongoing sync access to your shared brain.
+						{t('authorize.warnBefore')} <code>mycelium login</code> {t('authorize.warnAfter')}
 					</p>
 
 					<div class="mt-5 flex gap-2">
@@ -250,7 +254,7 @@
 							disabled={busy}
 							class="inline-flex h-10 flex-1 items-center justify-center rounded-md border border-border bg-background px-4 text-sm font-medium hover:bg-accent disabled:opacity-50"
 						>
-							Deny
+							{t('authorize.deny')}
 						</button>
 						<button
 							type="button"
@@ -258,7 +262,7 @@
 							disabled={busy}
 							class="inline-flex h-10 flex-1 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
 						>
-							{busy ? 'Authorizing…' : 'Authorize'}
+							{busy ? t('authorize.authorizing') : t('authorize.approve')}
 						</button>
 					</div>
 				</div>
@@ -272,7 +276,7 @@
 							autocomplete="off"
 							autocapitalize="characters"
 							spellcheck="false"
-							aria-label="Device code"
+							aria-label={t('authorize.codeLabel')}
 							aria-describedby="code-hint"
 							class="h-11 w-full rounded-md border border-input bg-background px-3 text-center font-mono text-lg uppercase tracking-widest outline-none focus-visible:ring-2 focus-visible:ring-ring"
 						/>
@@ -283,7 +287,7 @@
 						disabled={phase === 'looking'}
 						class="inline-flex h-10 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
 					>
-						{phase === 'looking' ? 'Checking…' : 'Continue'}
+						{phase === 'looking' ? t('authorize.checking') : t('authorize.continue')}
 					</button>
 				</form>
 			{/if}

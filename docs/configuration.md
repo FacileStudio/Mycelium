@@ -39,7 +39,6 @@ deliberate — a half-configured server is worse than one that refuses to boot.
 | `CLIENT_DIR` | no | `./client` | Directory holding the built SPA. The image sets `/client` |
 | `PASSWORD` | conditional | — | Shared password for `mycelium login --password` |
 | `CORS_ALLOWED_ORIGINS` | no | — | Comma-separated origins. Empty denies every cross-origin browser caller |
-| `SSO_ONLY` | no | `false` | Disables password login entirely. Requires `OIDC_ISSUER` |
 | `OIDC_ISSUER` | no | — | Issuer URL of the identity provider. Setting it turns SSO on and makes the three below required |
 | `OIDC_CLIENT_ID` | conditional | — | Required once `OIDC_ISSUER` is set |
 | `OIDC_CLIENT_SECRET` | conditional | — | Required once `OIDC_ISSUER` is set |
@@ -66,7 +65,6 @@ suite spellings — `ALLOWED_ORIGINS`, `DOMAINS`, `DOMAIN`, `CORS_ORIGINS`,
 
 `mycelium serve` exits 1 rather than start when:
 
-- `SSO_ONLY=true` and `OIDC_ISSUER` is unset — no caller could authenticate at all.
 - `OIDC_ISSUER` is set but any of `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`,
   `OIDC_REDIRECT_URL` is missing.
 - `OIDC_MACHINE_AUDIENCE` is set but `OIDC_ISSUER` is not.

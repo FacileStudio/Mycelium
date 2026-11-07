@@ -1,3 +1,4 @@
+import { t } from '$lib/i18n/index.svelte';
 export interface AlertData {
 	isAlert: boolean;
 	tone: 'note' | 'tip' | 'important' | 'warning' | 'caution' | 'pros' | 'cons';
@@ -72,20 +73,20 @@ export function parseAlert(raw: string): AlertData {
 	}
 	const rawType = match[1].toUpperCase();
 	let tone: AlertData['tone'] = 'note';
-	let defaultTitle = 'Note';
+	let defaultTitle = t('md.note');
 
 	if (rawType === 'TIP' || rawType === 'PROS' || rawType === 'ADVANTAGE') {
 		tone = rawType === 'PROS' || rawType === 'ADVANTAGE' ? 'pros' : 'tip';
-		defaultTitle = rawType === 'PROS' || rawType === 'ADVANTAGE' ? 'Advantages' : 'Tip';
+		defaultTitle = rawType === 'PROS' || rawType === 'ADVANTAGE' ? t('md.advantages') : t('md.tip');
 	} else if (rawType === 'IMPORTANT') {
 		tone = 'important';
-		defaultTitle = 'Important';
+		defaultTitle = t('md.important');
 	} else if (rawType === 'WARNING') {
 		tone = 'warning';
-		defaultTitle = 'Warning';
+		defaultTitle = t('md.warning');
 	} else if (rawType === 'CAUTION' || rawType === 'CONS' || rawType === 'DRAWBACK') {
 		tone = rawType === 'CONS' || rawType === 'DRAWBACK' ? 'cons' : 'caution';
-		defaultTitle = rawType === 'CONS' || rawType === 'DRAWBACK' ? 'Drawbacks' : 'Caution';
+		defaultTitle = rawType === 'CONS' || rawType === 'DRAWBACK' ? t('md.drawbacks') : t('md.caution');
 	}
 
 	const firstLineExtra = match[2].trim();

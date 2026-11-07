@@ -54,14 +54,16 @@ func stubIdP(t *testing.T, clientID, email string) *httptest.Server {
 	mux.HandleFunc("/token", func(w http.ResponseWriter, _ *http.Request) {
 		now := time.Now()
 		idToken := signJWT(t, key, map[string]any{
-			"iss":     server.URL,
-			"aud":     clientID,
-			"sub":     "stub-subject",
-			"iat":     now.Unix(),
-			"exp":     now.Add(time.Hour).Unix(),
-			"email":   email,
-			"name":    "Yann",
-			"picture": stubPicture,
+			"iss":            server.URL,
+			"aud":            clientID,
+			"sub":            "stub-subject",
+			"iat":            now.Unix(),
+			"exp":            now.Add(time.Hour).Unix(),
+			"email":          email,
+			"email_verified": true,
+			"locale":         "de-DE",
+			"name":           "Yann",
+			"picture":        stubPicture,
 		})
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]any{

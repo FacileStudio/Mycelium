@@ -15,7 +15,7 @@ import (
 func TestEveryRouteIsDocumented(t *testing.T) {
 	server := &Server{Log: slog.Default(), DataDir: t.TempDir()}
 
-	missing := apiref.Undocumented(server.Handler(), docs.Reference())
+	missing := apiref.Undocumented(server.Handler(), docs.Reference(), "/version")
 	if len(missing) > 0 {
 		t.Errorf("routes missing from the API registry: %v", missing)
 	}
@@ -29,6 +29,7 @@ func TestRegistryIsComplete(t *testing.T) {
 		"/auth/oidc/callback",
 		"/spaces/{id}/leave",
 		"/registre/sync",
+		"/registre/deletions",
 	); len(issues) > 0 {
 		t.Errorf("incomplete documentation routes: %v", issues)
 	}

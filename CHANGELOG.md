@@ -8,6 +8,48 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [Unreleased]
+
+### Changed
+
+- **Sign-in goes through Registre only.** With `OIDC_ISSUER` set, `POST /api/auth/login` is not
+  mounted and the dashboard offers only "Sign in with Facile" (muse `AuthScreen`). `SSO_ONLY` is
+  gone from the code, `.env.example` and docs: delete it from the deployment env after the deploy.
+  `GET /api/auth/config` still answers `sso_only`, true whenever an issuer is set, so old CLIs
+  keep choosing the browser or device flow. API tokens, machine tokens and sessions already issued
+  keep working. Clients that signed in with the shared password must switch to a token or to
+  `mycelium login`.
+- **OIDC accounts link by subject, then by verified email.** `.users.json` rows gain `issuer`,
+  `subject` and `locale`. A row that holds the subject signs in as itself. Otherwise the identity
+  links by email only when the id_token says `email_verified`, and never onto a row that already
+  holds another subject of the same issuer (a recycled address cannot take over a live account).
+  An unverified email or a second subject ends on `/login?error=sso`. Existing rows link on their
+  next sign-in. This is porte v0.10.0's rule, ported to Mycelium's own user store.
+- porte v0.7.0 to v0.12.0, `porte/directory` v0.1.0 to v0.3.0, tronc v0.16.0 to v0.17.1,
+  `@facile/muse` v0.11.0 to v0.12.1. No porte table is involved: Mycelium keeps its state in
+  files, so there is no migration.
+- tronc security headers are on. The CSP is report-only (framing is blocked and enforced); the
+  inline script hashes of the built client and the iconify and Journal origins are allowed.
+  The artifact preview iframe is a `srcdoc` and keeps working.
+- Per-IP limits (password login, device grants) read the address the chassis resolved from
+  `TRUSTED_PROXIES` (`private,cloudflare` behind Traefik) instead of the raw `X-Forwarded-For`,
+  which any client could spoof. The configured `TRUSTED_PROXIES` now reaches the router.
+- `GET /api/auth/me` returns the person's `locale`. The login page forwards `ui_locales` to the
+  issuer.
+- Every dashboard string is available in fr, en, es and de (es and de need native review), with
+  dates, numbers and durations through `Intl` in the session locale. The landing page uses muse
+  `LandingHeader` and `LandingFooter`.
+
+### Added
+
+- GDPR deletion. Mycelium polls Registre's deletion list and accepts its signed push on
+  `POST /api/registre/deletions` (outside the bearer middleware). A deleted person loses their
+  account, tokens and memberships; spaces only they used and Registre does not own are removed;
+  shared spaces keep their data and an owner is promoted when none is left. Replays are no-ops.
+  The cursor lives in `.deletions.json` in the data directory.
+- `GET /version`, from the `APP_VERSION` build arg (falls back to `git describe`).
+- CI builds the server and the client and checks the message catalogs.
+
 ## [0.38.1] — 2026-11-07
 
 ### Security

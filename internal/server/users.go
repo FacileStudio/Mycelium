@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"time"
 
 	apierrors "github.com/FacileStudio/tronc/errors"
 	"github.com/FacileStudio/tronc/httpjson"
@@ -19,6 +18,9 @@ type User struct {
 	Name      string `json:"name"`
 	Admin     bool   `json:"admin"`
 	AvatarURL string `json:"avatar_url"`
+	Locale    string `json:"locale,omitempty"`
+	Issuer    string `json:"issuer,omitempty"`
+	Subject   string `json:"subject,omitempty"`
 	CreatedAt string `json:"created_at"`
 }
 
@@ -42,33 +44,7 @@ func (s *Server) saveUsers(users map[string]User) error {
 	if err := os.MkdirAll(s.DataDir, 0o755); err != nil {
 		return err
 	}
-	return os.WriteFile(s.usersPath(), data, 0o600)
-}
-
-// upsertUser creates or refreshes a user keyed by email. The first user ever
-// seen becomes admin, mirroring the Nuage bootstrap convention. The picture is
-// written on every sign-in, so the stored URL always follows the provider.
-func (s *Server) upsertUser(email, name, picture string) User {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	users := s.loadUsers()
-	user, ok := users[email]
-	if !ok {
-		user = User{
-			Email:     email,
-			Admin:     len(users) == 0,
-			CreatedAt: time.Now().UTC().Format(time.RFC3339),
-		}
-	}
-	if name != "" {
-		user.Name = name
-	}
-	user.AvatarURL = pictureURL(picture)
-	users[email] = user
-	if err := s.saveUsers(users); err != nil {
-		s.Log.Error("users: save failed", slog.Any("error", err))
-	}
-	return user
+	return writeFileAtomic(s.usersPath(), data, 0o600)
 }
 
 func (s *Server) usersList(w http.ResponseWriter, r *http.Request) {
@@ -136,7 +112,7 @@ func (s *Server) authMe(w http.ResponseWriter, r *http.Request) {
 		user, ok := s.loadUsers()[id.Email]
 		s.mu.RUnlock()
 		if ok {
-			httpjson.WriteJSON(w, http.StatusOK, map[string]any{"email": user.Email, "name": user.Name, "admin": user.Admin, "avatar_url": user.AvatarURL})
+			httpjson.WriteJSON(w, http.StatusOK, map[string]any{"email": user.Email, "name": user.Name, "admin": user.Admin, "avatar_url": user.AvatarURL, "locale": user.Locale})
 			return
 		}
 		httpjson.WriteJSON(w, http.StatusOK, map[string]any{"email": id.Email, "name": "", "admin": id.Scope == scopeAdmin})

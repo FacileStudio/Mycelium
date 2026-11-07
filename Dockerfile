@@ -8,6 +8,7 @@ RUN bun run build
 FROM golang:1.26-alpine AS api-build
 
 ARG TARGETOS=linux
+ARG APP_VERSION=
 ARG TARGETARCH
 
 # Not in the base image, and the build needs it to name what it built.
@@ -36,7 +37,7 @@ COPY . .
 #
 # Without any of this the container answers "mycelium dev" and nothing running in
 # production can say which commit it came from.
-RUN VERSION="$(git describe --tags --always 2>/dev/null || echo dev)" && \
+RUN VERSION="${APP_VERSION:-$(git describe --tags --always 2>/dev/null || echo dev)}" && \
     CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH:-amd64} \
     go build -trimpath \
     -ldflags="-s -w -X github.com/FacileStudio/Mycelium/cmd.version=${VERSION#v}" \

@@ -4,6 +4,7 @@
 	import { icons, toast } from '@facile/muse';
 	import { backend } from '$lib/backend';
 	import DocumentEditor from '$lib/components/DocumentEditor.svelte';
+	import { t } from '$lib/i18n/index.svelte';
 
 	const name = $derived(page.params.name ?? '');
 	let content = $state('');
@@ -17,7 +18,7 @@
 			.then((c) => (content = c))
 			.catch((e) => {
 				content = '';
-				toast.danger(e instanceof Error ? e.message : `Could not load skill “${n}”.`);
+				toast.danger(e instanceof Error ? e.message : t('skills.loadOne', { name: n }));
 			})
 			.finally(() => (loading = false));
 	});
@@ -29,7 +30,7 @@
 
 	async function remove() {
 		await backend.skillDelete(name);
-		toast.success(`Skill “${name}” deleted.`);
+		toast.success(t('skills.deleted', { name }));
 		goto('/skills');
 	}
 </script>
@@ -39,11 +40,11 @@
 	path="skills/{name}.md"
 	icon={icons.bolt}
 	backHref="/skills"
-	backLabel="Skills"
+	backLabel={t('skills.title')}
 	{content}
 	{loading}
-	deleteTitle="Delete “{name}”?"
-	deleteDescription="The skill disappears from every agent on the next sync. It cannot be undone."
+	deleteTitle={t('memory.deleteTitle', { title: name })}
+	deleteDescription={t('skills.deleteText')}
 	onSave={save}
 	onDelete={remove}
 />

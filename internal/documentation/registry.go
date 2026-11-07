@@ -192,6 +192,7 @@ var Registry = Response{Modules: []Module{
 		Description: "Registre owns shared spaces. This instance pulls its snapshot at boot, every five minutes, and shortly after a nudge.",
 		Routes: []Route{
 			{Method: "POST", Path: "/registre/sync", Summary: "Nudge a pull of Registre's space snapshot", Description: "Unauthenticated and body-less: it only schedules the authenticated pull sooner.", Status: http.StatusAccepted},
+			{Method: "POST", Path: "/registre/deletions", Summary: "Receive Registre's signed user.deleted notice", Description: "Unauthenticated by session: the body is a signed security event token that porte verifies against the issuer's keys. Erasing a person is idempotent.", Status: http.StatusAccepted, Errors: []Error{badRequest}},
 		},
 	},
 }}

@@ -11,6 +11,7 @@
 		sum
 	} from '$lib/metrics';
 	import { formatAge } from '$lib/format';
+	import { t } from '$lib/i18n/index.svelte';
 
 	let {
 		files,
@@ -68,7 +69,7 @@
 
 	const folderSlices = $derived(
 		(grouped ?? []).map(([folder, entries]) => ({
-			label: folder === '/' ? 'root' : folder,
+			label: folder === '/' ? t('common.root') : folder,
 			value: (entries ?? []).length
 		}))
 	);
@@ -77,7 +78,7 @@
 	const pagesDelta = $derived(periodDelta(dailyPages, 'day'));
 	const sizeDelta = $derived(periodDelta(dailyBytes, 'day'));
 
-	const activitySeries = $derived([{ name: 'Pages touched', data: dailyPages }]);
+	const activitySeries = $derived([{ name: t('stats.pagesTouched'), data: dailyPages }]);
 
 	function label(path: string) {
 		return path.split('/').pop()!.replace(/\.md$/, '');
@@ -86,10 +87,10 @@
 
 <section class="flex flex-col gap-4">
 	<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 [&>*]:min-w-0">
-		<StatCard label="Pages" value={files.length} delta={pagesDelta}>
+		<StatCard label={t('stats.pages')} value={files.length} delta={pagesDelta}>
 			<Sparkline data={dailyPages} class="mt-3" showLast />
 		</StatCard>
-		<StatCard label="Folders" value={folderSlices.length}>
+		<StatCard label={t('stats.folders')} value={folderSlices.length}>
 			<Sparkline
 				data={dailyFolders}
 				class="mt-3"
@@ -97,11 +98,11 @@
 				valueFormat={(n) => `${n}`}
 			/>
 		</StatCard>
-		<StatCard label="Size" value={formatBytes(totalSize)} delta={sizeDelta}>
+		<StatCard label={t('stats.size')} value={formatBytes(totalSize)} delta={sizeDelta}>
 			<Sparkline data={dailyBytes} class="mt-3" color="var(--color-fc-chart-2)" />
 		</StatCard>
 		<StatCard
-			label="Last written"
+			label={t('stats.lastWritten')}
 			value={newest ? formatAge(newest.mod_time) : '—'}
 			delta={newest ? label(newest.path) : undefined}
 		>
@@ -112,7 +113,7 @@
 	<div class="grid gap-4 lg:grid-cols-3 [&>*]:min-w-0">
 		<Card class="flex flex-col gap-4 lg:col-span-2">
 			<p class="text-fc-sm font-medium text-fc-fg">
-				Pages written per day · last {WINDOW_DAYS} days
+				{t('stats.perDay', { days: WINDOW_DAYS })}
 			</p>
 			<LineChart
 				series={activitySeries}
@@ -125,10 +126,10 @@
 			/>
 		</Card>
 		<Card class="flex flex-col gap-4">
-			<p class="text-fc-sm font-medium text-fc-fg">Pages per folder</p>
+			<p class="text-fc-sm font-medium text-fc-fg">{t('stats.perFolder')}</p>
 			<DonutChart
 				data={folderSlices}
-				centerLabel="Pages"
+				centerLabel={t('stats.pages')}
 				centerValue={files.length}
 				class="flex-1"
 			/>

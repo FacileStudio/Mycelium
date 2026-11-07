@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Button, Card, ConfirmModal, Spinner, Textarea, icons, toast } from '@facile/muse';
+	import { t } from '$lib/i18n/index.svelte';
 
 	let {
 		title,
@@ -49,10 +50,10 @@
 		try {
 			await onSave(draft);
 			editing = false;
-			toast.success('Saved.');
+			toast.success(t('common.saved'));
 		} catch (e) {
-			toast.danger(e instanceof Error ? e.message : 'Could not save this file.', {
-				title: 'Save failed'
+			toast.danger(e instanceof Error ? e.message : t('common.genericError'), {
+				title: t('common.saveFailed')
 			});
 		} finally {
 			saving = false;
@@ -63,8 +64,8 @@
 		try {
 			await onDelete();
 		} catch (e) {
-			toast.danger(e instanceof Error ? e.message : 'Could not delete this file.', {
-				title: 'Delete failed'
+			toast.danger(e instanceof Error ? e.message : t('common.genericError'), {
+				title: t('common.deleteFailed')
 			});
 			throw e;
 		}
@@ -97,10 +98,10 @@
 			<div class="flex shrink-0 flex-wrap items-center gap-2">
 				{#if editing}
 					<Button variant="ghost" onclick={() => (editing = false)} disabled={saving}>
-						Cancel
+						{t('common.cancel')}
 					</Button>
 					<Button icon={icons.check} onclick={save} disabled={saving}>
-						{saving ? 'Saving…' : 'Save'}
+						{saving ? t('common.saving') : t('common.save')}
 					</Button>
 				{:else}
 					<Button
@@ -109,9 +110,9 @@
 						onclick={() => (confirmOpen = true)}
 						disabled={loading}
 					>
-						Delete
+						{t('common.delete')}
 					</Button>
-					<Button icon={icons.edit} onclick={edit} disabled={loading}>Edit</Button>
+					<Button icon={icons.edit} onclick={edit} disabled={loading}>{t('common.edit')}</Button>
 				{/if}
 			</div>
 		</div>
@@ -119,14 +120,14 @@
 
 	{#if loading}
 		<div class="flex items-center gap-3 text-fc-sm text-fc-fg-muted">
-			<Spinner size="sm" label="Loading" /> Loading…
+			<Spinner size="sm" label={t('common.loading')} /> {t('common.loadingDots')}
 		</div>
 	{:else if editing}
 		<Textarea
 			bind:value={draft}
 			spellcheck="false"
 			class="h-[62dvh] resize-none font-fc-mono leading-relaxed"
-			aria-label="{title} content"
+			aria-label={title}
 		/>
 	{:else}
 		<Card class="overflow-hidden">
@@ -141,7 +142,7 @@
 	tone="danger"
 	title={deleteTitle}
 	description={deleteDescription}
-	confirmLabel="Delete"
-	cancelLabel="Keep it"
+	confirmLabel={t('common.delete')}
+	cancelLabel={t('common.keep')}
 	onConfirm={remove}
 />

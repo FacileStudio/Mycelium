@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Alert, Input, SettingsRow, SettingsSection, Switch } from '@facile/muse';
+	import { t } from '$lib/i18n/index.svelte';
 
 	let {
 		usageAlerts = $bindable(),
@@ -17,25 +18,25 @@
 </script>
 
 <SettingsSection
-	title="Usage alerts"
-	description="When a subscription window crosses your threshold, Mycelium publishes one event to the Antenne. It fires once per window, not once per sync tick — the next alert waits for the window to reset. The Antenne owns what happens after that; Mycelium sends nothing itself. The alert shows up in the Antenne's activity feed — anything that should act on it needs to subscribe to usage_alert.created on its side."
+	title={t('alerts.title')}
+	description={t('alerts.help')}
 >
 	{#if !enabled}
-		<Alert tone="info" title="Emitting is off">
-			Alerts ride the same socket as sessions. Turn emitting on above and they start flowing.
+		<Alert tone="info" title={t('alerts.emittingOff')}>
+			{t('alerts.emittingOffText')}
 		</Alert>
 	{/if}
 
 	<SettingsRow
-		label="Alert on usage"
-		description="Off by default. Lowering the threshold later re-arms the current window."
+		label={t('alerts.on')}
+		description={t('alerts.onHelp')}
 	>
-		<Switch bind:checked={usageAlerts} disabled={!enabled || saving} aria-label="Alert on usage" />
+		<Switch bind:checked={usageAlerts} disabled={!enabled || saving} aria-label={t('alerts.on')} />
 	</SettingsRow>
 
 	<SettingsRow
-		label="Threshold"
-		description="Percent of a window's limit. 80 unless you change it; anything outside 1–100 falls back to it."
+		label={t('alerts.threshold')}
+		description={t('alerts.thresholdHelp')}
 		for="bus-usage-threshold"
 	>
 		<Input

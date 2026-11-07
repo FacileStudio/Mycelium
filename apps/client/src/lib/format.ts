@@ -1,51 +1,55 @@
+import { formatNumber } from '$lib/i18n/format';
+import { t } from '$lib/i18n/index.svelte';
+
+function unitText(value: number, unit: string, digits = 0): string {
+	return formatNumber(value, { style: 'unit', unit, unitDisplay: 'narrow', maximumFractionDigits: digits });
+}
+
 export function formatAge(iso: string): string {
 	const then = new Date(iso).getTime();
 	if (!iso || isNaN(then)) return '—';
 	const s = Math.max(0, Math.floor((Date.now() - then) / 1000));
-	if (s < 60) return 'just now';
-	if (s < 3600) return `${Math.floor(s / 60)}m ago`;
-	if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
-	return `${Math.floor(s / 86400)}d ago`;
+	if (s < 60) return t('time.justNow');
+	if (s < 3600) return t('time.minutesAgo', { count: Math.floor(s / 60) });
+	if (s < 86400) return t('time.hoursAgo', { count: Math.floor(s / 3600) });
+	return t('time.daysAgo', { count: Math.floor(s / 86400) });
 }
 
 export function formatDuration(seconds: number): string {
 	const h = Math.floor(seconds / 3600);
 	const m = Math.round((seconds % 3600) / 60);
-	if (h > 0) return `${h}h${String(m).padStart(2, '0')}m`;
-	return `${m}m`;
+	if (h > 0) return `${unitText(h, 'hour')} ${unitText(m, 'minute')}`;
+	return unitText(m, 'minute');
 }
 
 export function formatSpan(seconds: number): string {
-	if (!Number.isFinite(seconds) || seconds <= 0) return 'now';
+	if (!Number.isFinite(seconds) || seconds <= 0) return t('time.now');
 	const h = Math.floor(seconds / 3600);
 	const m = Math.floor((seconds % 3600) / 60);
-	if (h >= 24) return `${Math.floor(h / 24)}d ${h % 24}h`;
-	if (h > 0) return `${h}h ${m}m`;
-	return `${Math.max(1, m)}m`;
+	if (h >= 24) return `${unitText(Math.floor(h / 24), 'day')} ${unitText(h % 24, 'hour')}`;
+	if (h > 0) return `${unitText(h, 'hour')} ${unitText(m, 'minute')}`;
+	return unitText(Math.max(1, m), 'minute');
 }
 
 export function formatCountdown(iso: string): string {
 	const target = new Date(iso).getTime();
-	if (!iso || isNaN(target)) return 'unknown';
+	if (!iso || isNaN(target)) return t('time.unknown');
 	return formatSpan(Math.floor((target - Date.now()) / 1000));
 }
 
 export function formatTokens(n: number): string {
-	if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-	if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
-	return `${n}`;
+	return formatNumber(n, { notation: 'compact', maximumFractionDigits: 1 });
 }
 
 export function formatBytes(n: number): string {
-	if (n >= 1_048_576) return `${(n / 1_048_576).toFixed(1)} MB`;
-	if (n >= 1024) return `${Math.round(n / 1024)} kB`;
-	return `${n} B`;
+	if (n >= 1_048_576) return unitText(n / 1_048_576, 'megabyte', 1);
+	if (n >= 1024) return unitText(Math.round(n / 1024), 'kilobyte');
+	return unitText(n, 'byte');
 }
 
 export function formatCost(n: number): string {
-	if (n >= 100) return `$${Math.round(n)}`;
-	if (n >= 0.01) return `$${n.toFixed(2)}`;
-	return `$${n.toFixed(4)}`;
+	const digits = n >= 100 ? 0 : n >= 0.01 ? 2 : 4;
+	return formatNumber(n, { style: 'currency', currency: 'USD', minimumFractionDigits: digits, maximumFractionDigits: digits });
 }
 
 export function parseBarChart(raw: string) {

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { Card, Spinner, icons } from '@facile/muse';
+	import { t } from '$lib/i18n/index.svelte';
 
 	// Read-only counterpart to DocumentEditor: flows/models are executable and trust-gated
 	// per machine, so an editor here is a bigger call than "show me what's synced."
@@ -50,7 +51,7 @@
 
 	{#if loading}
 		<div class="flex items-center gap-3 text-fc-sm text-fc-fg-muted">
-			<Spinner size="sm" label="Loading" /> Loading…
+			<Spinner size="sm" label={t('common.loading')} /> {t('common.loadingDots')}
 		</div>
 	{:else}
 		{#if children}

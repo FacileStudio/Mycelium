@@ -2,6 +2,7 @@
 	import { Card, StatusDot, icons } from '@facile/muse';
 	import { backend, type LiveSession } from '$lib/backend';
 	import { formatDuration, formatTokens } from '$lib/format';
+	import { t } from '$lib/i18n/index.svelte';
 
 	let live: LiveSession[] = $state([]);
 
@@ -31,17 +32,17 @@
 
 	function liveLabel(s: LiveSession): string {
 		const state = liveState(s);
-		if (state === 'offline') return 'machine offline';
-		if (state === 'active') return 'active';
-		return `idle ${Math.max(1, Math.round(s.idle_seconds / 60))}m`;
+		if (state === 'offline') return t('live.offline');
+		if (state === 'active') return t('live.active');
+		return t('live.idle', { minutes: Math.max(1, Math.round(s.idle_seconds / 60)) });
 	}
 </script>
 
 <section class="flex flex-col gap-4">
 	<div class="flex flex-wrap items-start justify-between gap-3">
 		<div class="flex min-w-0 flex-col gap-1">
-			<h2 class="text-fc-lg font-semibold text-fc-fg">Running now</h2>
-			<p class="text-fc-sm text-fc-fg-muted">Refreshed every thirty seconds.</p>
+			<h2 class="text-fc-lg font-semibold text-fc-fg">{t('live.title')}</h2>
+			<p class="text-fc-sm text-fc-fg-muted">{t('live.refresh')}</p>
 		</div>
 		<!-- The phone's nav bar only holds four destinations, so this is how Machines is
 		     reached from a phone. -->
@@ -50,12 +51,12 @@
 			class="inline-flex shrink-0 items-center gap-1 text-fc-sm text-fc-fg-muted transition-colors hover:text-fc-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fc-ring"
 		>
 			<iconify-icon icon={icons.server} width="16" height="16" class="block"></iconify-icon>
-			Machines
+			{t('machines.title')}
 		</a>
 	</div>
 
 	{#if live.length === 0}
-		<Card class="text-fc-sm text-fc-fg-muted">No session is running.</Card>
+		<Card class="text-fc-sm text-fc-fg-muted">{t('live.none')}</Card>
 	{:else}
 		<div class="flex flex-col gap-2">
 			{#each live as session (session.machine + session.project + session.started_at)}
@@ -81,7 +82,7 @@
 						</span>
 					{/if}
 					<span class="ml-auto text-fc-xs tabular-nums text-fc-fg-muted">
-						{elapsed(session.started_at)} · {formatTokens(session.tokens_out)} out
+						{elapsed(session.started_at)} · {t('live.out', { tokens: formatTokens(session.tokens_out) })}
 					</span>
 				</Card>
 			{/each}

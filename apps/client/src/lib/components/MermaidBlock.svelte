@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '$lib/i18n/index.svelte';
 	import { Button, Card, Spinner, icons, toast } from '@facile/muse';
 	import mermaid from 'mermaid';
 	import MermaidModal from './MermaidModal.svelte';
@@ -69,7 +70,7 @@
 
 	function copyToClipboard(text: string) {
 		navigator.clipboard.writeText(text);
-		toast.success('Code copied to clipboard');
+		toast.success(t('md.codeCopied'));
 	}
 
 	function zoomInInline() {
@@ -119,12 +120,12 @@
 		class="flex flex-wrap items-center justify-between gap-2 border-b border-fc-border bg-fc-surface-hover/40 px-4 py-2 text-fc-xs text-fc-fg-muted"
 	>
 		<div class="flex items-center gap-2">
-			<span class="font-semibold uppercase tracking-wider">Flowchart</span>
+			<span class="font-semibold uppercase tracking-wider">{t('mermaid.flowchart')}</span>
 			{#if error}
 				<span
 					class="rounded bg-fc-danger/10 px-1.5 py-0.5 text-[0.65rem] font-medium text-fc-danger"
 				>
-					Syntax Error
+					{t('mermaid.syntaxError')}
 				</span>
 			{/if}
 		</div>
@@ -135,7 +136,7 @@
 						type="button"
 						class="flex size-6 items-center justify-center rounded text-fc-fg-muted hover:text-fc-fg transition-colors"
 						onclick={zoomOutInline}
-						aria-label="Zoom out"
+						aria-label={t('mermaid.zoomOut')}
 					>
 						<iconify-icon icon={icons.minus} width="14" height="14" class="block"></iconify-icon>
 					</button>
@@ -143,7 +144,7 @@
 						type="button"
 						class="px-1.5 font-fc-mono text-[0.7rem] text-fc-fg hover:text-fc-primary transition-colors"
 						onclick={resetInlineZoom}
-						aria-label="Reset zoom"
+						aria-label={t('mermaid.resetZoom')}
 					>
 						{Math.round(inlineZoom * 100)}%
 					</button>
@@ -151,7 +152,7 @@
 						type="button"
 						class="flex size-6 items-center justify-center rounded text-fc-fg-muted hover:text-fc-fg transition-colors"
 						onclick={zoomInInline}
-						aria-label="Zoom in"
+						aria-label={t('mermaid.zoomIn')}
 					>
 						<iconify-icon icon={icons.plus} width="14" height="14" class="block"></iconify-icon>
 					</button>
@@ -159,15 +160,15 @@
 
 				<Button variant="ghost" size="sm" onclick={() => (isFullscreen = true)}>
 					<iconify-icon icon="solar:maximize-square-linear" width="14" height="14" class="mr-1 block"></iconify-icon>
-					Fullscreen
+					{t('mermaid.fullscreen')}
 				</Button>
 			{/if}
 
 			<Button variant="ghost" size="sm" onclick={() => (showSource = !showSource)}>
-				{showSource ? 'View Diagram' : 'View Source'}
+				{showSource ? t('mermaid.viewDiagram') : t('mermaid.viewSource')}
 			</Button>
 			<Button variant="ghost" size="sm" icon={icons.copy} onclick={() => copyToClipboard(code)}>
-				Copy
+				{t('common.copy')}
 			</Button>
 		</div>
 	</div>
@@ -190,11 +191,11 @@
 			onwheel={handleInlineWheel}
 			ondblclick={() => (isFullscreen = true)}
 			role="region"
-			aria-label="Interactive flowchart diagram"
+			aria-label={t('mermaid.interactive')}
 		>
 			{#if loading}
 				<div class="flex items-center gap-2 text-fc-xs text-fc-fg-muted">
-					<Spinner size="sm" label="Loading" /> Rendering diagram…
+					<Spinner size="sm" label={t('common.loading')} /> {t('mermaid.rendering')}
 				</div>
 			{:else if svgHtml}
 				<div

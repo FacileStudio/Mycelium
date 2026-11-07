@@ -16,6 +16,7 @@
 	import { ApiError, backend, type AntenneSettings, type EmitterStatus } from '$lib/backend';
 	import BusMachineOverrides from '$lib/components/BusMachineOverrides.svelte';
 	import BusUsageAlerts from '$lib/components/BusUsageAlerts.svelte';
+	import { t } from '$lib/i18n/index.svelte';
 
 	let loaded = $state(false);
 	let denied = $state(false);
@@ -55,7 +56,7 @@
 				// A failed load is not a failed save. They were one variable, so
 				// opening the page on a broken response greeted you with "Not
 				// saved" for something you never submitted.
-				loadError = e instanceof Error ? e.message : 'Could not load the bus settings';
+				loadError = e instanceof Error ? e.message : t('bus.loadFailed');
 			});
 	});
 
@@ -92,11 +93,11 @@
 	 */
 	const connection = $derived.by(
 		(): { tone: 'success' | 'warning' | 'danger' | 'neutral'; label: string; pulse: boolean } => {
-			if (!enabled) return { tone: 'neutral', label: 'Disabled', pulse: false };
-			if (status?.connected) return { tone: 'success', label: 'Connected', pulse: false };
+			if (!enabled) return { tone: 'neutral', label: t('bus.disabled'), pulse: false };
+			if (status?.connected) return { tone: 'success', label: t('bus.connected'), pulse: false };
 			if (status?.last_error)
-				return { tone: 'danger', label: `Disconnected — ${status.last_error}`, pulse: false };
-			return { tone: 'warning', label: 'Connecting…', pulse: true };
+				return { tone: 'danger', label: t('bus.disconnected', { error: status.last_error }), pulse: false };
+			return { tone: 'warning', label: t('bus.connecting'), pulse: true };
 		}
 	);
 
@@ -121,9 +122,9 @@
 			});
 			apply(s.antenne, s.status);
 			envManaged = s.env_managed ?? {};
-			toast.success('Bus settings saved.');
+			toast.success(t('bus.saved'));
 		} catch (e) {
-			error = e instanceof Error ? e.message : 'Save failed';
+			error = e instanceof Error ? e.message : t('bus.saveFailed');
 		} finally {
 			saving = false;
 		}
@@ -131,54 +132,54 @@
 </script>
 
 {#if denied}
-	<Alert tone="info" title="Admin only">
-		Bus settings are visible to administrators. Sign in with an admin account to change them.
+	<Alert tone="info" title={t('bus.adminOnly')}>
+		{t('bus.adminOnlyText')}
 	</Alert>
 {:else if loadError}
-	<Alert tone="danger" title="Could not load the bus settings">{loadError}</Alert>
+	<Alert tone="danger" title={t('bus.loadFailed')}>{loadError}</Alert>
 {:else if !loaded}
 	<div class="flex items-center gap-3 text-fc-sm text-fc-fg-muted">
-		<Spinner size="sm" label="Loading" /> Loading…
+		<Spinner size="sm" label={t('common.loading')} /> {t('common.loadingDots')}
 	</div>
 {:else}
 	<div class="flex flex-col gap-10">
 		<SettingsSection
-			title="Antenne bus"
-			description="One socket to Antenne carries every sealed session this instance emits, so Sablier can turn them into time entries. Apps never talk to each other directly."
+			title={t('bus.title')}
+			description={t('bus.help')}
 		>
-			<SettingsRow label="Status" description="Live, from the socket itself — not from the last save.">
+			<SettingsRow label={t('bus.status')} description={t('bus.statusHelp')}>
 				<StatusDot tone={connection.tone} label={connection.label} pulse={connection.pulse} />
 			</SettingsRow>
 
-			<SettingsRow label="Emit sessions" description="Off keeps the config but stops the socket.">
-				<Switch bind:checked={enabled} aria-label="Emit sessions" />
+			<SettingsRow label={t('bus.emit')} description={t('bus.emitHelp')}>
+				<Switch bind:checked={enabled} aria-label={t('bus.emit')} />
 			</SettingsRow>
 
-			<SettingsRow label="Emitted" description="Sessions this instance has published since it started.">
-				<Badge tone="neutral">{status?.emitted ?? 0} sent</Badge>
+			<SettingsRow label={t('bus.emitted')} description={t('bus.emittedHelp')}>
+				<Badge tone="neutral">{t('bus.sent', { count: status?.emitted ?? 0 })}</Badge>
 			</SettingsRow>
 
-			<SettingsRow label="Outbox" description="Sealed sessions held locally until the socket comes back.">
+			<SettingsRow label={t('bus.outbox')} description={t('bus.outboxHelp')}>
 				<Badge tone={(status?.pending ?? 0) > 0 ? 'accent' : 'neutral'}>
-					{status?.pending ?? 0} pending
+					{t('bus.pending', { count: status?.pending ?? 0 })}
 				</Badge>
 			</SettingsRow>
 
 			{#if usageAlerts}
 				<SettingsRow
-					label="Alert outbox"
-					description="Usage alerts held locally until the socket comes back."
+					label={t('bus.alertOutbox')}
+					description={t('bus.alertOutboxHelp')}
 				>
 					<Badge tone={(status?.usage_alerts_pending ?? 0) > 0 ? 'accent' : 'neutral'}>
-						{status?.usage_alerts_pending ?? 0} pending
+						{t('bus.pending', { count: status?.usage_alerts_pending ?? 0 })}
 					</Badge>
 				</SettingsRow>
 			{/if}
 
 			{#if emitSince}
 				<SettingsRow
-					label="Emitting since"
-					description="Sessions that ended before this are never republished."
+					label={t('bus.since')}
+					description={t('bus.sinceHelp')}
 					stacked
 				>
 					<SecretField value={emitSince} sensitive={false} class="w-full" />
@@ -195,14 +196,14 @@
 		/>
 
 		<SettingsSection
-			title="Connection"
-			description="Where Antenne lives and the shared secret that registers this instance with it."
+			title={t('bus.connection')}
+			description={t('bus.connectionHelp')}
 		>
 			<SettingsRow
-				label="Instance URL"
+				label={t('bus.url')}
 				description={envManaged.instance
-					? 'Pinned by ANTENNE_URL. Edit the deployment, not this field.'
-					: 'Scheme included. The socket URL is derived from it.'}
+					? t('bus.urlPinned')
+					: t('bus.urlHelp')}
 				for="bus-url"
 				stacked
 			>
@@ -215,10 +216,10 @@
 			</SettingsRow>
 
 			<SettingsRow
-				label="Shared secret"
+				label={t('bus.secret')}
 				description={envManaged.secret
-					? 'Pinned by ANTENNE_SECRET. Edit the deployment, not this field.'
-					: 'Posted to Antenne when the socket registers. Required as soon as emitting is on.'}
+					? t('bus.secretPinned')
+					: t('bus.secretHelp')}
 				stacked
 			>
 				<SecretField
@@ -230,10 +231,10 @@
 			</SettingsRow>
 
 			<SettingsRow
-				label="Attribution email"
+				label={t('bus.email')}
 				description={envManaged.user_email
-					? 'Pinned by ANTENNE_USER_EMAIL. Edit the deployment, not this field.'
-					: 'Whose sessions these are, as far as the rest of the suite is concerned.'}
+					? t('bus.emailPinned')
+					: t('bus.emailHelp')}
 				for="bus-email"
 				stacked
 			>
@@ -247,12 +248,12 @@
 			</SettingsRow>
 
 			{#if error}
-				<Alert tone="danger" title="Not saved">{error}</Alert>
+				<Alert tone="danger" title={t('bus.notSaved')}>{error}</Alert>
 			{/if}
 
 			<div class="flex flex-wrap gap-2 pt-2">
 				<Button icon={icons.plug} disabled={saving} onclick={save}>
-					{saving ? 'Saving…' : 'Save and connect'}
+					{saving ? t('common.saving') : t('bus.saveConnect')}
 				</Button>
 			</div>
 		</SettingsSection>

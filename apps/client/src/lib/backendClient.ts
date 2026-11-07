@@ -1,4 +1,5 @@
 import { getActiveSpaceId } from './space.svelte';
+import { t } from './i18n/index.svelte';
 
 const BASE = '/api';
 
@@ -42,7 +43,7 @@ function errorMessage(text: string, status: number): string {
 		if (payload?.error?.message) return payload.error.message;
 	} catch {}
 	if (text && text.length <= 200) return text;
-	return `Request failed with status ${status}`;
+	return t('common.requestFailed', { status });
 }
 
 export async function request<T>(method: string, path: string, body?: unknown): Promise<T> {

@@ -2,6 +2,8 @@
 	import { Table } from '@facile/muse';
 	import type { SessionBlock, SessionStatRow } from '$lib/backend';
 	import { formatCost, formatDuration, formatTokens } from '$lib/format';
+	import { formatDate } from '$lib/i18n/format';
+	import { t } from '$lib/i18n/index.svelte';
 
 	let {
 		rows,
@@ -16,12 +18,7 @@
 	} = $props();
 
 	function formatEnded(iso: string): string {
-		const d = new Date(iso);
-		const month = d.toLocaleString('en-US', { month: 'short' });
-		const day = String(d.getDate()).padStart(2, '0');
-		const hh = String(d.getHours()).padStart(2, '0');
-		const mm = String(d.getMinutes()).padStart(2, '0');
-		return `${month} ${day} ${hh}:${mm}`;
+		return formatDate(iso, { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' });
 	}
 
 	function blockDuration(b: SessionBlock): string {
@@ -37,11 +34,11 @@
 	<thead>
 		<tr>
 			<th scope="col">{groups.find((g) => g.id === by)?.label ?? by}</th>
-			<th scope="col" class="text-right">Sessions</th>
-			<th scope="col" class="text-right">Active</th>
-			<th scope="col" class="text-right">Tokens in</th>
-			<th scope="col" class="text-right">Tokens out</th>
-			<th scope="col" class="text-right">Est. cost</th>
+			<th scope="col" class="text-right">{t('history.sessions')}</th>
+			<th scope="col" class="text-right">{t('history.active')}</th>
+			<th scope="col" class="text-right">{t('history.tokensIn')}</th>
+			<th scope="col" class="text-right">{t('history.tokensOut')}</th>
+			<th scope="col" class="text-right">{t('history.cost')}</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -62,12 +59,12 @@
 	<Table>
 		<thead>
 			<tr>
-				<th scope="col">Ended</th>
-				<th scope="col">Project</th>
-				<th scope="col">Machine / agent</th>
-				<th scope="col">Model</th>
-				<th scope="col" class="text-right">Duration</th>
-				<th scope="col" class="text-right">Tokens out</th>
+				<th scope="col">{t('history.ended')}</th>
+				<th scope="col">{t('history.project')}</th>
+				<th scope="col">{t('history.machineAgent')}</th>
+				<th scope="col">{t('history.model')}</th>
+				<th scope="col" class="text-right">{t('history.duration')}</th>
+				<th scope="col" class="text-right">{t('history.tokensOut')}</th>
 			</tr>
 		</thead>
 		<tbody>

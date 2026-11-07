@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        APP_VERSION: ${APP_VERSION:-}
     restart: unless-stopped
     expose:
     - '8420'
@@ -13,7 +15,6 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       DATA_DIR: /data
       PASSWORD: ${PASSWORD}
-      SSO_ONLY: ${SSO_ONLY:-false}
       OIDC_ISSUER: ${OIDC_ISSUER:-}
       OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-}
       OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:-}

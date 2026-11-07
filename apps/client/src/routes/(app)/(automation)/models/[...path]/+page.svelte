@@ -3,6 +3,7 @@
 	import { icons, toast } from '@facile/muse';
 	import { backend } from '$lib/backend';
 	import CodeView from '$lib/components/CodeView.svelte';
+	import { t } from '$lib/i18n/index.svelte';
 
 	const path = $derived(page.params.path ?? '');
 	const type = $derived('@' + path.replace(/\.ts$/, ''));
@@ -17,7 +18,7 @@
 			.then((c) => (content = c))
 			.catch((e) => {
 				content = '';
-				toast.danger(e instanceof Error ? e.message : `Could not load model "${p}".`);
+				toast.danger(e instanceof Error ? e.message : t('models.loadOne', { name: p }));
 			})
 			.finally(() => (loading = false));
 	});
@@ -28,7 +29,7 @@
 	path="extensions/models/{path}"
 	icon={icons.code}
 	backHref="/models"
-	backLabel="Models"
+	backLabel={t('models.title')}
 	{content}
 	{loading}
 />

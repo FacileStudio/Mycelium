@@ -3,6 +3,7 @@
 	import { Alert, Button, EmptyState, Field, Input, Modal, icons, toast } from '@facile/muse';
 	import { backend } from '$lib/backend';
 	import EntityCard from '$lib/components/EntityCard.svelte';
+	import { t } from '$lib/i18n/index.svelte';
 
 	let skills: string[] = $state([]);
 	let createOpen = $state(false);
@@ -17,7 +18,7 @@
 		backend
 			.skillsList()
 			.then((s) => (skills = s ?? []))
-			.catch((e) => (loadError = e instanceof Error ? e.message : 'Could not load skills'));
+			.catch((e) => (loadError = e instanceof Error ? e.message : t('skills.loadFailed')));
 	});
 
 	function openCreate() {
@@ -36,10 +37,10 @@
 			const template = `---\nname: ${name}\ndescription: ""\ntriggers: ["/${name}"]\n---\n\n# ${name}\n`;
 			await backend.skillSave(name, template);
 			createOpen = false;
-			toast.success(`Skill “${name}” created.`);
+			toast.success(t('skills.created', { name }));
 			goto(`/skills/${name}`);
 		} catch (e) {
-			error = e instanceof Error ? e.message : 'Could not create the skill';
+			error = e instanceof Error ? e.message : t('skills.createFailed');
 		} finally {
 			creating = false;
 		}
@@ -49,20 +50,20 @@
 <div class="flex flex-col gap-10">
 	<div class="flex flex-wrap items-start justify-between gap-4">
 		<p class="min-w-0 text-fc-sm text-fc-fg-muted">
-			Agent-agnostic capabilities, installed into each agent's own skill format.
+			{t('skills.subtitle')}
 		</p>
-		<Button icon={icons.plus} onclick={openCreate}>New skill</Button>
+		<Button icon={icons.plus} onclick={openCreate}>{t('skills.new')}</Button>
 	</div>
 
 	{#if loadError}
-		<Alert tone="danger" title="Could not load skills">{loadError}</Alert>
+		<Alert tone="danger" title={t('skills.loadFailed')}>{loadError}</Alert>
 	{:else if skills.length === 0}
 		<EmptyState
 			icon={icons.bolt}
-			title="No skills yet"
-			description="Add one to teach every agent the same trick."
+			title={t('skills.emptyTitle')}
+			description={t('skills.emptyText')}
 		>
-			<Button variant="outline" icon={icons.plus} onclick={openCreate}>New skill</Button>
+			<Button variant="outline" icon={icons.plus} onclick={openCreate}>{t('skills.new')}</Button>
 		</EmptyState>
 	{:else}
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 [&>*]:min-w-0">
@@ -78,11 +79,11 @@
 	{/if}
 </div>
 
-<Modal bind:open={createOpen} title="New skill" showClose>
+<Modal bind:open={createOpen} title={t('skills.new')} showClose>
 	<form class="flex flex-col gap-4" onsubmit={createSkill}>
 		<Field
-			label="Name"
-			helper="Becomes the slash command agents invoke it with."
+			label={t('common.name')}
+			helper={t('skills.nameHelp')}
 			error={error || undefined}
 		>
 			<Input bind:value={draftName} placeholder="changelog" disabled={creating} required />
@@ -94,7 +95,7 @@
 				class="w-full sm:w-auto"
 				onclick={() => (createOpen = false)}
 			>
-				Cancel
+				{t('common.cancel')}
 			</Button>
 			<Button
 				type="submit"
@@ -102,7 +103,7 @@
 				class="w-full sm:w-auto"
 				disabled={creating || draftName.trim().length === 0}
 			>
-				{creating ? 'Creating…' : 'Create skill'}
+				{creating ? t('common.creating') : t('skills.create')}
 			</Button>
 		</div>
 	</form>

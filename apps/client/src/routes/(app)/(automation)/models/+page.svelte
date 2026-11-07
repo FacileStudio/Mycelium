@@ -2,6 +2,7 @@
 	import { Alert, EmptyState, icons } from '@facile/muse';
 	import { backend } from '$lib/backend';
 	import EntityCard from '$lib/components/EntityCard.svelte';
+	import { t } from '$lib/i18n/index.svelte';
 
 	let models: { type: string; path: string }[] = $state([]);
 	let error = $state('');
@@ -10,23 +11,22 @@
 		backend
 			.modelsList()
 			.then((m) => (models = m))
-			.catch((e) => (error = e instanceof Error ? e.message : 'Could not load models.'));
+			.catch((e) => (error = e instanceof Error ? e.message : t('models.loadFailed')));
 	});
 </script>
 
 <div class="flex flex-col gap-10">
 	<p class="text-fc-sm text-fc-fg-muted">
-		Typed step extensions a flow can run with <code class="font-fc-mono">type:</code>. Mycelium
-		never executes these here — there is no bun on the server — so this is the source only.
+		{t('models.subtitle')}
 	</p>
 
 	{#if error}
-		<Alert tone="danger" title="Could not load models">{error}</Alert>
+		<Alert tone="danger" title={t('models.loadFailed')}>{error}</Alert>
 	{:else if models.length === 0}
 		<EmptyState
 			icon={icons.code}
-			title="No models yet"
-			description="Add a TypeScript file under extensions/models — it appears here once it syncs."
+			title={t('models.emptyTitle')}
+			description={t('models.emptyText')}
 		/>
 	{:else}
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 [&>*]:min-w-0">

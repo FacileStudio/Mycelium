@@ -231,6 +231,7 @@ export interface AuthUser {
 	name: string;
 	admin: boolean;
 	avatar_url?: string;
+	locale?: string;
 }
 
 export type SpaceRole = 'owner' | 'admin' | 'member';

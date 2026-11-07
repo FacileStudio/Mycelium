@@ -3,6 +3,7 @@
 	import { Alert, Button, EmptyState, Field, Input, Modal, icons, toast } from '@facile/muse';
 	import { backend } from '$lib/backend';
 	import EntityCard from '$lib/components/EntityCard.svelte';
+	import { t } from '$lib/i18n/index.svelte';
 
 	let rules: string[] = $state([]);
 	let createOpen = $state(false);
@@ -17,7 +18,7 @@
 		backend
 			.rulesList()
 			.then((r) => (rules = r ?? []))
-			.catch((e) => (loadError = e instanceof Error ? e.message : 'Could not load rules'));
+			.catch((e) => (loadError = e instanceof Error ? e.message : t('rules.loadFailed')));
 	});
 
 	function openCreate() {
@@ -35,10 +36,10 @@
 		try {
 			await backend.ruleSave(name, `# ${name}\n`);
 			createOpen = false;
-			toast.success(`Rule “${name}” created.`);
+			toast.success(t('rules.created', { name }));
 			goto(`/rules/${name}`);
 		} catch (e) {
-			error = e instanceof Error ? e.message : 'Could not create the rule';
+			error = e instanceof Error ? e.message : t('rules.createFailed');
 		} finally {
 			creating = false;
 		}
@@ -48,20 +49,20 @@
 <div class="flex flex-col gap-10">
 	<div class="flex flex-wrap items-start justify-between gap-4">
 		<p class="min-w-0 text-fc-sm text-fc-fg-muted">
-			Modular instructions, concatenated into every agent config in filename order.
+			{t('rules.subtitle')}
 		</p>
-		<Button icon={icons.plus} onclick={openCreate}>New rule</Button>
+		<Button icon={icons.plus} onclick={openCreate}>{t('rules.new')}</Button>
 	</div>
 
 	{#if loadError}
-		<Alert tone="danger" title="Could not load rules">{loadError}</Alert>
+		<Alert tone="danger" title={t('rules.loadFailed')}>{loadError}</Alert>
 	{:else if rules.length === 0}
 		<EmptyState
 			icon={icons.shield}
-			title="No rules yet"
-			description="Create one to shape how every agent behaves."
+			title={t('rules.emptyTitle')}
+			description={t('rules.emptyText')}
 		>
-			<Button variant="outline" icon={icons.plus} onclick={openCreate}>New rule</Button>
+			<Button variant="outline" icon={icons.plus} onclick={openCreate}>{t('rules.new')}</Button>
 		</EmptyState>
 	{:else}
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 [&>*]:min-w-0">
@@ -77,11 +78,11 @@
 	{/if}
 </div>
 
-<Modal bind:open={createOpen} title="New rule" showClose>
+<Modal bind:open={createOpen} title={t('rules.new')} showClose>
 	<form class="flex flex-col gap-4" onsubmit={createRule}>
 		<Field
-			label="Name"
-			helper="Prefix it to control the order agents read it in — 30-testing, 40-git."
+			label={t('common.name')}
+			helper={t('rules.nameHelp')}
 			error={error || undefined}
 		>
 			<Input bind:value={draftName} placeholder="30-testing" disabled={creating} required />
@@ -93,7 +94,7 @@
 				class="w-full sm:w-auto"
 				onclick={() => (createOpen = false)}
 			>
-				Cancel
+				{t('common.cancel')}
 			</Button>
 			<Button
 				type="submit"
@@ -101,7 +102,7 @@
 				class="w-full sm:w-auto"
 				disabled={creating || draftName.trim().length === 0}
 			>
-				{creating ? 'Creating…' : 'Create rule'}
+				{creating ? t('common.creating') : t('rules.create')}
 			</Button>
 		</div>
 	</form>
