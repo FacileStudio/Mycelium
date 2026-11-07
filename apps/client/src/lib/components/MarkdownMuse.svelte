@@ -1,5 +1,6 @@
 <script lang="ts">
 import { Badge, Button, icons, toast } from '@facile/muse';
+import { t } from '$lib/i18n/index.svelte';
 import { marked, type Tokens, type Token } from 'marked';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/github-dark.css';
@@ -20,7 +21,7 @@ function highlightCode(code: string, lang: string): string {
 
 function copyToClipboard(text: string) {
 	navigator.clipboard.writeText(text);
-	toast.success('Code copied to clipboard');
+	toast.success(t('md.codeCopied'));
 }
 
 let { content = '' }: { content: string } = $props();
@@ -287,7 +288,7 @@ const tokens = $derived(marked.lexer(cleanBody) as Token[]);
 					<div class="flex items-center justify-between border-b border-fc-border bg-fc-surface-hover/40 px-4 py-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-fc-fg-muted">
 						<span>diff</span>
 						<Button variant="ghost" size="sm" icon={icons.copy} onclick={() => copyToClipboard(c.text)}>
-							Copy
+							{t('common.copy')}
 						</Button>
 					</div>
 					<pre class="overflow-x-auto p-3 leading-relaxed"><code>{#each diffLines as dl}<div class="{dl.type === 'add' ? 'bg-fc-success/15 text-fc-success font-semibold' : dl.type === 'del' ? 'bg-fc-danger/15 text-fc-danger font-semibold' : dl.type === 'hunk' ? 'bg-fc-info/15 text-fc-info italic' : 'text-fc-fg-muted'} px-2 py-0.5">{dl.line}</div>{/each}</code></pre>
@@ -302,7 +303,7 @@ const tokens = $derived(marked.lexer(cleanBody) as Token[]);
 						<div class="flex items-center justify-between border-b border-fc-border bg-fc-surface-hover/40 px-4 py-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-fc-fg-muted">
 							<span>{c.lang}</span>
 							<Button variant="ghost" size="sm" icon={icons.copy} onclick={() => copyToClipboard(c.text)}>
-								Copy
+								{t('common.copy')}
 							</Button>
 						</div>
 					{/if}

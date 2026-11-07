@@ -2,11 +2,21 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import LandingOffers from '$lib/components/LandingOffers.svelte';
-	import { Button, Card, icons } from '@facile/muse';
+	import {
+		Button,
+		Card,
+		LandingFooter,
+		LandingHeader,
+		SignInWithFacile,
+		icons
+	} from '@facile/muse';
 	import WordReveal from '$lib/components/motion/WordReveal.svelte';
 	import { TOKEN_KEY } from '$lib/backend';
+	import { t } from '$lib/i18n/index.svelte';
 
 	let visible = $state(false);
+
+	const signInHref = '/api/auth/oidc';
 
 	onMount(() => {
 		if (localStorage.getItem(TOKEN_KEY)) {
@@ -29,76 +39,63 @@
 		{ agent: 'Copilot', file: 'copilot-instructions.md', icon: 'simple-icons:githubcopilot' }
 	];
 
-	const layers = [
+	const layers = $derived([
+		{ icon: icons.folder, title: t('landing.layer.memory.title'), body: t('landing.layer.memory.body') },
+		{ icon: icons.shield, title: t('landing.layer.rules.title'), body: t('landing.layer.rules.body') },
+		{ icon: icons.bolt, title: t('landing.layer.skills.title'), body: t('landing.layer.skills.body') }
+	]);
+
+	const cells = $derived([
+		{ name: 'personal', desc: t('landing.cell.personal'), active: true },
+		{ name: 'facile', desc: t('landing.cell.team'), active: false },
+		{ name: 'client-x', desc: t('landing.cell.client'), active: false }
+	]);
+
+	const footerColumns = [
 		{
-			icon: icons.folder,
-			title: 'Memory',
-			body: 'Wiki partagé en markdown. Bugs, outils, projets, conventions — vos agents apprennent de chaque session et partagent ce savoir entre eux.'
-		},
-		{
-			icon: icons.shield,
-			title: 'Rules',
-			body: 'Règles modulaires pour vos agents. Style de code, conventions git, engineering ladder — écrivez-les une fois, tous vos agents les suivent.'
-		},
-		{
-			icon: icons.bolt,
-			title: 'Skills',
-			body: 'Compétences agent-agnostiques avec des définitions portables. Un skill, six agents. Pas de vendor lock-in.'
+			title: 'Mycelium',
+			links: [
+				{ href: 'https://github.com/FacileStudio/Mycelium', label: 'GitHub', external: true },
+				{ href: 'https://facile.studio', label: 'Facile', external: true }
+			]
 		}
 	];
 
-	const cells = [
-		{ name: 'personal', desc: 'Votre mémoire, vos préférences, vos raccourcis', active: true },
-		{
-			name: 'facile',
-			desc: "Conventions d'équipe, stack technique, projets partagés",
-			active: false
-		},
-		{ name: 'client-x', desc: 'Contexte spécifique au projet, règles du client', active: false }
-	];
+	function lines(key: Parameters<typeof t>[0]): string[] {
+		return t(key).split('|');
+	}
 </script>
 
 <svelte:head>
-	<title>Mycelium — Shared Agent Memory</title>
-	<meta
-		name="description"
-		content="Un cerveau partagé pour vos agents IA. Mémoire, règles et compétences synchronisées entre pi, Claude, Gemini, Codex et toutes vos machines."
-	/>
+	<title>{t('landing.title')}</title>
+	<meta name="description" content={t('landing.description')} />
 </svelte:head>
 
 {#if visible}
 	<div class="min-h-dvh bg-fc-page text-fc-fg">
-		<header
-			class="fixed top-0 z-50 w-full border-b border-fc-border bg-fc-page/90 backdrop-blur"
-		>
-			<div class="mx-auto flex max-w-fc-lg items-center justify-between px-6 py-4">
-				<a href="/" class="flex items-center gap-2.5">
-					<iconify-icon icon="solar:structure-bold-duotone" width="24" height="24" class="block"
-					></iconify-icon>
-					<span class="text-fc-xl font-semibold text-fc-fg">Mycelium</span>
-				</a>
-				<Button href="/login" iconRight={icons.arrow} class="rounded-fc-md">Se connecter</Button>
-			</div>
-		</header>
+		<LandingHeader appName="Mycelium" icon="solar:structure-bold-duotone" skipHref="#main">
+			{#snippet actions()}
+				<SignInWithFacile href={signInHref} data-sveltekit-reload />
+			{/snippet}
+		</LandingHeader>
 
-		<main>
+		<main id="main">
 			<section class="mx-auto max-w-fc-lg px-6 pb-28 pt-36 md:pb-36 md:pt-44">
 				<p
 					class="mb-6 inline-flex items-center gap-2 rounded-fc-pill border border-fc-border px-3.5 py-1 text-fc-xs text-fc-fg-muted"
 				>
 					<iconify-icon icon={icons.server} width="14" height="14" class="block"></iconify-icon>
-					Local-first · Multi-agent · Open source
+					{t('landing.badge')}
 				</p>
 				<h1 class="max-w-3xl text-fc-3xl font-semibold leading-tight md:text-6xl">
-					Un cerveau.<br />
-					<span class="text-fc-fg-muted">Tous vos agents.</span>
+					{lines('landing.heroTitle')[0]}<br />
+					<span class="text-fc-fg-muted">{lines('landing.heroTitle')[1]}</span>
 				</h1>
 				<p class="mt-8 max-w-lg text-fc-md leading-relaxed text-fc-fg-muted">
-					Mémoire, règles et compétences partagées entre pi, Claude, Gemini, Codex, Cursor et toutes
-					vos machines. Un seul endroit, zéro friction.
+					{t('landing.heroText')}
 				</p>
 				<div class="mt-10 flex flex-wrap items-center gap-4">
-					<Button href="/login" size="lg" iconRight={icons.arrow} class="rounded-fc-md">Commencer</Button>
+					<SignInWithFacile href={signInHref} size="lg" data-sveltekit-reload />
 					<Button
 						href="https://github.com/FacileStudio/Mycelium"
 						target="_blank"
@@ -117,14 +114,14 @@
 				<div class="mx-auto max-w-fc-lg px-6 py-28 md:py-36">
 					<div class="mb-10 flex items-center gap-3">
 						<iconify-icon icon={icons.code} width="24" height="24" class="block"></iconify-icon>
-						<span class="text-fc-xl font-semibold">Adapters</span>
+						<span class="text-fc-xl font-semibold">{t('landing.adaptersLabel')}</span>
 					</div>
 					<h2 class="max-w-2xl text-fc-3xl font-semibold leading-tight md:text-5xl">
-						Écrivez une fois.<br />
-						<span class="opacity-50">Déployez partout.</span>
+						{lines('landing.adaptersTitle')[0]}<br />
+						<span class="opacity-50">{lines('landing.adaptersTitle')[1]}</span>
 					</h2>
 					<WordReveal
-						text="Vos règles et compétences sont écrites en markdown. Mycelium génère automatiquement les fichiers de configuration pour chaque agent."
+						text={t('landing.adaptersText')}
 						dimColor={invertedDim}
 						revealColor={invertedInk}
 						class="mt-8 max-w-xl text-fc-md"
@@ -147,10 +144,10 @@
 			<section class="mx-auto max-w-fc-lg px-6 py-28 md:py-36">
 				<div class="mb-16 max-w-lg">
 					<h2 class="text-fc-3xl font-semibold leading-tight md:text-5xl">
-						Trois couches.<br /><span class="text-fc-fg-muted">Chacune indépendante.</span>
+						{lines('landing.layersTitle')[0]}<br /><span class="text-fc-fg-muted">{lines('landing.layersTitle')[1]}</span>
 					</h2>
 					<p class="mt-4 text-fc-sm text-fc-fg-muted">
-						Pas de dépendance. Chaque pièce fonctionne seule et s'enrichit avec les autres.
+						{t('landing.layersText')}
 					</p>
 				</div>
 
@@ -177,13 +174,13 @@
 							<div class="mb-10 flex items-center gap-3">
 								<iconify-icon icon={icons.usersGroup} width="24" height="24" class="block"
 								></iconify-icon>
-								<span class="text-fc-xl font-semibold text-fc-fg">Cells</span>
+								<span class="text-fc-xl font-semibold text-fc-fg">{t('landing.cellsLabel')}</span>
 							</div>
 							<h2 class="text-fc-3xl font-semibold leading-tight md:text-5xl">
-								Perso vs. équipe.
+								{t('landing.cellsTitle')}
 							</h2>
 							<WordReveal
-								text="Un profil personnel, un profil équipe, un profil client — chaque cell a son propre memory, ses règles et ses skills. Superposez-les : les règles perso gagnent, la mémoire s'additionne."
+								text={t('landing.cellsText')}
 								class="mt-8 max-w-lg text-fc-md"
 							/>
 						</div>
@@ -214,27 +211,27 @@
 					<div class="mb-10 flex items-center gap-3">
 						<iconify-icon icon={icons.refresh} width="24" height="24" class="block"
 						></iconify-icon>
-						<span class="text-fc-xl font-semibold">Sync</span>
+						<span class="text-fc-xl font-semibold">{t('landing.syncLabel')}</span>
 					</div>
 					<h2 class="text-fc-3xl font-semibold leading-tight md:text-5xl">
-						Sync intégré.<br />
-						<span class="opacity-50">Même binaire.</span>
+						{lines('landing.syncTitle')[0]}<br />
+						<span class="opacity-50">{lines('landing.syncTitle')[1]}</span>
 					</h2>
 					<WordReveal
-						text="mycelium serve lance un serveur de sync HTTP. Déployez-le sur votre VPS, connectez vos machines avec un token."
+						text={t('landing.syncText')}
 						dimColor={invertedDim}
 						revealColor={invertedInk}
 						class="mt-8 max-w-xl text-fc-md"
 					/>
 
 					<div class="mt-12 rounded-fc-md bg-fc-accent-fg/10 p-6 font-fc-mono text-fc-sm">
-						<p class="opacity-50"># sur le serveur</p>
+						<p class="opacity-50">{t('landing.syncOnServer')}</p>
 						<p>$ mycelium serve --port 8420</p>
-						<p class="mt-4 opacity-50"># sur votre machine</p>
+						<p class="mt-4 opacity-50">{t('landing.syncOnMachine')}</p>
 						<p>$ mycelium sync</p>
 						<p class="mt-1 opacity-60">&nbsp; ↓ memory/tools/dokploy.md</p>
 						<p class="opacity-60">&nbsp; ↑ rules/engineering-ladder.md</p>
-						<p class="opacity-60">&nbsp; Synced 2 file(s).</p>
+						<p class="opacity-60">&nbsp; {t('landing.syncDone')}</p>
 					</div>
 				</div>
 			</section>
@@ -242,13 +239,13 @@
 			<section class="border-t border-fc-border">
 				<div class="mx-auto max-w-fc-lg px-6 py-28 text-center md:py-36">
 					<h2 class="text-fc-2xl font-semibold text-fc-fg">
-						Open source. Local-first. Gratuit.
+						{t('landing.ctaTitle')}
 					</h2>
 					<p class="mt-4 text-fc-sm text-fc-fg-muted">
-						Un binaire Go. Zéro dépendance. Vos données restent chez vous.
+						{t('landing.ctaText')}
 					</p>
 					<div class="mt-10 flex flex-wrap justify-center gap-3">
-						<Button href="/login" size="lg" class="rounded-fc-md">Se connecter</Button>
+						<SignInWithFacile href={signInHref} size="lg" data-sveltekit-reload />
 						<Button
 							href="https://github.com/FacileStudio/Mycelium"
 							target="_blank"
@@ -258,7 +255,7 @@
 							iconRight={icons.code}
 							class="rounded-fc-md"
 						>
-							Voir le code
+							{t('landing.code')}
 						</Button>
 					</div>
 				</div>
@@ -267,13 +264,11 @@
 
 		<LandingOffers />
 
-		<footer class="border-t border-fc-border">
-			<div class="mx-auto max-w-fc-lg px-6 py-6 text-center text-fc-sm text-fc-fg-muted">
-				© {new Date().getFullYear()} Mycelium by
-				<a href="https://facile.studio" class="text-fc-fg transition-opacity hover:opacity-70">
-					Facile.
-				</a>
-			</div>
-		</footer>
+		<LandingFooter
+			appName="Mycelium"
+			icon="solar:structure-bold-duotone"
+			tagline={t('landing.footerTagline')}
+			columns={footerColumns}
+		/>
 	</div>
 {/if}

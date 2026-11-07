@@ -4,6 +4,7 @@ import { sessions } from './sessions';
 import { spaces } from './spaces';
 import { bus } from './bus';
 import { settings } from './settings';
+import { viewer } from './viewer';
 import { common } from './common';
 import { memory } from './memory';
 import { shell } from './shell';
@@ -17,7 +18,8 @@ const rows = {
 	...sessions,
 	...spaces,
 	...settings,
-	...bus
+	...bus,
+	...viewer
 };
 
 export type AppKey = keyof typeof rows;

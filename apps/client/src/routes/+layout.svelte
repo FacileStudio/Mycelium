@@ -1,10 +1,14 @@
 <script lang="ts">
 	import '../app.css';
 	import { browser } from '$app/environment';
-	import { Toaster } from '@facile/muse';
+	import { Toaster, provideLocale } from '@facile/muse';
+	import { bindLocale, localeSource } from '$lib/i18n/index.svelte';
 	import { applyStoredTheme } from '$lib/theme.svelte';
 
 	let { children } = $props();
+
+	const i18n = provideLocale(localeSource);
+	bindLocale(() => i18n.locale);
 
 	/*
 	 * muse renders <iconify-icon> custom elements; they stay inert until the element is

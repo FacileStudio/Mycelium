@@ -23,6 +23,7 @@ export const common = {
 		'Se ha producido un error.',
 		'Es ist ein Fehler aufgetreten.'
 	],
+	'common.requestFailed': ['Request failed with status {status}', 'La requête a échoué (statut {status})', 'La solicitud falló con el estado {status}', 'Anfrage fehlgeschlagen (Status {status})'],
 	'common.name': ['Name', 'Nom', 'Nombre', 'Name'],
 	'common.copy': ['Copy', 'Copier', 'Copiar', 'Kopieren'],
 	'common.copied': ['Copied', 'Copié', 'Copiado', 'Kopiert'],
