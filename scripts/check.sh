@@ -73,6 +73,9 @@ for dir in $GO_MODULES; do
   ) || status=1
 done
 
+echo "==> version"
+sh scripts/check-version.sh || status=1
+
 if [ "$mode" = "all" ]; then
   echo "==> $CLIENT_DIR"
   (

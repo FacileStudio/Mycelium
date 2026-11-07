@@ -8,6 +8,13 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [Unreleased]
+
+### Changed
+
+- build(client): bump muse to v0.16.1 (from v0.14.4). The secondary buttons use the `secondary` variant in place of the deprecated `outline`.
+- `GET /version` and `mycelium --version` in the container come from the `VERSION` file, which the release commit bumps. The `APP_VERSION` build arg and the Dokploy env no longer take part, so a stale env value cannot make the server report an old release.
+
 ## [0.40.3] - 2026-11-07
 
 ### Changed

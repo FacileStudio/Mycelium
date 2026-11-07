@@ -8,11 +8,7 @@ RUN bun run build
 FROM golang:1.26-alpine AS api-build
 
 ARG TARGETOS=linux
-ARG APP_VERSION=
 ARG TARGETARCH
-
-# Not in the base image, and the build needs it to name what it built.
-RUN apk add --no-cache git
 
 WORKDIR /repo
 
@@ -21,32 +17,13 @@ RUN go mod download
 
 COPY . .
 
-# The version comes out of the checkout rather than a literal someone has to
-# remember to bump, which is the copy that drifts on the first release nobody
-# thinks about. A build sitting on a tag reports the tag, one past it reports
-# the tag plus the commit, and a checkout with no tags at all still reports the
-# short sha, which is what a Dokploy build reports because its clone carries no
-# tags. Goreleaser stamps this same variable without the leading v, so stripping
-# it keeps `mycelium --version` printing a bare semver either way.
-#
-# No --dirty. .dockerignore excludes .github, which is tracked, so git in here
-# always sees three deleted workflow files and would mark every build dirty,
-# including one from a spotless checkout. A flag that is always on is not a
-# signal, and the alternative is a rule that .dockerignore may never exclude
-# anything tracked, which nobody would remember.
-#
-# A tag on the checked-out commit wins over the APP_VERSION build arg. Dokploy keeps
-# APP_VERSION in its env and nobody remembers to bump it: it sat at v0.39.1 while
-# v0.40.0 and v0.40.1 shipped, so the container reported the old version. The arg
-# only stands in when the clone holds no tag for HEAD (the tag is pushed after
-# main, so the webhook build can run first).
-#
-# Without any of this the container answers "mycelium dev" and nothing running in
-# production can say which commit it came from.
-RUN VERSION="$(git describe --tags --exact-match 2>/dev/null || true)" && \
-    VERSION="${VERSION:-${APP_VERSION:-$(git describe --tags --always 2>/dev/null || echo dev)}}" && \
+# The version is the VERSION file, which the release commit bumps. It is not read
+# from git tags (Dokploy clones carry none) or from the Dokploy env, so the
+# container always reports the release it was built from. Goreleaser stamps the
+# same variable from the tag, without the leading v.
+RUN VERSION="$(tr -d '[:space:]' < VERSION)" && \
     CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH:-amd64} \
-    go build -trimpath \
+    go build -trimpath -buildvcs=false \
     -ldflags="-s -w -X github.com/FacileStudio/Mycelium/cmd.version=${VERSION#v}" \
     -o bin/mycelium .
 
