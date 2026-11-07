@@ -152,3 +152,40 @@ func TestSyncFreshMachinePullsAll(t *testing.T) {
 		t.Fatal("fresh pull missing content")
 	}
 }
+
+func TestSyncNeverExpiresAnArtifactOnItsOwn(t *testing.T) {
+	c, clientDir, serverDir := setup(t)
+	rel := "artifacts/2025/01/2025-01-02-old-plan-abc123.md"
+	body := "---\ntitle: \"Old plan\"\ncreated: 2025-01-02T10:00:00Z\nexpires: 2025-02-01T10:00:00Z\ntype: artifact\n---\n\n# Old plan\n"
+	establishBase(t, c, clientDir, serverDir, rel, body)
+
+	for range 2 {
+		res, err := c.Sync(clientDir)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(res.DeletedLocal) != 0 || len(res.DeletedRemote) != 0 {
+			t.Fatalf("an artifact past its expires line was deleted: %+v", res)
+		}
+	}
+	if !exists(clientDir, rel) || !exists(serverDir, rel) {
+		t.Fatal("an artifact past its expires line vanished from one side")
+	}
+}
+
+func TestSyncMirrorsAServerSideArtifactDeletion(t *testing.T) {
+	c, clientDir, serverDir := setup(t)
+	rel := "artifacts/2026/08/2026-08-01-plan-abc123.md"
+	establishBase(t, c, clientDir, serverDir, rel, "# Plan\n")
+
+	if err := os.Remove(filepath.Join(serverDir, filepath.FromSlash(rel))); err != nil {
+		t.Fatal(err)
+	}
+	res, err := c.Sync(clientDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if exists(clientDir, rel) || len(res.DeletedLocal) != 1 {
+		t.Fatalf("the server deletion was not mirrored: %+v", res)
+	}
+}

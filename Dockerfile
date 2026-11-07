@@ -35,9 +35,16 @@ COPY . .
 # signal, and the alternative is a rule that .dockerignore may never exclude
 # anything tracked, which nobody would remember.
 #
+# A tag on the checked-out commit wins over the APP_VERSION build arg. Dokploy keeps
+# APP_VERSION in its env and nobody remembers to bump it: it sat at v0.39.1 while
+# v0.40.0 and v0.40.1 shipped, so the container reported the old version. The arg
+# only stands in when the clone holds no tag for HEAD (the tag is pushed after
+# main, so the webhook build can run first).
+#
 # Without any of this the container answers "mycelium dev" and nothing running in
 # production can say which commit it came from.
-RUN VERSION="${APP_VERSION:-$(git describe --tags --always 2>/dev/null || echo dev)}" && \
+RUN VERSION="$(git describe --tags --exact-match 2>/dev/null || true)" && \
+    VERSION="${VERSION:-${APP_VERSION:-$(git describe --tags --always 2>/dev/null || echo dev)}}" && \
     CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH:-amd64} \
     go build -trimpath \
     -ldflags="-s -w -X github.com/FacileStudio/Mycelium/cmd.version=${VERSION#v}" \

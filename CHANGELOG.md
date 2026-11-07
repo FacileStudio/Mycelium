@@ -8,6 +8,16 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [Unreleased]
+
+### Fixed
+
+- Docker: the image version comes from the tag on the checked-out commit first, then the `APP_VERSION` build arg, then `git describe`. A stale `APP_VERSION` in the Dokploy env no longer makes `mycelium --version` report an old release.
+
+### Tests
+
+- Sync never deletes an artifact because of an old `expires` line, and mirrors a deletion made on the server.
+
 ## [0.40.1] — 2026-11-07
 
 ### Changed
