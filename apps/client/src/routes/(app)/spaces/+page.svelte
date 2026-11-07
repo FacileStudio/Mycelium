@@ -4,6 +4,7 @@
 	import { backend, type Space, type SpaceRole } from '$lib/backend';
 	import { setSpaces } from '$lib/space.svelte';
 	import EntityCard from '$lib/components/EntityCard.svelte';
+	import { t } from '$lib/i18n/index.svelte';
 
 	const roleTone = { owner: 'owner', admin: 'admin', member: 'neutral' } as const;
 
@@ -23,7 +24,7 @@
 				registreURL = d.registre_url;
 				setSpaces(d.spaces);
 			})
-			.catch((e) => toast.danger(e instanceof Error ? e.message : 'Could not load spaces.'));
+			.catch((e) => toast.danger(e instanceof Error ? e.message : t('spaces.loadFailed')));
 	});
 
 	function openCreate() {
@@ -42,10 +43,10 @@
 		try {
 			const space = await backend.spaceCreate(name, draftDescription.trim());
 			createOpen = false;
-			toast.success(`Space “${space.name}” created.`);
+			toast.success(t('spaces.created', { name: space.name }));
 			goto(`/spaces/${space.id}`);
 		} catch (e) {
-			createError = e instanceof Error ? e.message : 'Could not create the space';
+			createError = e instanceof Error ? e.message : t('spaces.createFailed');
 		} finally {
 			creating = false;
 		}
@@ -59,36 +60,36 @@
 <div class="flex flex-col gap-10">
 	<div class="flex flex-wrap items-start justify-between gap-4">
 		<div class="flex min-w-0 flex-col gap-2">
-			<h1 class="text-fc-2xl font-semibold text-fc-fg">Spaces</h1>
+			<h1 class="text-fc-2xl font-semibold text-fc-fg">{t('spaces.title')}</h1>
 			<p class="text-fc-sm text-fc-fg-muted">
 				{registreURL
-					? 'Shared memory trees. Members and roles are managed in Registre, for every Facile app at once.'
-					: 'Shared memory trees. Invite teammates and scope memory, rules and skills per space.'}
+					? t('spaces.subtitleRegistre')
+					: t('spaces.subtitleLocal')}
 			</p>
 		</div>
 		{#if registreURL}
 			<Button icon={icons.arrow} href={registreURL} target="_blank" rel="noopener">
-				Manage in Registre
+				{t('spaces.manage')}
 			</Button>
 		{:else}
-			<Button icon={icons.plus} onclick={openCreate}>New space</Button>
+			<Button icon={icons.plus} onclick={openCreate}>{t('spaces.new')}</Button>
 		{/if}
 	</div>
 
 	{#if spaces.length === 0}
 		<EmptyState
 			icon={icons.space}
-			title="No spaces yet"
+			title={t('spaces.emptyTitle')}
 			description={registreURL
-				? 'Spaces are shared across the Facile suite. Create one in Registre and it appears here.'
-				: 'Create one to share a memory tree with the people you work with.'}
+				? t('spaces.emptyRegistre')
+				: t('spaces.emptyLocal')}
 		>
 			{#if registreURL}
 				<Button variant="outline" icon={icons.arrow} href={registreURL} target="_blank" rel="noopener">
-					Manage in Registre
+					{t('spaces.manage')}
 				</Button>
 			{:else}
-				<Button variant="outline" icon={icons.plus} onclick={openCreate}>New space</Button>
+				<Button variant="outline" icon={icons.plus} onclick={openCreate}>{t('spaces.new')}</Button>
 			{/if}
 		</EmptyState>
 	{:else}
@@ -98,11 +99,11 @@
 					href="/spaces/{space.id}"
 					icon={icons.space}
 					title={space.name}
-					meta={space.description || 'No description'}
+					meta={space.description || t('spaces.noDescription')}
 					mono={false}
 				>
 					{#snippet trailing()}
-						<Badge tone={tone(space.role)}>{space.role}</Badge>
+						<Badge tone={tone(space.role)}>{t(`role.${space.role}`)}</Badge>
 					{/snippet}
 				</EntityCard>
 			{/each}
@@ -110,16 +111,16 @@
 	{/if}
 </div>
 
-<Modal bind:open={createOpen} title="New space" showClose>
+<Modal bind:open={createOpen} title={t('spaces.new')} showClose>
 	<form class="flex flex-col gap-4" onsubmit={createSpace}>
-		<Field label="Name" error={createError || undefined}>
+		<Field label={t('common.name')} error={createError || undefined}>
 			<Input bind:value={draftName} placeholder="Facile" disabled={creating} required />
 		</Field>
-		<Field label="Description" helper="Optional — what this memory tree is for.">
+		<Field label={t('spaces.description')} helper={t('spaces.descriptionHelp')}>
 			<Textarea
 				bind:value={draftDescription}
 				rows={3}
-				placeholder="Team conventions, stack and shared projects."
+				placeholder={t('spaces.descriptionPlaceholder')}
 				disabled={creating}
 			/>
 		</Field>
@@ -130,7 +131,7 @@
 				class="w-full sm:w-auto"
 				onclick={() => (createOpen = false)}
 			>
-				Cancel
+				{t('common.cancel')}
 			</Button>
 			<Button
 				type="submit"
@@ -138,7 +139,7 @@
 				class="w-full sm:w-auto"
 				disabled={creating || draftName.trim().length === 0}
 			>
-				{creating ? 'Creating…' : 'Create space'}
+				{creating ? t('common.creating') : t('spaces.create')}
 			</Button>
 		</div>
 	</form>

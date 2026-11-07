@@ -1,6 +1,9 @@
 import type { Catalogs, Message } from '@facile/muse';
 import { automation } from './automation';
 import { sessions } from './sessions';
+import { spaces } from './spaces';
+import { bus } from './bus';
+import { settings } from './settings';
 import { common } from './common';
 import { memory } from './memory';
 import { shell } from './shell';
@@ -11,7 +14,10 @@ const rows = {
 	...shell,
 	...memory,
 	...automation,
-	...sessions
+	...sessions,
+	...spaces,
+	...settings,
+	...bus
 };
 
 export type AppKey = keyof typeof rows;

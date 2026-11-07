@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { Button, ProfileCard, SettingsRow, SettingsSection, icons, toast } from '@facile/muse';
 	import { backend, TOKEN_KEY, type AuthUser, type MyceliumStatus } from '$lib/backend';
+	import { t } from '$lib/i18n/index.svelte';
 
 	const status = getContext<() => MyceliumStatus | null>('status');
 
@@ -19,9 +20,9 @@
 	const meta = $derived.by(() => {
 		const s = status?.();
 		const rows: { label: string; value: string }[] = [];
-		if (s?.machine) rows.push({ label: 'This machine', value: s.machine });
-		if (s) rows.push({ label: 'Rules', value: `${s.rules?.length ?? 0}` });
-		if (s) rows.push({ label: 'Skills', value: `${s.skills?.length ?? 0}` });
+		if (s?.machine) rows.push({ label: t('profile.thisMachine'), value: s.machine });
+		if (s) rows.push({ label: t('profile.rules'), value: `${s.rules?.length ?? 0}` });
+		if (s) rows.push({ label: t('profile.skills'), value: `${s.skills?.length ?? 0}` });
 		return rows;
 	});
 
@@ -33,7 +34,7 @@
 			/* The session cookie may already be gone server-side; the local token still has to go. */
 		}
 		localStorage.removeItem(TOKEN_KEY);
-		toast.success('Signed out.');
+		toast.success(t('profile.loggedOut'));
 		goto('/login');
 	}
 </script>
@@ -48,17 +49,17 @@
 	/>
 
 	<SettingsSection
-		title="Account"
+		title={t('profile.account')}
 		description={me
-			? 'Managed by Facile SSO. Change your name, email or picture at sso.facile.studio/account.'
-			: 'This instance is running on a shared password, so there is no account to manage.'}
+			? t('profile.managed')
+			: t('profile.sharedPassword')}
 	>
 		<SettingsRow
-			label="Log out"
-			description="Ends this session in this browser. Paired machines keep syncing."
+			label={t('profile.logout')}
+			description={t('profile.logoutHelp')}
 		>
 			<Button variant="outline" icon={icons.logout} disabled={loggingOut} onclick={logout}>
-				{loggingOut ? 'Signing out…' : 'Log out'}
+				{loggingOut ? t('profile.loggingOut') : t('profile.logout')}
 			</Button>
 		</SettingsRow>
 	</SettingsSection>

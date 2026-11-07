@@ -2,6 +2,7 @@
 	import { getContext } from 'svelte';
 	import { SecretField, SettingsRow, SettingsSection, StatusDot } from '@facile/muse';
 	import { backend, type AuthConfig, type MyceliumStatus } from '$lib/backend';
+	import { t } from '$lib/i18n/index.svelte';
 
 	const status = getContext<() => MyceliumStatus | null>('status');
 
@@ -15,41 +16,39 @@
 	});
 
 	const authMode = $derived.by(() => {
-		if (!config) return { tone: 'neutral' as const, label: 'Unknown' };
-		if (config.sso_only) return { tone: 'success' as const, label: 'SSO only' };
-		if (config.oidc_enabled)
-			return { tone: 'info' as const, label: 'SSO and shared password' };
-		return { tone: 'warning' as const, label: 'Shared password only' };
+		if (!config) return { tone: 'neutral' as const, label: t('advanced.auth.unknown') };
+		if (config.oidc_enabled) return { tone: 'success' as const, label: t('advanced.auth.sso') };
+		return { tone: 'warning' as const, label: t('advanced.auth.password') };
 	});
 </script>
 
 <div class="flex flex-col gap-10">
 	<SettingsSection
-		title="Instance"
-		description="Useful when you file a bug against this self-hosted install."
+		title={t('advanced.instance')}
+		description={t('advanced.instanceHelp')}
 	>
-		<SettingsRow label="Sign-in" description="How this instance authenticates people.">
+		<SettingsRow label={t('advanced.signIn')} description={t('advanced.signInHelp')}>
 			<StatusDot tone={authMode.tone} label={authMode.label} />
 		</SettingsRow>
 
-		<SettingsRow label="This machine" description="The name the server reports for itself." stacked>
+		<SettingsRow label={t('profile.thisMachine')} description={t('advanced.machineHelp')} stacked>
 			<SecretField value={status?.()?.machine ?? '—'} sensitive={false} class="w-full" />
 		</SettingsRow>
 
-		<SettingsRow label="Rules loaded" description="Concatenated into every agent config.">
+		<SettingsRow label={t('advanced.rulesLoaded')} description={t('advanced.rulesHelp')}>
 			<span class="text-fc-sm tabular-nums text-fc-fg">{status?.()?.rules?.length ?? 0}</span>
 		</SettingsRow>
 
-		<SettingsRow label="Skills loaded" description="Installed into each agent's skill format.">
+		<SettingsRow label={t('advanced.skillsLoaded')} description={t('advanced.skillsHelp')}>
 			<span class="text-fc-sm tabular-nums text-fc-fg">{status?.()?.skills?.length ?? 0}</span>
 		</SettingsRow>
 	</SettingsSection>
 
 	<SettingsSection
-		title="Command line"
-		description="The CLI is the same binary as the server, so a machine only needs the install script and a token."
+		title={t('advanced.cli')}
+		description={t('advanced.cliHelp')}
 	>
-		<SettingsRow label="Install" stacked>
+		<SettingsRow label={t('advanced.install')} stacked>
 			<SecretField
 				value="curl -fsSL https://raw.githubusercontent.com/FacileStudio/Mycelium/main/install.sh | bash"
 				sensitive={false}
@@ -57,7 +56,7 @@
 			/>
 		</SettingsRow>
 
-		<SettingsRow label="Pair this machine" description="Paste an API token when it asks." stacked>
+		<SettingsRow label={t('advanced.pair')} description={t('advanced.pairHelp')} stacked>
 			<SecretField
 				value="mycelium login https://mycelium.facile.studio"
 				sensitive={false}

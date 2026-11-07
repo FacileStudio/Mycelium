@@ -17,6 +17,7 @@
 	import { backend, type Space, type SpaceMember, type UserInfo } from '$lib/backend';
 	import { setSpaces } from '$lib/space.svelte';
 	import SpaceMembers from '$lib/components/SpaceMembers.svelte';
+	import { t } from '$lib/i18n/index.svelte';
 
 	const roleTone = { owner: 'owner', admin: 'admin', member: 'neutral' } as const;
 
@@ -58,7 +59,7 @@
 				.then((u) => (users = u ?? []))
 				.catch(() => (users = []))
 		])
-			.catch((e) => toast.danger(e instanceof Error ? e.message : 'Could not load this space.'))
+			.catch((e) => toast.danger(e instanceof Error ? e.message : t('spaces.loadOne')))
 			.finally(() => (loading = false));
 	});
 
@@ -82,9 +83,9 @@
 		try {
 			space = await backend.spaceUpdate(id, draftName.trim(), draftDescription.trim());
 			editOpen = false;
-			toast.success('Space updated.');
+			toast.success(t('spaces.updated'));
 		} catch (e) {
-			editError = e instanceof Error ? e.message : 'Update failed';
+			editError = e instanceof Error ? e.message : t('spaces.updateFailed');
 		} finally {
 			savingEdit = false;
 		}
@@ -93,10 +94,10 @@
 	async function leaveSpace() {
 		try {
 			await backend.spaceLeave(id);
-			toast.success('You left the space.');
+			toast.success(t('spaces.left'));
 			goto('/spaces');
 		} catch (e) {
-			toast.danger(e instanceof Error ? e.message : 'Could not leave this space.');
+			toast.danger(e instanceof Error ? e.message : t('spaces.leaveFailed'));
 			throw e;
 		}
 	}
@@ -104,10 +105,10 @@
 	async function deleteSpace() {
 		try {
 			await backend.spaceDelete(id);
-			toast.success('Space deleted.');
+			toast.success(t('spaces.deleted'));
 			goto('/spaces');
 		} catch (e) {
-			toast.danger(e instanceof Error ? e.message : 'Could not delete this space.');
+			toast.danger(e instanceof Error ? e.message : t('spaces.deleteFailed'));
 			throw e;
 		}
 	}
@@ -119,15 +120,15 @@
 		class="inline-flex w-fit items-center gap-1 text-fc-sm text-fc-fg-muted transition-colors hover:text-fc-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fc-ring"
 	>
 		<iconify-icon icon={icons.chevronLeft} width="16" height="16" class="block"></iconify-icon>
-		Spaces
+		{t('spaces.title')}
 	</a>
 
 	{#if loading}
 		<div class="flex items-center gap-3 text-fc-sm text-fc-fg-muted">
-			<Spinner size="sm" label="Loading" /> Loading…
+			<Spinner size="sm" label={t('common.loading')} /> {t('common.loadingDots')}
 		</div>
 	{:else if !space}
-		<Card class="text-fc-sm text-fc-fg-muted">This space does not exist, or you left it.</Card>
+		<Card class="text-fc-sm text-fc-fg-muted">{t('spaces.missing')}</Card>
 	{:else}
 		<div class="flex flex-wrap items-start justify-between gap-4">
 			<div class="flex min-w-0 items-center gap-3">
@@ -140,10 +141,10 @@
 				<div class="min-w-0">
 					<div class="flex items-center gap-2">
 						<h1 class="truncate text-fc-xl font-semibold text-fc-fg">{space.name}</h1>
-						<Badge tone={roleTone[space.role]}>{space.role}</Badge>
+						<Badge tone={roleTone[space.role]}>{t(`role.${space.role}`)}</Badge>
 					</div>
 					<p class="truncate text-fc-sm text-fc-fg-muted">
-						{space.description || 'No description'}
+						{space.description || t('spaces.noDescription')}
 					</p>
 				</div>
 			</div>
@@ -151,20 +152,20 @@
 			<div class="flex shrink-0 flex-wrap items-center gap-2">
 				{#if managed}
 					<Button variant="outline" icon={icons.arrow} href={manageHref} target="_blank" rel="noopener">
-						Manage in Registre
+						{t('spaces.manage')}
 					</Button>
 				{/if}
 				{#if canManage && !linkedID}
-					<Button variant="outline" icon={icons.edit} onclick={openEdit}>Edit</Button>
+					<Button variant="outline" icon={icons.edit} onclick={openEdit}>{t('common.edit')}</Button>
 				{/if}
 				{#if !managed}
 					<Button variant="ghost" icon={icons.logout} onclick={() => (leaveOpen = true)}>
-						Leave
+						{t('spaces.leave')}
 					</Button>
 				{/if}
 				{#if isOwner && !linkedID}
 					<Button variant="ghost-danger" icon={icons.remove} onclick={() => (deleteOpen = true)}>
-						Delete
+						{t('common.delete')}
 					</Button>
 				{/if}
 			</div>
@@ -182,12 +183,12 @@
 	{/if}
 </div>
 
-<Modal bind:open={editOpen} title="Edit space" showClose>
+<Modal bind:open={editOpen} title={t('spaces.edit')} showClose>
 	<form class="flex flex-col gap-4" onsubmit={saveEdit}>
-		<Field label="Name" error={editError || undefined}>
+		<Field label={t('common.name')} error={editError || undefined}>
 			<Input bind:value={draftName} disabled={savingEdit} required />
 		</Field>
-		<Field label="Description">
+		<Field label={t('spaces.description')}>
 			<Textarea bind:value={draftDescription} rows={3} disabled={savingEdit} />
 		</Field>
 		<div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -197,7 +198,7 @@
 				class="w-full sm:w-auto"
 				onclick={() => (editOpen = false)}
 			>
-				Cancel
+				{t('common.cancel')}
 			</Button>
 			<Button
 				type="submit"
@@ -205,7 +206,7 @@
 				class="w-full sm:w-auto"
 				disabled={savingEdit || draftName.trim().length === 0}
 			>
-				{savingEdit ? 'Saving…' : 'Save changes'}
+				{savingEdit ? t('common.saving') : t('spaces.saveChanges')}
 			</Button>
 		</div>
 	</form>
@@ -214,19 +215,19 @@
 <ConfirmModal
 	bind:open={leaveOpen}
 	tone="danger"
-	title="Leave {space?.name ?? 'this space'}?"
-	description="This space disappears from your machines on the next sync. An owner has to invite you back."
-	confirmLabel="Leave space"
-	cancelLabel="Stay"
+	title={t('spaces.leaveTitle', { name: space?.name ?? t('spaces.thisSpace') })}
+	description={t('spaces.leaveText')}
+	confirmLabel={t('spaces.leaveConfirm')}
+	cancelLabel={t('spaces.stay')}
 	onConfirm={leaveSpace}
 />
 
 <ConfirmModal
 	bind:open={deleteOpen}
 	tone="danger"
-	title="Delete {space?.name ?? 'this space'}?"
-	description="Every member loses it, and the memory, rules and skills stored in it are gone. This cannot be undone."
-	confirmLabel="Delete space"
-	cancelLabel="Keep it"
+	title={t('spaces.deleteTitle', { name: space?.name ?? t('spaces.thisSpace') })}
+	description={t('spaces.deleteText')}
+	confirmLabel={t('spaces.deleteConfirm')}
+	cancelLabel={t('common.keep')}
 	onConfirm={deleteSpace}
 />

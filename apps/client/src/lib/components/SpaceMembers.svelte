@@ -12,6 +12,7 @@
 		toast
 	} from '@facile/muse';
 	import { backend, type SpaceMember, type SpaceRole, type UserInfo } from '$lib/backend';
+	import { t } from '$lib/i18n/index.svelte';
 
 	let {
 		id,
@@ -46,12 +47,12 @@
 		adding = true;
 		try {
 			await backend.spaceMemberAdd(id, newMemberEmail, newMemberRole);
-			toast.success(`${newMemberEmail} added to ${spaceName ?? 'the space'}.`);
+			toast.success(t('members.added', { email: newMemberEmail, space: spaceName ?? t('members.theSpace') }));
 			newMemberEmail = '';
 			newMemberRole = 'member';
 			await onChanged();
 		} catch (e) {
-			toast.danger(e instanceof Error ? e.message : 'Could not add that member.');
+			toast.danger(e instanceof Error ? e.message : t('members.addFailed'));
 		} finally {
 			adding = false;
 		}
@@ -60,9 +61,9 @@
 	async function changeRole(email: string, role: SpaceRole) {
 		try {
 			await backend.spaceMemberUpdate(id, email, role);
-			toast.success(`${email} is now ${role}.`);
+			toast.success(t('members.roleChanged', { email, role: t(`role.${role}`) }));
 		} catch (e) {
-			toast.danger(e instanceof Error ? e.message : 'Could not change that role.');
+			toast.danger(e instanceof Error ? e.message : t('members.roleFailed'));
 		} finally {
 			await onChanged();
 		}
@@ -73,11 +74,11 @@
 		if (!target) return;
 		try {
 			await backend.spaceMemberRemove(id, target.email);
-			toast.success(`${target.email} removed.`);
+			toast.success(t('members.removed', { email: target.email }));
 			removeTarget = null;
 			await onChanged();
 		} catch (e) {
-			toast.danger(e instanceof Error ? e.message : 'Could not remove that member.');
+			toast.danger(e instanceof Error ? e.message : t('members.removeFailed'));
 			throw e;
 		}
 	}
@@ -85,20 +86,20 @@
 
 <section class="flex flex-col gap-4">
 	<div class="flex flex-col gap-1">
-		<h2 class="text-fc-lg font-semibold text-fc-fg">Members</h2>
+		<h2 class="text-fc-lg font-semibold text-fc-fg">{t('members.title')}</h2>
 		<p class="text-fc-sm text-fc-fg-muted">
-			Everyone here reads and writes the same memory, rules and skills.
+			{t('members.subtitle')}
 		</p>
 	</div>
 
 	<Table>
 		<thead>
 			<tr>
-				<th scope="col">Email</th>
-				<th scope="col">Name</th>
-				<th scope="col">Role</th>
+				<th scope="col">{t('members.email')}</th>
+				<th scope="col">{t('common.name')}</th>
+				<th scope="col">{t('members.role')}</th>
 				{#if canManage}
-					<th scope="col" class="text-right" aria-label="Actions"></th>
+					<th scope="col" class="text-right" aria-label={t('members.actions')}></th>
 				{/if}
 			</tr>
 		</thead>
@@ -121,17 +122,17 @@
 						{#if isOwner}
 							<Select
 								value={member.role}
-								aria-label="Role for {member.email}"
+								aria-label={t('members.roleFor', { email: member.email })}
 								class="h-9 min-w-28"
 								onchange={(e) =>
 									changeRole(member.email, e.currentTarget.value as SpaceRole)}
 							>
-								<option value="member">member</option>
-								<option value="admin">admin</option>
-								<option value="owner">owner</option>
+								<option value="member">{t('role.member')}</option>
+								<option value="admin">{t('role.admin')}</option>
+								<option value="owner">{t('role.owner')}</option>
 							</Select>
 						{:else}
-							<Badge tone={roleTone[member.role]}>{member.role}</Badge>
+							<Badge tone={roleTone[member.role]}>{t(`role.${member.role}`)}</Badge>
 						{/if}
 					</td>
 					{#if canManage}
@@ -140,13 +141,13 @@
 								variant="ghost-danger"
 								size="sm"
 								icon={icons.remove}
-								aria-label="Remove {member.email}"
+								aria-label={t('members.removeLabel', { email: member.email })}
 								onclick={() => {
 									removeTarget = member;
 									removeOpen = true;
 								}}
 							>
-								Remove
+								{t('members.remove')}
 							</Button>
 						</td>
 					{/if}
@@ -157,12 +158,12 @@
 
 	{#if canManage}
 		<Card class="flex flex-col gap-4">
-			<p class="text-fc-sm font-medium text-fc-fg">Add a member</p>
+			<p class="text-fc-sm font-medium text-fc-fg">{t('members.add')}</p>
 			<form class="flex flex-col gap-3 sm:flex-row sm:items-end" onsubmit={addMember}>
 				<div class="min-w-0 flex-1">
-					<Field label="User" helper="Only people with a Mycelium account can be added.">
+					<Field label={t('members.user')} helper={t('members.userHelp')}>
 						<Select bind:value={newMemberEmail} disabled={adding || candidates.length === 0}>
-							<option value="" disabled>Select a user…</option>
+							<option value="" disabled>{t('members.select')}</option>
 							{#each candidates as user (user.email)}
 								<option value={user.email}>
 									{user.name ? `${user.name} — ${user.email}` : user.email}
@@ -171,17 +172,17 @@
 						</Select>
 					</Field>
 				</div>
-				<Field label="Role">
+				<Field label={t('members.role')}>
 					<Select bind:value={newMemberRole} class="min-w-32" disabled={adding}>
-						<option value="member">member</option>
-						<option value="admin">admin</option>
+						<option value="member">{t('role.member')}</option>
+						<option value="admin">{t('role.admin')}</option>
 						{#if isOwner}
-							<option value="owner">owner</option>
+							<option value="owner">{t('role.owner')}</option>
 						{/if}
 					</Select>
 				</Field>
 				<Button type="submit" icon={icons.plus} disabled={adding || !newMemberEmail}>
-					{adding ? 'Adding…' : 'Add'}
+					{adding ? t('members.adding') : t('members.addButton')}
 				</Button>
 			</form>
 		</Card>
@@ -191,10 +192,10 @@
 <ConfirmModal
 	bind:open={removeOpen}
 	tone="danger"
-	title="Remove {removeTarget?.email ?? 'this member'}?"
-	description="They lose access to this space's memory, rules and skills on their next sync. Anything they wrote stays."
-	confirmLabel="Remove member"
-	cancelLabel="Keep them"
+	title={t('members.removeTitle', { email: removeTarget?.email ?? t('members.thisMember') })}
+	description={t('members.removeText')}
+	confirmLabel={t('members.removeConfirm')}
+	cancelLabel={t('members.keep')}
 	onConfirm={removeMember}
 	onCancel={() => (removeTarget = null)}
 />
