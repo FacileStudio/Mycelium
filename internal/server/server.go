@@ -4,7 +4,6 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
-	"net/netip"
 	"os"
 	"path/filepath"
 	"sync"
@@ -38,10 +37,7 @@ type Server struct {
 	DataDir            string
 	Password           string
 	Version            string
-	TrustedProxies     []netip.Prefix
-	CDNProxies         []netip.Prefix
-	CDNHeader          string
-	ScriptSources      []string
+	Edge               EdgeConfig
 	OIDC               *env.OIDC
 	CORSAllowedOrigins []string
 	JournalBrowserURL  string
@@ -92,9 +88,9 @@ func (s *Server) Handler() *chi.Mux {
 		Logger: s.Log,
 		CORS:   middleware.CORSConfig{AllowedOrigins: s.CORSAllowedOrigins},
 
-		TrustedProxies: s.TrustedProxies,
-		CDNProxies:     s.CDNProxies,
-		CDNHeader:      s.CDNHeader,
+		TrustedProxies: s.Edge.TrustedProxies,
+		CDNProxies:     s.Edge.CDNProxies,
+		CDNHeader:      s.Edge.CDNHeader,
 		Security:       s.securityConfig(),
 	})
 	health.Mount(router, s.dataDirCheck())

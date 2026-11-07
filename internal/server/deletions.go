@@ -130,7 +130,7 @@ func promoteOwner(space *Space) {
 		if role == roleOwner {
 			return
 		}
-		if best == "" || rank(role) > rank(space.Members[best]) || (rank(role) == rank(space.Members[best]) && email < best) {
+		if best == "" || outranks(role, email, space.Members[best], best) {
 			best = email
 		}
 	}
@@ -139,9 +139,9 @@ func promoteOwner(space *Space) {
 	}
 }
 
-func rank(role string) int {
-	if role == roleAdmin {
-		return 1
+func outranks(role, email, bestRole, best string) bool {
+	if (role == roleAdmin) != (bestRole == roleAdmin) {
+		return role == roleAdmin
 	}
-	return 0
+	return email < best
 }

@@ -107,11 +107,3 @@ func readStore[T any](path string) (map[string]T, error) {
 	}
 	return store, nil
 }
-
-func (s *Server) versionHandler(w http.ResponseWriter, _ *http.Request) {
-	version := s.Version
-	if version == "" {
-		version = "dev"
-	}
-	httpjson.WriteJSON(w, http.StatusOK, map[string]string{"version": version})
-}

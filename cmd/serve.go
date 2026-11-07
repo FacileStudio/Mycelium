@@ -95,9 +95,11 @@ var serveCmd = &cobra.Command{
 
 		srv := server.New(cfg.DataDir, cfg.Password)
 		srv.Version = version
-		srv.TrustedProxies = cfg.TrustedProxies
-		srv.CDNProxies = cfg.CDNProxies
-		srv.CDNHeader = cfg.CDNHeader
+		srv.Edge = server.EdgeConfig{
+			TrustedProxies: cfg.TrustedProxies,
+			CDNProxies:     cfg.CDNProxies,
+			CDNHeader:      cfg.CDNHeader,
+		}
 		srv.OIDC = cfg.OIDC
 		srv.CORSAllowedOrigins = cfg.CORSAllowedOrigins
 		srv.JournalBrowserURL = cfg.JournalBrowserURL
@@ -118,7 +120,7 @@ var serveCmd = &cobra.Command{
 
 		clientDir := spa.DirFromEnv()
 		if hashes, err := spa.InlineScriptHashes(clientDir); err == nil {
-			srv.ScriptSources = hashes
+			srv.Edge.ScriptSources = hashes
 		}
 		router := srv.Handler()
 		if spa.Available(clientDir) {
