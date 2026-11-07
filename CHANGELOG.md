@@ -8,6 +8,15 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [Unreleased]
+
+### Changed
+
+- Libraries: porte v0.12.0 to v0.12.1 and `@facile/muse` v0.12.1 to v0.13.0 (borderless
+  controls with the light `fc-field` fill, `Select` as a custom combobox, badges that never
+  wrap). The server keeps JSON storage and uses no `porte/pg`, so the porte fix does not touch
+  it. No app code change: the page-create and space-member selects keep their labels.
+
 ## [0.39.0] — 2026-11-07
 
 ### Changed
