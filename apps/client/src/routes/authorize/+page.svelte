@@ -206,7 +206,7 @@
 		{#if phase === 'starting'}
 			<div class="h-40"></div>
 		{:else if phase === 'approved'}
-			<div class="rounded-xl border border-border bg-card p-6 text-center">
+			<div class="rounded-xl bg-fc-surface p-6 text-center">
 				<iconify-icon icon="solar:check-circle-bold" width="40" height="40" class="mx-auto block text-fc-success"></iconify-icon>
 				<h1 class="mt-3 text-lg font-semibold">{t('authorize.approved')}</h1>
 				<p class="mt-1 text-sm text-muted-foreground">
@@ -214,7 +214,7 @@
 				</p>
 			</div>
 		{:else if phase === 'denied'}
-			<div class="rounded-xl border border-border bg-card p-6 text-center">
+			<div class="rounded-xl bg-fc-surface p-6 text-center">
 				<iconify-icon icon="solar:close-circle-bold" width="40" height="40" class="mx-auto block text-muted-foreground"></iconify-icon>
 				<h1 class="mt-3 text-lg font-semibold">{t('authorize.denied')}</h1>
 				<p class="mt-1 text-sm text-muted-foreground">{t('authorize.deniedText')}</p>
@@ -228,7 +228,7 @@
 			</div>
 
 			{#if phase === 'ready'}
-				<div class="rounded-xl border border-border bg-card p-5">
+				<div class="rounded-xl bg-fc-surface p-5">
 					<div class="flex items-center gap-3">
 						<div class="flex size-10 items-center justify-center rounded-lg bg-accent">
 							<iconify-icon icon="solar:server-square-linear" width="20" height="20" class="block"></iconify-icon>
@@ -252,7 +252,7 @@
 							type="button"
 							onclick={deny}
 							disabled={busy}
-							class="inline-flex h-10 flex-1 items-center justify-center rounded-md border border-border bg-background px-4 text-sm font-medium hover:bg-accent disabled:opacity-50"
+							class="inline-flex h-10 flex-1 items-center justify-center rounded-md bg-fc-surface px-4 text-sm font-medium hover:bg-accent disabled:opacity-50"
 						>
 							{t('authorize.deny')}
 						</button>
@@ -278,7 +278,7 @@
 							spellcheck="false"
 							aria-label={t('authorize.codeLabel')}
 							aria-describedby="code-hint"
-							class="h-11 w-full rounded-md border border-input bg-background px-3 text-center font-mono text-lg uppercase tracking-widest outline-none focus-visible:ring-2 focus-visible:ring-ring"
+							class="h-11 w-full rounded-md bg-fc-field px-3 text-center font-mono text-lg uppercase tracking-widest outline-none focus-visible:ring-2 focus-visible:ring-ring"
 						/>
 						<p id="code-hint" class="text-center text-xs text-muted-foreground">{hint}</p>
 					</div>

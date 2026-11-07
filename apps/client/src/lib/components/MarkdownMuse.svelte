@@ -39,7 +39,7 @@ const tokens = $derived(marked.lexer(cleanBody) as Token[]);
 					{@html richInline(h.text)}
 				</h1>
 			{:else if h.depth === 2}
-				<h2 class="mt-4 border-b border-fc-border pb-2 text-fc-xl font-bold tracking-tight text-fc-fg">
+				<h2 class="mt-4 pb-2 text-fc-xl font-bold tracking-tight text-fc-fg">
 					{@html richInline(h.text)}
 				</h2>
 			{:else if h.depth === 3}
@@ -63,7 +63,7 @@ const tokens = $derived(marked.lexer(cleanBody) as Token[]);
 			{@const alert = parseAlert(b.text)}
 			{#if alert.isAlert}
 				{#if alert.tone === 'pros' || alert.tone === 'tip'}
-					<div class="my-3 flex flex-col gap-1.5 rounded-fc-lg border-l-4 border-fc-success bg-fc-success/10 p-4 text-fc-sm shadow-fc-xs">
+					<div class="my-3 flex flex-col gap-1.5 rounded-fc-lg bg-fc-success/10 p-4 text-fc-sm shadow-fc-xs">
 						<div class="flex items-center gap-2 font-semibold text-fc-success">
 							<span class="inline-flex size-5 items-center justify-center rounded-full bg-fc-success/20 text-xs font-bold">+</span>
 							<span>{alert.title}</span>
@@ -73,7 +73,7 @@ const tokens = $derived(marked.lexer(cleanBody) as Token[]);
 						</div>
 					</div>
 				{:else if alert.tone === 'cons' || alert.tone === 'caution'}
-					<div class="my-3 flex flex-col gap-1.5 rounded-fc-lg border-l-4 border-fc-danger bg-fc-danger/10 p-4 text-fc-sm shadow-fc-xs">
+					<div class="my-3 flex flex-col gap-1.5 rounded-fc-lg bg-fc-danger/10 p-4 text-fc-sm shadow-fc-xs">
 						<div class="flex items-center gap-2 font-semibold text-fc-danger">
 							<span class="inline-flex size-5 items-center justify-center rounded-full bg-fc-danger/20 text-xs font-bold">-</span>
 							<span>{alert.title}</span>
@@ -83,7 +83,7 @@ const tokens = $derived(marked.lexer(cleanBody) as Token[]);
 						</div>
 					</div>
 				{:else if alert.tone === 'warning'}
-					<div class="my-3 flex flex-col gap-1.5 rounded-fc-lg border-l-4 border-fc-warning bg-fc-warning/10 p-4 text-fc-sm shadow-fc-xs">
+					<div class="my-3 flex flex-col gap-1.5 rounded-fc-lg bg-fc-warning/10 p-4 text-fc-sm shadow-fc-xs">
 						<div class="flex items-center gap-2 font-semibold text-fc-warning">
 							<span class="inline-flex size-5 items-center justify-center rounded-full bg-fc-warning/20 text-xs font-bold">!</span>
 							<span>{alert.title}</span>
@@ -93,7 +93,7 @@ const tokens = $derived(marked.lexer(cleanBody) as Token[]);
 						</div>
 					</div>
 				{:else if alert.tone === 'important'}
-					<div class="my-3 flex flex-col gap-1.5 rounded-fc-lg border-l-4 border-fc-accent bg-fc-accent/10 p-4 text-fc-sm shadow-fc-xs">
+					<div class="my-3 flex flex-col gap-1.5 rounded-fc-lg bg-fc-accent/10 p-4 text-fc-sm shadow-fc-xs">
 						<div class="flex items-center gap-2 font-semibold text-fc-accent">
 							<span class="inline-flex size-5 items-center justify-center rounded-full bg-fc-accent/20 text-xs font-bold">★</span>
 							<span>{alert.title}</span>
@@ -103,7 +103,7 @@ const tokens = $derived(marked.lexer(cleanBody) as Token[]);
 						</div>
 					</div>
 				{:else}
-					<div class="my-3 flex flex-col gap-1.5 rounded-fc-lg border-l-4 border-fc-info bg-fc-info/10 p-4 text-fc-sm shadow-fc-xs">
+					<div class="my-3 flex flex-col gap-1.5 rounded-fc-lg bg-fc-info/10 p-4 text-fc-sm shadow-fc-xs">
 						<div class="flex items-center gap-2 font-semibold text-fc-info">
 							<span class="inline-flex size-5 items-center justify-center rounded-full bg-fc-info/20 text-xs font-bold">i</span>
 							<span>{alert.title}</span>
@@ -114,7 +114,7 @@ const tokens = $derived(marked.lexer(cleanBody) as Token[]);
 					</div>
 				{/if}
 			{:else}
-				<div class="rounded-fc-lg border-l-4 border-fc-primary bg-fc-surface/60 p-4 text-fc-sm text-fc-fg-muted italic">
+				<div class="rounded-fc-lg bg-fc-surface/60 p-4 text-fc-sm text-fc-fg-muted italic">
 					{@html safeHtml(marked.parse(b.text) as string)}
 				</div>
 			{/if}
@@ -126,7 +126,7 @@ const tokens = $derived(marked.lexer(cleanBody) as Token[]);
 					{#each l.items as item, index}
 						{@const parsed = parseListItem(item.text)}
 						<li class="flex items-start gap-3 text-fc-sm text-fc-fg">
-							<span class="flex size-5 shrink-0 items-center justify-center rounded-full bg-fc-surface border border-fc-border font-fc-mono text-[0.7rem] font-semibold text-fc-primary">
+							<span class="flex size-5 shrink-0 items-center justify-center rounded-full bg-fc-surface font-fc-mono text-[0.7rem] font-semibold text-fc-primary">
 								{(typeof l.start === 'number' ? l.start : 1) + index}
 							</span>
 							<div class="leading-relaxed text-fc-fg-muted pt-0.5">
@@ -140,7 +140,7 @@ const tokens = $derived(marked.lexer(cleanBody) as Token[]);
 					{#each l.items as item}
 						{@const parsed = parseListItem(item.text)}
 						{#if parsed.kind === 'pro'}
-							<li class="flex items-start gap-2.5 rounded-fc-md bg-fc-success/5 px-3 py-1.5 text-fc-sm border border-fc-success/20">
+							<li class="flex items-start gap-2.5 rounded-fc-md bg-fc-success/5 px-3 py-1.5 text-fc-sm">
 								<span class="mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-fc-success/20 text-fc-success text-xs font-bold">
 									+
 								</span>
@@ -149,7 +149,7 @@ const tokens = $derived(marked.lexer(cleanBody) as Token[]);
 								</div>
 							</li>
 						{:else if parsed.kind === 'con'}
-							<li class="flex items-start gap-2.5 rounded-fc-md bg-fc-danger/5 px-3 py-1.5 text-fc-sm border border-fc-danger/20">
+							<li class="flex items-start gap-2.5 rounded-fc-md bg-fc-danger/5 px-3 py-1.5 text-fc-sm">
 								<span class="mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-fc-danger/20 text-fc-danger text-xs font-bold">
 									-
 								</span>
@@ -158,7 +158,7 @@ const tokens = $derived(marked.lexer(cleanBody) as Token[]);
 								</div>
 							</li>
 						{:else if parsed.kind === 'warn'}
-							<li class="flex items-start gap-2.5 rounded-fc-md bg-fc-warning/5 px-3 py-1.5 text-fc-sm border border-fc-warning/20">
+							<li class="flex items-start gap-2.5 rounded-fc-md bg-fc-warning/5 px-3 py-1.5 text-fc-sm">
 								<span class="mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-fc-warning/20 text-fc-warning text-xs font-bold">
 									!
 								</span>
@@ -167,7 +167,7 @@ const tokens = $derived(marked.lexer(cleanBody) as Token[]);
 								</div>
 							</li>
 						{:else if parsed.kind === 'info'}
-							<li class="flex items-start gap-2.5 rounded-fc-md bg-fc-info/5 px-3 py-1.5 text-fc-sm border border-fc-info/20">
+							<li class="flex items-start gap-2.5 rounded-fc-md bg-fc-info/5 px-3 py-1.5 text-fc-sm">
 								<span class="mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-fc-info/20 text-fc-info text-xs font-bold">
 									i
 								</span>
@@ -189,10 +189,10 @@ const tokens = $derived(marked.lexer(cleanBody) as Token[]);
 
 		{:else if token.type === 'table'}
 			{@const t = token as Tokens.Table}
-			<div class="my-3 overflow-x-auto rounded-fc-lg border border-fc-border bg-fc-surface/40">
+			<div class="my-3 overflow-x-auto rounded-fc-lg bg-fc-surface/40">
 				<table class="w-full border-collapse text-fc-sm">
 					<thead>
-						<tr class="border-b border-fc-border bg-fc-surface-hover/60">
+						<tr class="bg-fc-surface-hover/60">
 							{#each t.header as headerCell, i}
 								<th class="p-3 text-left font-semibold text-fc-fg {t.align[i] ? `text-${t.align[i]}` : ''}">
 									{@html richInline(headerCell.text)}
@@ -200,7 +200,7 @@ const tokens = $derived(marked.lexer(cleanBody) as Token[]);
 							{/each}
 						</tr>
 					</thead>
-					<tbody class="divide-y divide-fc-border/60">
+					<tbody class="">
 						{#each t.rows as row}
 							<tr class="transition-colors hover:bg-fc-surface-hover/40">
 								{#each row as cell, i}
@@ -220,7 +220,7 @@ const tokens = $derived(marked.lexer(cleanBody) as Token[]);
 
 			{#if lang.startsWith('chart:bar') || lang.startsWith('chart:bars') || lang === 'chart'}
 				{@const chart = parseBarChart(c.text)}
-				<div class="my-4 rounded-fc-lg border border-fc-border bg-fc-surface p-5 shadow-fc-xs">
+				<div class="my-4 rounded-fc-lg bg-fc-surface p-5 shadow-fc-xs">
 					{#if chart.title}
 						<h4 class="mb-4 text-fc-sm font-semibold text-fc-fg">{chart.title}</h4>
 					{/if}
@@ -244,7 +244,7 @@ const tokens = $derived(marked.lexer(cleanBody) as Token[]);
 				{@const metrics = parseMetrics(c.text)}
 				<div class="my-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
 					{#each metrics as m}
-						<div class="flex flex-col gap-1 rounded-fc-lg border border-fc-border bg-fc-surface p-4 shadow-fc-xs">
+						<div class="flex flex-col gap-1 rounded-fc-lg bg-fc-surface p-4 shadow-fc-xs">
 							{#if m.label}
 								<span class="text-[0.7rem] font-semibold uppercase tracking-wider text-fc-fg-muted">{m.label}</span>
 							{/if}
@@ -262,7 +262,7 @@ const tokens = $derived(marked.lexer(cleanBody) as Token[]);
 				{@const comp = parseCompare(c.text)}
 				<div class="my-4 grid gap-4 sm:grid-cols-2">
 					{#each comp as section}
-						<div class="flex flex-col gap-3 rounded-fc-lg border p-4 {section.tone === 'pro' ? 'border-fc-success/30 bg-fc-success/5' : section.tone === 'con' ? 'border-fc-danger/30 bg-fc-danger/5' : 'border-fc-border bg-fc-surface'}">
+						<div class="flex flex-col gap-3 rounded-fc-lg p-4 {section.tone === 'pro' ? ' bg-fc-success/5' : section.tone === 'con' ? ' bg-fc-danger/5' : ' bg-fc-surface'}">
 							<div class="flex items-center gap-2 font-semibold {section.tone === 'pro' ? 'text-fc-success' : section.tone === 'con' ? 'text-fc-danger' : 'text-fc-fg'}">
 								<span class="inline-flex size-5 items-center justify-center rounded-full {section.tone === 'pro' ? 'bg-fc-success/20 text-xs font-bold' : section.tone === 'con' ? 'bg-fc-danger/20 text-xs font-bold' : 'bg-fc-surface-hover'}">
 									{section.tone === 'pro' ? '+' : section.tone === 'con' ? '-' : '•'}
@@ -284,8 +284,8 @@ const tokens = $derived(marked.lexer(cleanBody) as Token[]);
 
 			{:else if lang === 'diff'}
 				{@const diffLines = parseDiff(c.text)}
-				<div class="my-3 overflow-hidden rounded-fc-lg border border-fc-border bg-fc-surface font-fc-mono text-fc-xs">
-					<div class="flex items-center justify-between border-b border-fc-border bg-fc-surface-hover/40 px-4 py-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-fc-fg-muted">
+				<div class="my-3 overflow-hidden rounded-fc-lg bg-fc-surface font-fc-mono text-fc-xs">
+					<div class="flex items-center justify-between bg-fc-surface-hover/40 px-4 py-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-fc-fg-muted">
 						<span>diff</span>
 						<Button variant="ghost" size="sm" icon={icons.copy} onclick={() => copyToClipboard(c.text)}>
 							{t('common.copy')}
@@ -298,9 +298,9 @@ const tokens = $derived(marked.lexer(cleanBody) as Token[]);
 				<MermaidBlock code={c.text} />
 
 			{:else}
-				<div class="my-3 overflow-hidden rounded-fc-lg border border-fc-border bg-fc-surface">
+				<div class="my-3 overflow-hidden rounded-fc-lg bg-fc-surface">
 					{#if c.lang}
-						<div class="flex items-center justify-between border-b border-fc-border bg-fc-surface-hover/40 px-4 py-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-fc-fg-muted">
+						<div class="flex items-center justify-between bg-fc-surface-hover/40 px-4 py-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-fc-fg-muted">
 							<span>{c.lang}</span>
 							<Button variant="ghost" size="sm" icon={icons.copy} onclick={() => copyToClipboard(c.text)}>
 								{t('common.copy')}
@@ -312,7 +312,7 @@ const tokens = $derived(marked.lexer(cleanBody) as Token[]);
 			{/if}
 
 		{:else if token.type === 'hr'}
-			<hr class="my-4 border-fc-border" />
+			<hr class="my-6 border-0" />
 		{/if}
 	{/each}
 </div>

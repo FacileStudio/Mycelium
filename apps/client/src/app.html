@@ -31,6 +31,14 @@
 			content="One brain for all your AI coding agents, synced across every machine. Memory, rules and skills in a single canonical store."
 		/>
 		<meta name="twitter:image" content="https://mycelium.facile.studio/og-image.png" />
+		<script>
+			try {
+				var theme = localStorage.getItem('mycelium-theme');
+				var root = document.documentElement;
+				root.classList.toggle('dark', theme === 'dark');
+				root.classList.toggle('light', theme === 'light');
+			} catch (e) {}
+		</script>
 		%sveltekit.head%
 
 		<title>Mycelium — One brain for your agents</title>

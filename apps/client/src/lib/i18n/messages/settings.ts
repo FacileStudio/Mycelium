@@ -11,6 +11,8 @@ export const settings = {
 	],
 	'settings.sections': ['Settings sections', 'Sections des réglages', 'Secciones de ajustes', 'Abschnitte der Einstellungen'],
 	'settings.tab.profile': ['Profile', 'Profil', 'Perfil', 'Profil'],
+	'settings.tab.preferences': ['Preferences', 'Préférences', 'Preferencias', 'Einstellungen'],
+	'settings.tab.connect': ['Connect', 'Connexion', 'Conectar', 'Verbinden'],
 	'settings.tab.appearance': ['Appearance', 'Apparence', 'Apariencia', 'Darstellung'],
 	'settings.tab.api': ['API', 'API', 'API', 'API'],
 	'settings.tab.bus': ['Bus', 'Bus', 'Bus', 'Bus'],

@@ -117,7 +117,7 @@
 
 <Card class="my-4 overflow-hidden p-0">
 	<div
-		class="flex flex-wrap items-center justify-between gap-2 border-b border-fc-border bg-fc-surface-hover/40 px-4 py-2 text-fc-xs text-fc-fg-muted"
+		class="flex flex-wrap items-center justify-between gap-2 bg-fc-surface-hover/40 px-4 py-2 text-fc-xs text-fc-fg-muted"
 	>
 		<div class="flex items-center gap-2">
 			<span class="font-semibold uppercase tracking-wider">{t('mermaid.flowchart')}</span>
@@ -131,7 +131,7 @@
 		</div>
 		<div class="flex flex-wrap items-center gap-1.5">
 			{#if !showSource && !error && svgHtml}
-				<div class="flex items-center rounded-fc-md border border-fc-border bg-fc-surface p-0.5">
+				<div class="flex items-center rounded-fc-md bg-fc-surface p-0.5">
 					<button
 						type="button"
 						class="flex size-6 items-center justify-center rounded text-fc-fg-muted hover:text-fc-fg transition-colors"
@@ -177,7 +177,7 @@
 		<pre
 			class="overflow-x-auto p-4 font-fc-mono text-fc-xs leading-relaxed text-fc-fg"><code>{code}</code></pre>
 		{#if error}
-			<div class="border-t border-fc-border bg-fc-danger/5 p-3 font-fc-mono text-fc-xs text-fc-danger">
+			<div class="bg-fc-danger/5 p-3 font-fc-mono text-fc-xs text-fc-danger">
 				{error}
 			</div>
 		{/if}

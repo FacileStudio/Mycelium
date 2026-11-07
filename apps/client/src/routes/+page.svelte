@@ -82,7 +82,7 @@
 		<main id="main">
 			<section class="mx-auto max-w-fc-lg px-6 pb-28 pt-36 md:pb-36 md:pt-44">
 				<p
-					class="mb-6 inline-flex items-center gap-2 rounded-fc-pill border border-fc-border px-3.5 py-1 text-fc-xs text-fc-fg-muted"
+					class="mb-6 inline-flex items-center gap-2 rounded-fc-pill px-3.5 py-1 text-fc-xs text-fc-fg-muted"
 				>
 					<iconify-icon icon={icons.server} width="14" height="14" class="block"></iconify-icon>
 					{t('landing.badge')}
@@ -236,7 +236,7 @@
 				</div>
 			</section>
 
-			<section class="border-t border-fc-border">
+			<section class="">
 				<div class="mx-auto max-w-fc-lg px-6 py-28 text-center md:py-36">
 					<h2 class="text-fc-2xl font-semibold text-fc-fg">
 						{t('landing.ctaTitle')}

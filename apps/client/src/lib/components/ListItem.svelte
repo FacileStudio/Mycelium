@@ -4,10 +4,10 @@
 	let { kind, clean }: { kind: 'pro' | 'con' | 'warn' | 'info' | 'normal'; clean: string } = $props();
 
 	const cfg: Record<string, { li: string; badge: string; icon: string }> = {
-		pro: { li: 'flex items-start gap-2.5 rounded-fc-md bg-fc-success/5 px-3 py-1.5 text-fc-sm border border-fc-success/20', badge: 'mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-fc-success/20 text-fc-success text-xs font-bold', icon: '+' },
-		con: { li: 'flex items-start gap-2.5 rounded-fc-md bg-fc-danger/5 px-3 py-1.5 text-fc-sm border border-fc-danger/20', badge: 'mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-fc-danger/20 text-fc-danger text-xs font-bold', icon: '-' },
-		warn: { li: 'flex items-start gap-2.5 rounded-fc-md bg-fc-warning/5 px-3 py-1.5 text-fc-sm border border-fc-warning/20', badge: 'mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-fc-warning/20 text-fc-warning text-xs font-bold', icon: '!' },
-		info: { li: 'flex items-start gap-2.5 rounded-fc-md bg-fc-info/5 px-3 py-1.5 text-fc-sm border border-fc-info/20', badge: 'mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-fc-info/20 text-fc-info text-xs font-bold', icon: 'i' }
+		pro: { li: 'flex items-start gap-2.5 rounded-fc-md bg-fc-success/5 px-3 py-1.5 text-fc-sm  ', badge: 'mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-fc-success/20 text-fc-success text-xs font-bold', icon: '+' },
+		con: { li: 'flex items-start gap-2.5 rounded-fc-md bg-fc-danger/5 px-3 py-1.5 text-fc-sm  ', badge: 'mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-fc-danger/20 text-fc-danger text-xs font-bold', icon: '-' },
+		warn: { li: 'flex items-start gap-2.5 rounded-fc-md bg-fc-warning/5 px-3 py-1.5 text-fc-sm  ', badge: 'mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-fc-warning/20 text-fc-warning text-xs font-bold', icon: '!' },
+		info: { li: 'flex items-start gap-2.5 rounded-fc-md bg-fc-info/5 px-3 py-1.5 text-fc-sm  ', badge: 'mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-fc-info/20 text-fc-info text-xs font-bold', icon: 'i' }
 	} as const;
 </script>
 
