@@ -1,17 +1,19 @@
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+import { formatDate, formatNumber } from '$lib/i18n/format';
+import { locale, t } from '$lib/i18n/index.svelte';
 
 export function sum(values: number[]): number {
 	return values.reduce((total, v) => total + (Number.isFinite(v) ? v : 0), 0);
 }
 
-export function periodDelta(values: number[], unit: string): string | undefined {
+export function periodDelta(values: number[], unit: 'hour' | 'day' | 'week' | 'month'): string | undefined {
 	const half = Math.floor(values.length / 2);
 	if (half < 1) return undefined;
 	const previous = sum(values.slice(values.length - 2 * half, values.length - half));
 	const current = sum(values.slice(values.length - half));
 	if (previous <= 0) return undefined;
 	const pct = Math.round(((current - previous) / previous) * 100);
-	return `${pct >= 0 ? '+' : ''}${pct}% vs previous ${half} ${unit}${half === 1 ? '' : 's'}`;
+	const span = formatNumber(half, { style: 'unit', unit, unitDisplay: 'long' });
+	return t('metrics.delta', { pct: `${pct >= 0 ? '+' : ''}${formatNumber(pct)}`, span });
 }
 
 export function columnTotals(rows: number[][]): number[] {
@@ -67,62 +69,57 @@ export function bucketByDay(
 
 export function bucketLabel(label: string): string {
 	const parts = label.split('-');
-	const month = MONTHS[Number(parts[1]) - 1] ?? label;
-	if (parts.length >= 3) return `${month} ${Number(parts[2])}`;
-	return `${month} ${parts[0]?.slice(2) ?? ''}`;
+	const year = Number(parts[0]);
+	const month = Number(parts[1]) - 1;
+	if (parts.length >= 3) {
+		return formatDate(Date.UTC(year, month, Number(parts[2])), { month: 'short', day: 'numeric', timeZone: 'UTC' });
+	}
+	return formatDate(Date.UTC(year, month, 1), { month: 'short', year: '2-digit', timeZone: 'UTC' });
+}
+
+function unitText(value: number, unit: string, digits = 0): string {
+	return formatNumber(value, { style: 'unit', unit, unitDisplay: 'narrow', maximumFractionDigits: digits });
 }
 
 export function formatDuration(seconds: number): string {
 	const h = Math.floor(seconds / 3600);
 	const m = Math.floor((seconds % 3600) / 60);
 	const s = seconds % 60;
-	if (h > 0) {
-		return `${h}h ${m > 0 ? m + 'm' : ''} ${s > 0 ? s + 's' : ''}`.trim();
-	}
-	if (m > 0) {
-		return `${m}m ${s > 0 ? s + 's' : ''}`.trim();
-	}
-	return `${s}s`;
+	const parts = [
+		h > 0 ? unitText(h, 'hour') : '',
+		h > 0 || m > 0 ? (m > 0 ? unitText(m, 'minute') : '') : '',
+		h > 0 || m > 0 ? (s > 0 ? unitText(s, 'second') : '') : unitText(s, 'second')
+	];
+	return parts.filter(Boolean).join(' ');
 }
 
 export function formatTokens(tokens: number): string {
-	if (tokens >= 1_000_000) {
-		return `${(tokens / 1_000_000).toFixed(1)}M`;
-	}
-	if (tokens >= 1_000) {
-		return `${(tokens / 1_000).toFixed(1)}K`;
-	}
-	return tokens.toString();
+	return formatNumber(tokens, { notation: 'compact', maximumFractionDigits: 1 });
 }
 
 export function formatCost(cost: number): string {
-	if (cost >= 100) return `$${Math.round(cost)}`;
-	if (cost >= 0.01) return `$${cost.toFixed(2)}`;
-	return `$${cost.toFixed(4)}`;
+	const digits = cost >= 100 ? 0 : cost >= 0.01 ? 2 : 4;
+	return formatNumber(cost, {
+		style: 'currency',
+		currency: 'USD',
+		minimumFractionDigits: digits,
+		maximumFractionDigits: digits
+	});
 }
 
 export function formatBytes(bytes: number): string {
-	if (bytes >= 1_000_000_000) {
-		return `${(bytes / 1_000_000_000).toFixed(1)} GB`;
+	const scales: [number, string][] = [[1_000_000_000, 'gigabyte'], [1_000_000, 'megabyte'], [1_000, 'kilobyte']];
+	for (const [size, unit] of scales) {
+		if (bytes >= size) return unitText(bytes / size, unit, 1);
 	}
-	if (bytes >= 1_000_000) {
-		return `${(bytes / 1_000_000).toFixed(1)} MB`;
-	}
-	if (bytes >= 1_000) {
-		return `${(bytes / 1_000).toFixed(1)} KB`;
-	}
-	return `${bytes} B`;
+	return unitText(bytes, 'byte');
 }
 
 export function formatAge(timestamp: number): string {
-	const now = Date.now();
-	const diff = now - timestamp;
-	const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-	if (days === 0) return 'today';
-	if (days === 1) return 'yesterday';
-	if (days < 7) return `${days} days ago`;
-	if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
-	if (days < 365) return `${Math.floor(days / 30)} months ago`;
-	return `${Math.floor(days / 365)} years ago`;
+	const days = Math.floor((Date.now() - timestamp) / 86_400_000);
+	const relative = new Intl.RelativeTimeFormat(locale(), { numeric: 'auto' });
+	if (days < 7) return relative.format(-days, 'day');
+	if (days < 30) return relative.format(-Math.floor(days / 7), 'week');
+	if (days < 365) return relative.format(-Math.floor(days / 30), 'month');
+	return relative.format(-Math.floor(days / 365), 'year');
 }

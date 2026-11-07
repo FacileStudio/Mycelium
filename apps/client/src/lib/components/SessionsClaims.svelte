@@ -2,6 +2,7 @@
 	import { Button, Card, StatusDot, icons } from '@facile/muse';
 	import { backend, type Claim } from '$lib/backend';
 	import { formatDuration } from '$lib/format';
+	import { t } from '$lib/i18n/index.svelte';
 
 	let claims: Claim[] = $state([]);
 	let releasing: string | null = $state(null);
@@ -48,9 +49,9 @@
 
 	function claimLabel(c: Claim): string {
 		const state = claimState(c);
-		if (state === 'offline') return 'machine offline';
-		if (state === 'active') return 'active';
-		return 'idle';
+		if (state === 'offline') return t('live.offline');
+		if (state === 'active') return t('live.active');
+		return t('claims.idle');
 	}
 
 	function claimBodyPreview(body?: string): string {
@@ -61,14 +62,14 @@
 
 <section class="flex flex-col gap-4">
 	<div class="flex flex-col gap-1">
-		<h2 class="text-fc-lg font-semibold text-fc-fg">Active claims</h2>
+		<h2 class="text-fc-lg font-semibold text-fc-fg">{t('claims.title')}</h2>
 		<p class="text-fc-sm text-fc-fg-muted">
-			In-flight task leases across every machine — release one to let another agent take over.
+			{t('claims.subtitle')}
 		</p>
 	</div>
 
 	{#if claims.length === 0}
-		<Card class="text-fc-sm text-fc-fg-muted">No active claim.</Card>
+		<Card class="text-fc-sm text-fc-fg-muted">{t('claims.none')}</Card>
 	{:else}
 		<div class="flex flex-col gap-2">
 			{#each claims as claim (claimKey(claim))}
@@ -93,18 +94,18 @@
 							</span>
 						{/if}
 						<span class="text-fc-xs tabular-nums text-fc-fg-muted">
-							since {elapsed(claim.started_at)}
+							{t('claims.since', { elapsed: elapsed(claim.started_at) })}
 						</span>
 						<Button
 							class="ml-auto"
 							variant="ghost-danger"
 							size="sm"
 							icon={icons.close}
-							aria-label="Release claim on {claim.project} by {claim.machine}/{claim.agent}"
+							aria-label={t('claims.releaseLabel', { project: claim.project, agent: `${claim.machine}/${claim.agent}` })}
 							disabled={releasing === claimKey(claim)}
 							onclick={() => releaseClaim(claim)}
 						>
-							{releasing === claimKey(claim) ? 'Releasing…' : 'Release'}
+							{releasing === claimKey(claim) ? t('claims.releasing') : t('claims.release')}
 						</Button>
 					</div>
 					{#if claim.task}

@@ -6,6 +6,8 @@
 	import hljs from 'highlight.js';
 	import 'highlight.js/styles/github-dark.css';
 	import MarkdownMuse from '$lib/components/MarkdownMuse.svelte';
+	import { formatDate } from '$lib/i18n/format';
+	import { t } from '$lib/i18n/index.svelte';
 
 	const id = $derived(page.params.id ?? '');
 	let detail: ArtifactDetail | null = $state(null);
@@ -22,7 +24,7 @@
 		backend
 			.artifactGet(artId)
 			.then((d) => (detail = d))
-			.catch((e) => (error = e instanceof Error ? e.message : 'Could not load artifact.'))
+			.catch((e) => (error = e instanceof Error ? e.message : t('artifacts.loadOne')))
 			.finally(() => (loading = false));
 	});
 
@@ -34,10 +36,9 @@
 		}
 	}
 
-	function formatDate(iso: string): string {
+	function fullDate(iso: string): string {
 		try {
-			const d = new Date(iso);
-			return d.toLocaleString(undefined, {
+			return formatDate(iso, {
 				year: 'numeric',
 				month: 'short',
 				day: 'numeric',
@@ -54,11 +55,11 @@
 		deleting = true;
 		try {
 			await backend.artifactDelete(detail.id);
-			toast.success(`Deleted artifact "${detail.title}".`);
+			toast.success(t('artifacts.deleted', { title: detail.title }));
 			goto('/artifacts');
 		} catch (e) {
-			toast.danger(e instanceof Error ? e.message : 'Could not delete artifact.', {
-				title: 'Delete failed'
+			toast.danger(e instanceof Error ? e.message : t('common.genericError'), {
+				title: t('common.deleteFailed')
 			});
 		} finally {
 			deleting = false;
@@ -73,7 +74,7 @@
 			class="inline-flex w-fit items-center gap-1 text-fc-sm text-fc-fg-muted transition-colors hover:text-fc-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fc-ring"
 		>
 			<iconify-icon icon={icons.chevronLeft} width="16" height="16" class="block"></iconify-icon>
-			Artifacts
+			{t('artifacts.title')}
 		</a>
 
 		{#if detail}
@@ -82,7 +83,7 @@
 					<div class="flex min-w-0 flex-wrap items-center gap-2">
 						<h1 class="min-w-0 truncate text-fc-2xl font-bold text-fc-fg">{detail.title}</h1>
 						<Badge tone="neutral">
-							{detail.format === 'html' ? 'HTML' : 'Markdown'}
+							{detail.format === 'html' ? 'HTML' : t('artifacts.markdown')}
 						</Badge>
 					</div>
 					<p
@@ -102,10 +103,10 @@
 							<span class="truncate">{detail.machine}</span>
 						</span>
 						<span class="shrink-0" aria-hidden="true">•</span>
-						<span class="shrink-0">Created {formatDate(detail.created)}</span>
+						<span class="shrink-0">{t('artifacts.created', { date: fullDate(detail.created) })}</span>
 						{#if detail.updated && detail.updated !== detail.created}
 							<span class="shrink-0" aria-hidden="true">•</span>
-							<span class="shrink-0">Updated {formatDate(detail.updated)}</span>
+							<span class="shrink-0">{t('artifacts.updated', { date: fullDate(detail.updated) })}</span>
 						{/if}
 					</p>
 				</div>
@@ -117,14 +118,14 @@
 							class="rounded px-2.5 py-1 text-fc-xs font-medium transition-colors {viewMode === 'preview' ? 'bg-fc-accent text-fc-accent-fg' : 'text-fc-fg-muted hover:text-fc-fg'}"
 							onclick={() => (viewMode = 'preview')}
 						>
-							Preview
+							{t('artifacts.preview')}
 						</button>
 						<button
 								type="button"
 								class="rounded px-2.5 py-1 text-fc-xs font-medium transition-colors {viewMode === 'source' ? 'bg-fc-accent text-fc-accent-fg' : 'text-fc-fg-muted hover:text-fc-fg'}"
 								onclick={() => (viewMode = 'source')}
 							>
-								Source
+								{t('artifacts.source')}
 							</button>
 						</div>
 					<Button
@@ -133,7 +134,7 @@
 						onclick={() => (confirmOpen = true)}
 						disabled={deleting}
 					>
-						Delete
+						{t('common.delete')}
 					</Button>
 				</div>
 			</div>
@@ -142,10 +143,10 @@
 
 	{#if loading}
 		<div class="flex items-center gap-3 text-fc-sm text-fc-fg-muted">
-			<Spinner size="sm" label="Loading" /> Loading artifact…
+			<Spinner size="sm" label={t('common.loading')} /> {t('artifacts.loadingOne')}
 		</div>
 	{:else if error}
-		<Alert tone="danger" title="Could not load artifact">{error}</Alert>
+		<Alert tone="danger" title={t('artifacts.loadOne')}>{error}</Alert>
 	{:else if detail}
 		{#if viewMode === 'preview'}
 			{#if detail.format === 'html'}
@@ -170,9 +171,9 @@
 					<span>{srcLang}</span>
 					<Button variant="ghost" size="sm" icon={icons.copy} onclick={() => {
 						navigator.clipboard.writeText(srcContent);
-						toast.success('Code copied to clipboard');
+						toast.success(t('artifacts.codeCopied'));
 					}}>
-						Copy
+						{t('common.copy')}
 					</Button>
 				</div>
 				<pre class="overflow-x-auto p-4 font-fc-mono text-fc-xs leading-relaxed text-fc-fg"><code>{@html highlight(srcContent, srcLang)}</code></pre>
@@ -185,10 +186,10 @@
 	<ConfirmModal
 		bind:open={confirmOpen}
 		tone="danger"
-		title={'Delete "' + (detail?.title ?? '') + '"?'}
-		description="The artifact will be permanently deleted from this machine and from sync."
-		confirmLabel="Delete"
-		cancelLabel="Keep it"
+		title={t('artifacts.deleteTitle', { title: detail?.title ?? '' })}
+		description={t('artifacts.deleteText')}
+		confirmLabel={t('common.delete')}
+		cancelLabel={t('common.keep')}
 		onConfirm={remove}
 	/>
 {/if}

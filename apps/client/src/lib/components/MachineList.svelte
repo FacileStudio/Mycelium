@@ -2,7 +2,8 @@
 	import { Card, Sparkline, StatusDot, chartColor, icons } from '@facile/muse';
 	import type { SessionStatRow, TimelineSeries, TokenInfo } from '$lib/backend';
 	import { formatDuration } from '$lib/format';
-import { hours } from '$lib/metrics';
+	import { hours } from '$lib/metrics';
+	import { t } from '$lib/i18n/index.svelte';
 
 	let {
 		machines,
@@ -17,14 +18,14 @@ import { hours } from '$lib/metrics';
 	const ONLINE_WINDOW_MS = 11 * 60 * 1000;
 
 	function ago(iso: string): string {
-		if (!iso) return 'never';
+		if (!iso) return t('machines.never');
 		const then = new Date(iso).getTime();
-		if (isNaN(then)) return 'never';
+		if (isNaN(then)) return t('machines.never');
 		const s = Math.floor((Date.now() - then) / 1000);
-		if (s < 60) return `${s}s ago`;
-		if (s < 3600) return `${Math.floor(s / 60)}m ago`;
-		if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
-		return `${Math.floor(s / 86400)}d ago`;
+		if (s < 60) return t('machines.secondsAgo', { count: s });
+		if (s < 3600) return t('time.minutesAgo', { count: Math.floor(s / 60) });
+		if (s < 86400) return t('time.hoursAgo', { count: Math.floor(s / 3600) });
+		return t('time.daysAgo', { count: Math.floor(s / 86400) });
 	}
 
 	/* Three states, not a boolean: a machine that has never checked in needs a different fix
@@ -39,9 +40,9 @@ import { hours } from '$lib/metrics';
 
 	function statusLabel(m: TokenInfo): string {
 		const s = machineState(m);
-		if (s === 'connected') return 'connected';
-		if (s === 'never') return 'never synced';
-		return `idle · ${ago(m.last_seen)}`;
+		if (s === 'connected') return t('machines.connected');
+		if (s === 'never') return t('machines.neverSynced');
+		return t('machines.idle', { ago: ago(m.last_seen) });
 	}
 
 	function machineSeconds(name: string): number {
@@ -60,7 +61,7 @@ import { hours } from '$lib/metrics';
 </script>
 
 <section class="flex flex-col gap-4">
-	<h2 class="text-fc-lg font-semibold text-fc-fg">Paired machines</h2>
+	<h2 class="text-fc-lg font-semibold text-fc-fg">{t('machines.paired')}</h2>
 	<div class="grid gap-4 sm:grid-cols-2 [&>*]:min-w-0">
 		{#each machines as machine (machine.name)}
 			<Card class="flex flex-col gap-4">
@@ -93,15 +94,15 @@ import { hours } from '$lib/metrics';
 				{/if}
 				<dl class="flex flex-col gap-1 text-fc-xs text-fc-fg-muted">
 					<div class="flex justify-between gap-3">
-						<dt>Last sync</dt>
+						<dt>{t('machines.lastSync')}</dt>
 						<dd class="tabular-nums">{ago(machine.last_seen)}</dd>
 					</div>
 					<div class="flex justify-between gap-3">
-						<dt>Active in range</dt>
+						<dt>{t('machines.activeInRange')}</dt>
 						<dd class="tabular-nums">{formatDuration(machineSeconds(machine.name))}</dd>
 					</div>
 					<div class="flex justify-between gap-3">
-						<dt>Paired</dt>
+						<dt>{t('machines.pairedOn')}</dt>
 						<dd class="tabular-nums">{machine.created_at?.slice(0, 10) || '—'}</dd>
 					</div>
 				</dl>

@@ -33,6 +33,7 @@ export const common = {
 	'time.minutesAgo': ['{count}m ago', 'il y a {count} min', 'hace {count} min', 'vor {count} Min.'],
 	'time.hoursAgo': ['{count}h ago', 'il y a {count} h', 'hace {count} h', 'vor {count} Std.'],
 	'time.daysAgo': ['{count}d ago', 'il y a {count} j', 'hace {count} d', 'vor {count} T.'],
+	'metrics.delta': ['{pct} vs previous {span}', '{pct} par rapport aux {span} précédents', '{pct} frente a los {span} anteriores', '{pct} gegenüber den vorherigen {span}'],
 	'time.now': ['now', 'maintenant', 'ahora', 'jetzt'],
 	'time.unknown': ['unknown', 'inconnu', 'desconocido', 'unbekannt']
 } as const satisfies Record<string, Row>;

@@ -13,23 +13,24 @@
 	import SessionsHistoryTab from '$lib/components/SessionsHistoryTab.svelte';
 	import SessionsLive from '$lib/components/SessionsLive.svelte';
 	import SessionsOverviewTab from '$lib/components/SessionsOverviewTab.svelte';
+	import { t } from '$lib/i18n/index.svelte';
 
-	const RANGES = [
-		{ id: '7d', label: '7 days' },
-		{ id: '30d', label: '30 days' },
-		{ id: 'all', label: 'All time' }
-	];
-	const GROUPS = [
-		{ id: 'project', label: 'Project', icon: icons.folder },
-		{ id: 'machine', label: 'Machine', icon: icons.server },
-		{ id: 'agent', label: 'Agent', icon: icons.bolt },
-		{ id: 'model', label: 'Model', icon: icons.dashboard }
-	];
-	const PAGE_TABS = [
-		{ id: 'overview', label: 'Overview' },
-		{ id: 'history', label: 'History' },
-		{ id: 'usage', label: 'Usage' }
-	];
+	const RANGES = $derived([
+		{ id: '7d', label: t('range.7d') },
+		{ id: '30d', label: t('range.30d') },
+		{ id: 'all', label: t('range.all') }
+	]);
+	const GROUPS = $derived([
+		{ id: 'project', label: t('group.project'), icon: icons.folder },
+		{ id: 'machine', label: t('group.machine'), icon: icons.server },
+		{ id: 'agent', label: t('group.agent'), icon: icons.bolt },
+		{ id: 'model', label: t('group.model'), icon: icons.dashboard }
+	]);
+	const PAGE_TABS = $derived([
+		{ id: 'overview', label: t('sessions.tab.overview') },
+		{ id: 'history', label: t('sessions.tab.history') },
+		{ id: 'usage', label: t('sessions.tab.usage') }
+	]);
 
 	let tab = $state('overview');
 	let since = $state('7d');
@@ -61,7 +62,7 @@
 	$effect(() => {
 		backend
 			.sessionsTimeline(since, bucket, by)
-			.then((t) => (timeline = t))
+			.then((tl) => (timeline = tl))
 			.catch(() => (timeline = null));
 	});
 
@@ -88,9 +89,9 @@
 
 <div class="flex flex-col gap-10">
 	<div class="flex flex-col gap-2">
-		<h1 class="text-fc-2xl font-semibold text-fc-fg">Sessions</h1>
+		<h1 class="text-fc-2xl font-semibold text-fc-fg">{t('sessions.title')}</h1>
 		<p class="text-fc-sm text-fc-fg-muted">
-			Agent work sessions recorded across every machine that syncs with this brain.
+			{t('sessions.subtitle')}
 		</p>
 	</div>
 
@@ -100,9 +101,9 @@
 
 	<section class="flex flex-col gap-4">
 		<div class="flex flex-col gap-1">
-			<h2 class="text-fc-lg font-semibold text-fc-fg">Totals</h2>
+			<h2 class="text-fc-lg font-semibold text-fc-fg">{t('sessions.totals')}</h2>
 			<p class="text-fc-sm text-fc-fg-muted">
-				Sealed sessions only — whatever is running now lands here when it ends.
+				{t('sessions.totalsHelp')}
 			</p>
 		</div>
 
@@ -111,27 +112,27 @@
 		{#if rows.length === 0}
 			<EmptyState
 				icon={icons.history}
-				title="No sessions recorded yet"
-				description="Machines record agent activity automatically once they run mycelium v0.5 or later."
+				title={t('sessions.emptyTitle')}
+				description={t('sessions.emptyText')}
 			/>
 		{:else if tab === 'overview'}
 			<div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-				<Tabs items={RANGES} bind:value={since} label="Time range" />
-				<Tabs items={GROUPS} bind:value={by} label="Group sessions by" />
+				<Tabs items={RANGES} bind:value={since} label={t('range.label')} />
+				<Tabs items={GROUPS} bind:value={by} label={t('group.label')} />
 			</div>
 
 			<SessionsOverviewTab {rows} {timeline} {by} {bucketUnit} />
 		{:else if tab === 'history'}
 			<div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-				<Tabs items={RANGES} bind:value={since} label="Time range" />
-				<Tabs items={GROUPS} bind:value={by} label="Group sessions by" />
+				<Tabs items={RANGES} bind:value={since} label={t('range.label')} />
+				<Tabs items={GROUPS} bind:value={by} label={t('group.label')} />
 			</div>
 
 			<SessionsHistoryTab {rows} {recent} {by} groups={GROUPS} />
 		{:else if tab === 'usage'}
-			<h2 class="text-fc-lg font-semibold text-fc-fg">Subscription windows</h2>
+			<h2 class="text-fc-lg font-semibold text-fc-fg">{t('sessions.windows')}</h2>
 			<p class="text-fc-sm text-fc-fg-muted">
-				Usage against subscription limits recorded by each agent.
+				{t('sessions.windowsHelp')}
 			</p>
 			<UsageMeter snapshots={usage} history={usageLog} />
 		{/if}

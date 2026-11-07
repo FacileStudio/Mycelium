@@ -2,6 +2,8 @@
 	import { Alert, Badge, EmptyState, Input, Spinner, icons } from '@facile/muse';
 	import EntityCard from '$lib/components/EntityCard.svelte';
 	import { backend, type ArtifactSummary } from '$lib/backend';
+	import { formatDate } from '$lib/i18n/format';
+	import { t } from '$lib/i18n/index.svelte';
 
 	let artifacts: ArtifactSummary[] = $state([]);
 	let loading = $state(true);
@@ -13,7 +15,7 @@
 		backend
 			.artifactsList()
 			.then((r) => (artifacts = r ?? []))
-			.catch((e) => (error = e instanceof Error ? e.message : 'Could not load artifacts.'))
+			.catch((e) => (error = e instanceof Error ? e.message : t('artifacts.loadFailed')))
 			.finally(() => (loading = false));
 	});
 
@@ -25,14 +27,9 @@
 		})
 	);
 
-	function formatDate(iso: string): string {
+	function shortDate(iso: string): string {
 		try {
-			const d = new Date(iso);
-			return d.toLocaleDateString(undefined, {
-				year: 'numeric',
-				month: 'short',
-				day: 'numeric'
-			});
+			return formatDate(iso, { year: 'numeric', month: 'short', day: 'numeric' });
 		} catch {
 			return iso;
 		}
@@ -41,37 +38,37 @@
 
 <div class="flex flex-col gap-8">
 	<div class="flex flex-col gap-2">
-		<h1 class="text-fc-2xl font-bold text-fc-fg">Artifacts & Reports</h1>
+		<h1 class="text-fc-2xl font-bold text-fc-fg">{t('artifacts.heading')}</h1>
 		<p class="text-fc-sm text-fc-fg-muted">
-			Rendered markdown documents, reports, and architecture blueprints generated across your fleet.
+			{t('artifacts.subtitle')}
 		</p>
 	</div>
 
 	{#if loading}
 		<div class="flex items-center gap-3 text-fc-sm text-fc-fg-muted">
-			<Spinner size="sm" label="Loading" /> Loading artifacts…
+			<Spinner size="sm" label={t('common.loading')} /> {t('artifacts.loading')}
 		</div>
 	{:else if error}
-		<Alert tone="danger" title="Could not load artifacts">{error}</Alert>
+		<Alert tone="danger" title={t('artifacts.loadFailed')}>{error}</Alert>
 	{:else if artifacts.length === 0}
 		<EmptyState
 			icon="solar:file-smile-linear"
-			title="No artifacts yet"
-			description="Publish one with `mycelium artifact add <file>` or the `publish_artifact` tool."
+			title={t('artifacts.emptyTitle')}
+			description={t('artifacts.emptyText')}
 		/>
 	{:else}
 		<div class="flex flex-col gap-4">
 			<div class="max-w-md">
 				<Input
 					type="search"
-					placeholder="Filter artifacts by title, machine…"
+					placeholder={t('artifacts.filter')}
 					bind:value={query}
 				/>
 			</div>
 
 			{#if filtered.length === 0}
 				<p class="py-8 text-center text-fc-sm text-fc-fg-muted">
-					No artifacts match “{query}”.
+					{t('artifacts.noMatch', { query })}
 				</p>
 			{:else}
 				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 [&>*]:min-w-0">
@@ -97,9 +94,9 @@
 										height="14"
 										class="block shrink-0"
 									></iconify-icon>
-									{art.machine || 'unknown'}
+									{art.machine || t('artifacts.unknownMachine')}
 								</span>
-								<span class="shrink-0">Updated {formatDate(art.updated || art.created)}</span>
+								<span class="shrink-0">{t('artifacts.updated', { date: shortDate(art.updated || art.created) })}</span>
 							{/snippet}
 						</EntityCard>
 					{/each}

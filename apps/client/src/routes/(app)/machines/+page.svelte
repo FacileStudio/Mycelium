@@ -18,6 +18,7 @@
 		type LiveSession
 	} from '$lib/backend';
 	import MachineList from '$lib/components/MachineList.svelte';
+	import { t } from '$lib/i18n/index.svelte';
 	import {
 		bucketLabel,
 		columnActive,
@@ -30,11 +31,11 @@
 
 	const ONLINE_WINDOW_MS = 11 * 60 * 1000;
 
-	const RANGES = [
-		{ id: '7d', label: '7 days' },
-		{ id: '30d', label: '30 days' },
-		{ id: 'all', label: 'All time' }
-	];
+	const RANGES = $derived([
+		{ id: '7d', label: t('range.7d') },
+		{ id: '30d', label: t('range.30d') },
+		{ id: 'all', label: t('range.all') }
+	]);
 
 	let tokens: TokenInfo[] = $state([]);
 	/*
@@ -52,7 +53,7 @@
 
 	const machines = $derived(
 		tokens.filter(
-			(t) => t.scope !== 'admin' && t.scope !== 'user' && !t.name.startsWith('session')
+			(m) => m.scope !== 'admin' && m.scope !== 'user' && !m.name.startsWith('session')
 		)
 	);
 	const online = $derived(machines.filter((m) => machineState(m) === 'connected').length);
@@ -61,8 +62,8 @@
 		const load = () =>
 			backend
 				.tokensList()
-				.then((t) => {
-					tokens = t ?? [];
+				.then((list) => {
+					tokens = list ?? [];
 					tokensDenied = false;
 				})
 				.catch(() => (tokensDenied = true));
@@ -85,7 +86,7 @@
 	$effect(() => {
 		backend
 			.sessionsTimeline(since, bucket, 'machine')
-			.then((t) => (timeline = t))
+			.then((tl) => (timeline = tl))
 			.catch(() => (timeline = null));
 	});
 
@@ -146,27 +147,26 @@
 
 <div class="flex flex-col gap-10">
 	<div class="flex flex-col gap-2">
-		<h1 class="text-fc-2xl font-semibold text-fc-fg">Machines</h1>
+		<h1 class="text-fc-2xl font-semibold text-fc-fg">{t('machines.title')}</h1>
 		<p class="text-fc-sm text-fc-fg-muted">
-			Machines and agents syncing with this brain. Connected means a sync in the last ten
-			minutes.
+			{t('machines.subtitle')}
 		</p>
 	</div>
 
 	<section class="flex flex-col gap-4">
 		<div class="flex flex-wrap items-center justify-between gap-3">
-			<h2 class="text-fc-lg font-semibold text-fc-fg">Fleet activity</h2>
-			<Tabs items={RANGES} bind:value={since} label="Time range" />
+			<h2 class="text-fc-lg font-semibold text-fc-fg">{t('machines.fleet')}</h2>
+			<Tabs items={RANGES} bind:value={since} label={t('range.label')} />
 		</div>
 
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 [&>*]:min-w-0">
-			<StatCard label="Machines" value={knownMachines}>
+			<StatCard label={t('machines.count')} value={knownMachines}>
 				<Sparkline data={activePerBucket} class="mt-3" valueFormat={(n) => `${n}`} />
 			</StatCard>
 			<StatCard
-				label="Working now"
+				label={t('machines.workingNow')}
 				value={workingNow}
-				delta={tokensDenied ? undefined : `${online} synced in the last 10 minutes`}
+				delta={tokensDenied ? undefined : t('machines.synced', { count: online })}
 			>
 				<Sparkline
 					data={sessionsPerBucket}
@@ -175,7 +175,7 @@
 					valueFormat={(n) => `${n}`}
 				/>
 			</StatCard>
-			<StatCard label="Active time" value={formatDuration(totalSeconds)} delta={timeDelta}>
+			<StatCard label={t('machines.activeTime')} value={formatDuration(totalSeconds)} delta={timeDelta}>
 				<Sparkline
 					data={secondsPerBucket.map(hours)}
 					class="mt-3"
@@ -183,7 +183,7 @@
 					showLast
 				/>
 			</StatCard>
-			<StatCard label="Tokens out" value={formatTokens(totalTokensOut)} delta={tokensDelta}>
+			<StatCard label={t('machines.tokensOut')} value={formatTokens(totalTokensOut)} delta={tokensDelta}>
 				<Sparkline data={tokensPerBucket} class="mt-3" color="var(--color-fc-chart-5)" />
 			</StatCard>
 		</div>
@@ -192,7 +192,7 @@
 			<div class="grid gap-4 lg:grid-cols-3 [&>*]:min-w-0">
 				<Card class="flex flex-col gap-4 lg:col-span-2">
 					<p class="text-fc-sm font-medium text-fc-fg">
-						Active time per {bucketUnit}, by machine
+						{t('machines.perBucket', { unit: t(bucketUnit === 'month' ? 'machines.unit.month' : 'machines.unit.day') })}
 					</p>
 					<LineChart
 						series={hoursSeries}
@@ -205,10 +205,10 @@
 					/>
 				</Card>
 				<Card class="flex flex-col gap-4">
-					<p class="text-fc-sm font-medium text-fc-fg">Share of active time</p>
+					<p class="text-fc-sm font-medium text-fc-fg">{t('machines.share')}</p>
 					<DonutChart
 						data={shareSlices}
-						centerLabel="Active"
+						centerLabel={t('machines.active')}
 						centerValue={formatDuration(totalSeconds)}
 						valueFormat={(n) => `${n} h`}
 						class="flex-1"
@@ -217,21 +217,20 @@
 			</div>
 		{:else}
 			<Card class="text-fc-sm text-fc-fg-muted">
-				No recorded activity in this range yet.
+				{t('machines.noActivity')}
 			</Card>
 		{/if}
 	</section>
 
 	{#if machines.length === 0}
-		<EmptyState icon={icons.server} title="No machines connected yet">
+		<EmptyState icon={icons.server} title={t('machines.emptyTitle')}>
 			<p class="text-fc-sm text-fc-fg-muted">
 				{#if tokensDenied}
-					Only an admin can list paired machines — the activity above still reflects the whole
-					fleet.
+					{t('machines.adminOnly')}
 				{:else}
-					Run <code class="rounded-fc-xs bg-fc-surface px-1.5 py-0.5 font-fc-mono text-fc-xs"
+					{t('machines.pairBefore')} <code class="rounded-fc-xs bg-fc-surface px-1.5 py-0.5 font-fc-mono text-fc-xs"
 						>mycelium login https://mycelium.facile.studio</code
-					> on a machine to pair it.
+					> {t('machines.pairAfter')}
 				{/if}
 			</p>
 		</EmptyState>
