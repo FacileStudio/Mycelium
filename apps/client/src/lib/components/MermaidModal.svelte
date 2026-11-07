@@ -123,7 +123,7 @@
 		aria-label={t('mermaid.fullscreenView')}
 	>
 		<div
-			class="flex flex-wrap items-center justify-between gap-3 border-b border-fc-border/60 bg-fc-surface/60 px-6 py-3"
+			class="flex flex-wrap items-center justify-between gap-3 bg-fc-surface/60 px-6 py-3"
 		>
 			<div class="flex items-center gap-3">
 				<span class="text-fc-sm font-semibold text-fc-fg">{t('mermaid.flowchart')}</span>
@@ -131,7 +131,7 @@
 			</div>
 
 			<div class="flex flex-wrap items-center gap-2">
-				<div class="flex items-center rounded-fc-md border border-fc-border bg-fc-surface p-0.5">
+				<div class="flex items-center rounded-fc-md bg-fc-surface p-0.5">
 					<button
 						type="button"
 						class="flex size-7 items-center justify-center rounded text-fc-fg-muted hover:text-fc-fg transition-colors"
@@ -179,10 +179,10 @@
 		{#if showSource || error}
 			<div class="flex-1 overflow-auto p-6">
 				<pre
-					class="overflow-x-auto rounded-fc-lg border border-fc-border bg-fc-surface p-6 font-fc-mono text-fc-sm leading-relaxed text-fc-fg"><code>{code}</code></pre>
+					class="overflow-x-auto rounded-fc-lg bg-fc-surface p-6 font-fc-mono text-fc-sm leading-relaxed text-fc-fg"><code>{code}</code></pre>
 				{#if error}
 					<div
-						class="mt-4 rounded-fc-lg border border-fc-danger/30 bg-fc-danger/10 p-4 font-fc-mono text-fc-sm text-fc-danger"
+						class="mt-4 rounded-fc-lg bg-fc-danger/10 p-4 font-fc-mono text-fc-sm text-fc-danger"
 					>
 						{error}
 					</div>

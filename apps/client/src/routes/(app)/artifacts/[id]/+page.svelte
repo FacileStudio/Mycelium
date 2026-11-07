@@ -112,7 +112,7 @@
 				</div>
 
 				<div class="flex shrink-0 items-center gap-2">
-					<div class="flex rounded-fc-md border border-fc-border bg-fc-surface p-0.5">
+					<div class="flex rounded-fc-md bg-fc-surface p-0.5">
 						<button
 							type="button"
 							class="rounded px-2.5 py-1 text-fc-xs font-medium transition-colors {viewMode === 'preview' ? 'bg-fc-accent text-fc-accent-fg' : 'text-fc-fg-muted hover:text-fc-fg'}"
@@ -150,12 +150,12 @@
 	{:else if detail}
 		{#if viewMode === 'preview'}
 			{#if detail.format === 'html'}
-				<div class="overflow-hidden rounded-fc-lg border border-fc-border bg-fc-bg">
+				<div class="overflow-hidden rounded-fc-lg bg-fc-bg">
 					<iframe
 						title={detail.title}
 						srcdoc={detail.content}
 						sandbox="allow-same-origin allow-scripts allow-popups"
-						class="h-[75dvh] w-full border-0 bg-fc-bg"
+						class="h-[75dvh] w-full bg-fc-bg"
 					></iframe>
 				</div>
 			{:else}
@@ -166,8 +166,8 @@
 		{:else if viewMode === 'source'}
 			{@const srcLang = detail.format === 'html' ? 'html' : 'markdown'}
 			{@const srcContent = detail.content}
-			<div class="my-3 overflow-hidden rounded-fc-lg border border-fc-border bg-fc-surface">
-				<div class="flex items-center justify-between border-b border-fc-border bg-fc-surface-hover/40 px-4 py-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-fc-fg-muted">
+			<div class="my-3 overflow-hidden rounded-fc-lg bg-fc-surface">
+				<div class="flex items-center justify-between bg-fc-surface-hover/40 px-4 py-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-fc-fg-muted">
 					<span>{srcLang}</span>
 					<Button variant="ghost" size="sm" icon={icons.copy} onclick={() => {
 						navigator.clipboard.writeText(srcContent);

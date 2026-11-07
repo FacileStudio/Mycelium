@@ -8,12 +8,15 @@
 		SpaceSwitcher,
 		Spinner,
 		Topbar,
-		icons
+		toast,
+		icons,
+		type UserMenuOptions
 	} from '@facile/muse';
 	import { backend, TOKEN_KEY, type AuthUser, type MyceliumStatus, type Space } from '$lib/backend';
 	import { getActiveSpaceId, getSpaces, setActiveSpaceId, setSpaces } from '$lib/space.svelte';
 	import { setContext } from 'svelte';
-	import { setSessionLocale, t } from '$lib/i18n/index.svelte';
+	import { rememberLocale, setSessionLocale, t } from '$lib/i18n/index.svelte';
+	import { setTheme, theme } from '$lib/theme.svelte';
 
 	let { children } = $props();
 	let status: MyceliumStatus | null = $state(null);
@@ -121,8 +124,32 @@
 	const routeKey = $derived(onSettings ? '/settings' : page.url.pathname);
 	const user = $derived.by(() => ({
 		name: me?.name || me?.email || t('nav.user'),
+		email: me?.email || undefined,
 		avatar: me?.avatar_url || undefined
 	}));
+
+	async function logout() {
+		try {
+			if (me) await backend.logout();
+		} catch {
+			return signOutLocally();
+		}
+		signOutLocally();
+	}
+
+	function signOutLocally() {
+		localStorage.removeItem(TOKEN_KEY);
+		toast.success(t('profile.loggedOut'));
+		goto('/login');
+	}
+
+	const userMenu = $derived<UserMenuOptions>({
+		helpHref: 'https://facile.studio/docs/mycelium',
+		onSignOut: logout,
+		theme: theme.mode,
+		onThemeChange: (next) => setTheme(next),
+		onLocaleChange: rememberLocale
+	});
 	const switcherSpaces = $derived(getSpaces().map((s) => ({ id: s.id, name: s.name })));
 
 	const mobilePages = $derived(navPages.filter((p) => !MOBILE_HIDDEN.includes(p.href)));
@@ -135,6 +162,7 @@
 	}
 
 	setContext('status', () => status);
+	setContext('me', () => me);
 </script>
 
 {#if ready}
@@ -152,6 +180,7 @@
 				personalSpaceLabel={me?.admin ? t('nav.personal') : null}
 				{user}
 				userHref="/settings"
+				{userMenu}
 				userActive={onSettings}
 				class="h-full"
 			/>
@@ -183,7 +212,7 @@
 			</div>
 		</main>
 
-		<MobileNav items={mobilePages} {user} profileHref="/settings" profileActive={onSettings} />
+		<MobileNav items={mobilePages} {user} profileHref="/settings" profileActive={onSettings} {userMenu} />
 	</div>
 {:else}
 	<div class="flex h-dvh w-full items-center justify-center bg-fc-page">

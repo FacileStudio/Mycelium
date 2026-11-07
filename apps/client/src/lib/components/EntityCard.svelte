@@ -58,7 +58,7 @@
 	</div>
 	{#if footer}
 		<div
-			class="flex min-w-0 items-center justify-between gap-3 border-t border-fc-border pt-3 text-fc-xs text-fc-fg-muted"
+			class="flex min-w-0 items-center justify-between gap-3 pt-3 text-fc-xs text-fc-fg-muted"
 		>
 			{@render footer()}
 		</div>

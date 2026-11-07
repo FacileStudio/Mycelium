@@ -8,7 +8,21 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
-## [0.39.1] — 2026-11-07
+## [Unreleased]
+
+### Changed
+
+- Web: the sidebar card and the phone avatar open the shared muse user menu (Facile account, settings, language, theme, help, sign out).
+- Web: settings use the muse settings layout: Profile, Preferences, Connect, Bus, API tokens, Advanced. The API tokens list, create drawer and revoke dialog are the muse tokens section, and the same API calls. Appearance is now Preferences, and `/settings/api` and `/settings/appearance` redirect.
+- Web: the theme choice applies before the first paint.
+- Web: removed the hand-rolled card, badge, table, callout and toggle borders; surfaces use fills.
+- Libraries: `@facile/muse` v0.13.0 to v0.14.1.
+
+### Removed
+
+- Web: the sign-out button inside settings (it lives in the user menu) and the local profile card.
+
+ — 2026-11-07
 
 ### Changed
 
