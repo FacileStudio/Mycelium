@@ -4,6 +4,7 @@
 	import { icons, toast } from '@facile/muse';
 	import { backend } from '$lib/backend';
 	import DocumentEditor from '$lib/components/DocumentEditor.svelte';
+	import { t } from '$lib/i18n/index.svelte';
 
 	const name = $derived(page.params.name ?? '');
 	let content = $state('');
@@ -17,7 +18,7 @@
 			.then((c) => (content = c))
 			.catch((e) => {
 				content = '';
-				toast.danger(e instanceof Error ? e.message : `Could not load rule “${n}”.`);
+				toast.danger(e instanceof Error ? e.message : t('rules.loadOne', { name: n }));
 			})
 			.finally(() => (loading = false));
 	});
@@ -29,7 +30,7 @@
 
 	async function remove() {
 		await backend.ruleDelete(name);
-		toast.success(`Rule “${name}” deleted.`);
+		toast.success(t('rules.deleted', { name }));
 		goto('/rules');
 	}
 </script>
@@ -39,11 +40,11 @@
 	path="rules/{name}.md"
 	icon={icons.shield}
 	backHref="/rules"
-	backLabel="Rules"
+	backLabel={t('rules.title')}
 	{content}
 	{loading}
-	deleteTitle="Delete “{name}”?"
-	deleteDescription="Every agent config is rebuilt without this rule on the next sync. It cannot be undone."
+	deleteTitle={t('memory.deleteTitle', { title: name })}
+	deleteDescription={t('rules.deleteText')}
 	onSave={save}
 	onDelete={remove}
 />

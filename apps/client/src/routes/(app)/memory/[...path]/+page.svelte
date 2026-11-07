@@ -4,6 +4,7 @@
 	import { icons, toast } from '@facile/muse';
 	import { backend } from '$lib/backend';
 	import DocumentEditor from '$lib/components/DocumentEditor.svelte';
+	import { t } from '$lib/i18n/index.svelte';
 
 	const rel = $derived(page.params.path ?? '');
 	const fullPath = $derived(`memory/${rel}`);
@@ -19,7 +20,7 @@
 			.then((c) => (content = c))
 			.catch((e) => {
 				content = '';
-				toast.danger(e instanceof Error ? e.message : `Could not load ${p}.`);
+				toast.danger(e instanceof Error ? e.message : t('memory.loadFile', { path: p }));
 			})
 			.finally(() => (loading = false));
 	});
@@ -31,7 +32,7 @@
 
 	async function remove() {
 		await backend.syncFileDelete(fullPath);
-		toast.success(`Deleted ${fullPath}.`);
+		toast.success(t('memory.deleted', { path: fullPath }));
 		goto('/memory');
 	}
 </script>
@@ -41,11 +42,11 @@
 	path={fullPath}
 	icon={icons.folder}
 	backHref="/memory"
-	backLabel="Memory"
+	backLabel={t('memory.title')}
 	{content}
 	{loading}
-	deleteTitle="Delete “{title}”?"
-	deleteDescription="The page is removed from every machine on the next sync, and nothing keeps a copy. It cannot be undone."
+	deleteTitle={t('memory.deleteTitle', { title })}
+	deleteDescription={t('memory.deleteText')}
 	onSave={save}
 	onDelete={remove}
 />

@@ -130,10 +130,9 @@ configuration from the environment, once, at startup.
 | Variable | What it does |
 |---|---|
 | `APP_ENV` | `development`, `staging`, or `production` |
-| `PASSWORD` | Shared password for `mycelium login --password` |
+| `PASSWORD` | Shared password for `mycelium login --password`. Ignored once `OIDC_ISSUER` is set |
 | `DATA_DIR` | Where the markdown tree lives, default `~/.local/share/mycelium` |
 | `OIDC_ISSUER` | Issuer URL of the identity provider; setting it makes the client credentials required |
-| `SSO_ONLY` | Disables password login, requires `OIDC_ISSUER` |
 | `OIDC_MACHINE_AUDIENCE` | Accepts delegated suite JWTs for this audience, limited to the caller's spaces |
 
 Full reference: [docs/configuration.md](docs/configuration.md).

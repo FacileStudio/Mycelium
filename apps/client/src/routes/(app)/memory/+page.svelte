@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { Button, EmptyState, Field, Input, Modal, Select, icons, toast } from '@facile/muse';
 	import { backend, type FileEntry } from '$lib/backend';
+	import { t } from '$lib/i18n/index.svelte';
 	import EntityCard from '$lib/components/EntityCard.svelte';
 	import MemorySearch from '$lib/components/MemorySearch.svelte';
 	import MemoryStats from '$lib/components/MemoryStats.svelte';
@@ -26,7 +27,7 @@
 						.sort((a, b) => a.path.localeCompare(b.path)))
 			)
 			.catch((e) =>
-				toast.danger(e instanceof Error ? e.message : 'Could not load the memory tree.')
+				toast.danger(e instanceof Error ? e.message : t('memory.loadFailed'))
 			);
 	});
 
@@ -64,10 +65,10 @@
 		try {
 			await backend.syncFilePut(path, `# ${name.replace(/\.md$/, '')}\n`);
 			createOpen = false;
-			toast.success(`Created ${path}.`);
+			toast.success(t('memory.created', { path }));
 			goto(`/memory/${path.slice('memory/'.length)}`);
 		} catch (e) {
-			createError = e instanceof Error ? e.message : 'Could not create the page';
+			createError = e instanceof Error ? e.message : t('memory.createFailed');
 		} finally {
 			creating = false;
 		}
@@ -77,12 +78,12 @@
 <div class="flex flex-col gap-10">
 	<div class="flex flex-wrap items-start justify-between gap-4">
 		<div class="flex min-w-0 flex-col gap-2">
-			<h1 class="text-fc-2xl font-semibold text-fc-fg">Memory</h1>
+			<h1 class="text-fc-2xl font-semibold text-fc-fg">{t('memory.title')}</h1>
 			<p class="text-fc-sm text-fc-fg-muted">
-				Browse, search and curate the wiki your agents read from and write back to.
+				{t('memory.subtitle')}
 			</p>
 		</div>
-		<Button icon={icons.plus} onclick={openCreate}>New page</Button>
+		<Button icon={icons.plus} onclick={openCreate}>{t('memory.newPage')}</Button>
 	</div>
 
 	{#if files.length > 0}
@@ -94,10 +95,10 @@
 	{#if files.length === 0}
 		<EmptyState
 			icon={icons.folder}
-			title="No memories yet"
-			description="Create a page, or let your agents fill this in as they learn."
+			title={t('memory.emptyTitle')}
+			description={t('memory.emptyText')}
 		>
-			<Button variant="outline" icon={icons.plus} onclick={openCreate}>New page</Button>
+			<Button variant="outline" icon={icons.plus} onclick={openCreate}>{t('memory.newPage')}</Button>
 		</EmptyState>
 	{:else}
 		{#each grouped as [folder, entries] (folder)}
@@ -109,7 +110,7 @@
 						height="18"
 						class="block text-fc-fg-muted"
 					></iconify-icon>
-					{folder === '/' ? 'root' : folder}
+					{folder === '/' ? t('common.root') : folder}
 				</h2>
 				<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 [&>*]:min-w-0">
 					{#each entries as file (file.path)}
@@ -126,19 +127,19 @@
 	{/if}
 </div>
 
-<Modal bind:open={createOpen} title="New memory page" showClose>
+<Modal bind:open={createOpen} title={t('memory.createTitle')} showClose>
 	<form class="flex flex-col gap-4" onsubmit={createPage}>
-		<Field label="Folder" helper="Leave it on root for a page that fits nowhere else.">
+		<Field label={t('memory.folder')} helper={t('memory.folderHelp')}>
 			<Select bind:value={draftFolder} disabled={creating}>
-				<option value="">root</option>
+				<option value="">{t('common.root')}</option>
 				{#each FOLDERS as folder (folder)}
 					<option value={folder}>{folder}</option>
 				{/each}
 			</Select>
 		</Field>
 		<Field
-			label="Name"
-			helper="The .md extension is added if you leave it off."
+			label={t('common.name')}
+			helper={t('memory.nameHelp')}
 			error={createError || undefined}
 		>
 			<Input bind:value={draftName} placeholder="dokploy-redeploy" disabled={creating} required />
@@ -150,7 +151,7 @@
 				class="w-full sm:w-auto"
 				onclick={() => (createOpen = false)}
 			>
-				Cancel
+				{t('common.cancel')}
 			</Button>
 			<Button
 				type="submit"
@@ -158,7 +159,7 @@
 				class="w-full sm:w-auto"
 				disabled={creating || draftName.trim().length === 0}
 			>
-				{creating ? 'Creating…' : 'Create page'}
+				{creating ? t('common.creating') : t('memory.createPage')}
 			</Button>
 		</div>
 	</form>

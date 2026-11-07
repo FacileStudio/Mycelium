@@ -39,21 +39,24 @@ prefix the platform assumes.
 
 | Method | Path | Auth | Body / query | Returns |
 |---|---|---|---|---|
-| GET | `/api/auth/config` | none | — | `{password_auth, sso_only, oidc_enabled, device_enabled}` |
+| GET | `/api/auth/config` | none | — | `{password_auth, sso_only, oidc_enabled, device_enabled}` (`sso_only` is true whenever an issuer is set) |
 | POST | `/api/auth/login` | none | `{password, machine}` | `{token}` |
-| GET | `/api/auth/oidc` | none | optional `flow=cli`, `port`, `cli_state` | 302 to the IdP, sets an `oidc_state` cookie |
+| GET | `/api/auth/oidc` | none | optional `flow=cli`, `port`, `cli_state`, `ui_locales` (fr, en, es or de, forwarded to the issuer) | 302 to the IdP, sets an `oidc_state` cookie |
 | GET | `/api/auth/oidc/callback` | none | `code`, `state` | 302 to the success URL with `#token=…`, or to the loopback listener, or 200 and the paste page |
 | POST | `/api/auth/oidc/exchange` | none | `{code}` | `{token}` |
-| GET | `/api/auth/me` | any | — | `{email, name, admin}` |
+| GET | `/api/auth/me` | any | — | `{email, name, admin, avatar_url, locale}` |
 | POST | `/api/auth/logout` | any | — | 204, deletes the calling token |
 
-`POST /api/auth/login` is registered only when `SSO_ONLY` is false. It is rate-limited to 10
+`POST /api/auth/login` is registered only when no `OIDC_ISSUER` is set. It is rate-limited to 10
 attempts per minute per client IP and compares the password in constant time. A non-empty
 `machine` mints a `sync` token named after the machine; an empty one mints an `admin`
 browser session named `session`.
 
-The OIDC callback requires an `email` claim, upserts the user into `.users.json` — the first
-user ever seen becomes admin — and mints a session valid for 30 days.
+The OIDC callback requires `sub` and `email`. An account that already holds the `sub` signs in
+as itself. Otherwise the identity links to an account by email only when the issuer reports
+`email_verified`, and never onto an account that holds another `sub` of the same issuer. The
+first user ever seen becomes admin. The callback stores the `locale` claim and mints a session
+valid for 30 days. An unverified email, or a second subject, ends on `/login?error=sso`.
 
 ### Loopback SSO, for a CLI
 

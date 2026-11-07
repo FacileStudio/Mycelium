@@ -2,6 +2,7 @@
 	import { Button, Card, Input, icons, toast } from '@facile/muse';
 	import { backend, type MemorySearchHit } from '$lib/backend';
 	import IndexStatus from '$lib/components/IndexStatus.svelte';
+	import { t } from '$lib/i18n/index.svelte';
 
 	let query = $state('');
 	let results: MemorySearchHit[] = $state([]);
@@ -19,7 +20,7 @@
 			searchDegraded = answer.degraded;
 		} catch (e) {
 			results = [];
-			toast.danger(e instanceof Error ? e.message : 'Search failed.');
+			toast.danger(e instanceof Error ? e.message : t('search.failed'));
 		} finally {
 			searching = false;
 			searched = true;
@@ -32,7 +33,7 @@
 
 	<form class="flex flex-col gap-3 sm:flex-row" onsubmit={search}>
 		<div class="min-w-0 flex-1">
-			<Input bind:value={query} placeholder="Search memory…" aria-label="Search memory" />
+			<Input bind:value={query} placeholder={t('search.placeholder')} aria-label={t('search.label')} />
 		</div>
 		<Button
 			type="submit"
@@ -40,13 +41,13 @@
 			icon={icons.search}
 			disabled={searching || query.trim().length === 0}
 		>
-			{searching ? 'Searching…' : 'Search'}
+			{searching ? t('common.searching') : t('common.search')}
 		</Button>
 	</form>
 
 	{#if searchDegraded && searched}
 		<p class="text-fc-xs text-fc-fg-muted">
-			Matched words only — the semantic half is unavailable.
+			{t('search.degraded')}
 		</p>
 	{/if}
 
@@ -70,6 +71,6 @@
 			{/each}
 		</div>
 	{:else if searched && !searching}
-		<Card class="text-fc-sm text-fc-fg-muted">Nothing matched “{query}”.</Card>
+		<Card class="text-fc-sm text-fc-fg-muted">{t('search.none', { query })}</Card>
 	{/if}
 </section>

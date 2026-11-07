@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { Badge, Card, icons } from '@facile/muse';
 	import { backend, type MemoryIndexState } from '$lib/backend';
+	import { formatNumber } from '$lib/i18n/format';
+	import { t } from '$lib/i18n/index.svelte';
 
 	/*
 	 * Two cadences, because the two states answer different questions. A run in flight is a
@@ -24,7 +26,7 @@
 			index = await backend.memoryIndexStatus();
 			error = '';
 		} catch (e) {
-			error = e instanceof Error ? e.message : 'Could not read the index state.';
+			error = e instanceof Error ? e.message : t('index.readFailed');
 		} finally {
 			inFlight = false;
 		}
@@ -53,12 +55,12 @@
 	});
 
 	function count(n: number): string {
-		return n.toLocaleString('en-US');
+		return formatNumber(n);
 	}
 
 	function rateText(rate: number): string {
-		if (!Number.isFinite(rate) || rate <= 0) return 'measuring rate…';
-		return `${rate.toFixed(rate >= 10 ? 0 : 2)} chunks/sec`;
+		if (!Number.isFinite(rate) || rate <= 0) return t('index.measuring');
+		return t('index.rate', { rate: formatNumber(rate, { maximumFractionDigits: rate >= 10 ? 0 : 2 }) });
 	}
 
 	/*
@@ -66,14 +68,15 @@
 	 * something a human can act on, never to the second the arithmetic produced.
 	 */
 	function etaText(seconds: number): string {
-		if (!Number.isFinite(seconds) || seconds <= 0) return 'almost done';
-		if (seconds < 60) return 'less than a minute left';
+		if (!Number.isFinite(seconds) || seconds <= 0) return t('index.almostDone');
+		if (seconds < 60) return t('index.lessThanMinute');
 		const minutes = Math.round(seconds / 60);
-		if (minutes < 60) return `about ${minutes} minute${minutes === 1 ? '' : 's'} left`;
-		const h = Math.floor(minutes / 60);
-		const m = minutes % 60;
-		const head = `about ${h} hour${h === 1 ? '' : 's'}`;
-		return m === 0 ? `${head} left` : `${head} ${m} min left`;
+		if (minutes < 60) return t('index.minutesLeft', { count: minutes });
+		const hours = Math.floor(minutes / 60);
+		const rest = minutes % 60;
+		return rest === 0
+			? t('index.hoursLeft', { hours })
+			: t('index.hoursMinutesLeft', { hours, minutes: rest });
 	}
 </script>
 
@@ -87,27 +90,27 @@
 					height="16"
 					class="block shrink-0 text-fc-fg-muted"
 				></iconify-icon>
-				<span class="text-fc-sm font-medium text-fc-fg">Semantic index</span>
+				<span class="text-fc-sm font-medium text-fc-fg">{t('index.title')}</span>
 			</span>
 			{#if index?.indexing}
-				<Badge tone="info">Indexing</Badge>
+				<Badge tone="info">{t('index.indexing')}</Badge>
 			{:else if index?.enabled}
-				<Badge tone="success">Ready</Badge>
+				<Badge tone="success">{t('index.ready')}</Badge>
 			{:else if index}
-				<Badge tone="neutral">Off</Badge>
+				<Badge tone="neutral">{t('index.off')}</Badge>
 			{/if}
 		</div>
 
 		{#if index && !index.enabled}
 			<p class="text-fc-sm text-fc-fg-muted">
-				Semantic search is off. Search matches words literally until a model is configured.
+				{t('index.offText')}
 			</p>
 		{:else if index}
 			{#if index.indexing}
 				<div class="flex flex-col gap-1.5">
 					<div class="flex items-baseline justify-between gap-3">
 						<span class="truncate text-fc-sm text-fc-fg">
-							{count(index.indexed_chunks)} / {count(index.total_chunks)} chunks
+							{t('index.progress', { done: count(index.indexed_chunks), total: count(index.total_chunks) })}
 						</span>
 						<span class="shrink-0 text-fc-sm font-medium tabular-nums text-fc-fg">{percent}%</span>
 					</div>
@@ -117,7 +120,7 @@
 						aria-valuenow={percent}
 						aria-valuemin={0}
 						aria-valuemax={100}
-						aria-label="Chunks embedded"
+						aria-label={t('index.embedded')}
 					>
 						<div
 							class="h-full rounded-fc-full bg-fc-accent transition-[width] duration-500"
@@ -125,17 +128,16 @@
 						></div>
 					</div>
 					<p class="text-fc-xs text-fc-fg-muted">
-						{rateText(index.chunks_per_second)} · {etaText(index.eta_seconds)}{index.pending_paths >
-						0
-							? ` · ${count(index.pending_paths)} page${index.pending_paths === 1 ? '' : 's'} queued`
+						{rateText(index.chunks_per_second)} · {etaText(index.eta_seconds)}{index.pending_paths > 0
+							? ` · ${t('index.queued', { count: count(index.pending_paths) })}`
 							: ''}
 					</p>
 				</div>
 			{:else}
 				<p class="text-fc-sm text-fc-fg-muted">
-					{count(index.indexed_chunks)} chunks embedded{index.pending_paths > 0
-						? `, ${count(index.pending_paths)} page${index.pending_paths === 1 ? '' : 's'} queued`
-						: ''}.
+					{index.pending_paths > 0
+						? t('index.doneQueued', { count: count(index.indexed_chunks), queued: count(index.pending_paths) })
+						: t('index.doneText', { count: count(index.indexed_chunks) })}
 				</p>
 			{/if}
 
@@ -144,10 +146,10 @@
 					<span class="truncate">{index.model.name}</span>
 				{/if}
 				{#if index.model?.dims}
-					<span>{index.model.dims} dims</span>
+					<span>{t('index.dims', { count: index.model.dims })}</span>
 				{/if}
 				{#if index.store}
-					<span>{index.store} store</span>
+					<span>{t('index.store', { name: index.store })}</span>
 				{/if}
 			</div>
 		{/if}
