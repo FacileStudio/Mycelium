@@ -25,6 +25,7 @@ type snapshotApply struct {
 	seen        map[string]bool
 	spacesDirty bool
 	usersDirty  bool
+	issuer      string
 	now         string
 }
 
@@ -48,7 +49,7 @@ func (s *Server) applySnapshot(_ context.Context, snapshot directory.Snapshot) e
 	if err != nil {
 		return fmt.Errorf("registre: read users: %w", err)
 	}
-	pass := newSnapshotApply(spaces, users)
+	pass := newSnapshotApply(spaces, users, s.issuer())
 	for _, remote := range snapshot.Spaces {
 		pass.apply(remote)
 	}
@@ -62,9 +63,9 @@ func (s *Server) applySnapshot(_ context.Context, snapshot directory.Snapshot) e
 }
 
 // newSnapshotApply indexes the local spaces a snapshot can land on.
-func newSnapshotApply(spaces map[string]*Space, users map[string]User) *snapshotApply {
+func newSnapshotApply(spaces map[string]*Space, users map[string]User, issuer string) *snapshotApply {
 	pass := &snapshotApply{
-		spaces: spaces, users: users, linked: map[string]*Space{}, byName: map[string]*Space{},
+		spaces: spaces, users: users, issuer: issuer, linked: map[string]*Space{}, byName: map[string]*Space{},
 		seen: map[string]bool{}, now: time.Now().UTC().Format(time.RFC3339),
 	}
 	ids := make([]string, 0, len(spaces))
@@ -126,23 +127,25 @@ func (p *snapshotApply) local(remote directory.Space) *Space {
 
 // resolve maps a Registre member onto a stored account by email, case
 // insensitively, and provisions one when there is none. A provisioned account
-// is never an admin, as with ensureDelegatedUser.
+// is never an admin, as with ensureDelegatedUser. The member's subject is
+// stored on an account that has none yet, so a deletion notice finds it.
 func (p *snapshotApply) resolve(member directory.Member) string {
 	email := strings.TrimSpace(member.Email)
 	if email == "" {
 		return ""
 	}
-	if _, ok := p.users[email]; ok {
-		return email
+	key, ok := findByEmail(p.users, email)
+	if !ok {
+		key = email
+		p.users[key] = User{Email: email, Name: member.Name, AvatarURL: pictureURL(member.Picture), CreatedAt: p.now}
+		p.usersDirty = true
 	}
-	for stored := range p.users {
-		if strings.EqualFold(stored, email) {
-			return stored
-		}
+	if user := p.users[key]; user.Subject == "" && member.Subject != "" && p.issuer != "" {
+		user.Issuer, user.Subject = p.issuer, member.Subject
+		p.users[key] = user
+		p.usersDirty = true
 	}
-	p.users[email] = User{Email: email, Name: member.Name, AvatarURL: pictureURL(member.Picture), CreatedAt: p.now}
-	p.usersDirty = true
-	return email
+	return key
 }
 
 // localRole maps a Registre role onto Mycelium's, which share a vocabulary.
