@@ -1,5 +1,7 @@
 @import '@facile/muse/styles';
+@import '@facile/encre/styles';
 @source '../node_modules/@facile/muse/src';
+@source '../node_modules/@facile/encre/src';
 
 /*
  * The suite's semantic names, aliased onto muse's tokens. The auth screens are raw

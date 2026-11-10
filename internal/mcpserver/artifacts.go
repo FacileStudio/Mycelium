@@ -15,8 +15,8 @@ import (
 )
 
 type publishArtifactInput struct {
-	Path    string `json:"path,omitempty" jsonschema:"path to the markdown (.md) file to record; artifacts are markdown only, HTML is refused"`
-	Content string `json:"content,omitempty" jsonschema:"inline markdown content to record as an artifact (alternative to path); HTML is refused"`
+	Path    string `json:"path,omitempty" jsonschema:"path to the markdown (.md) file to record; artifacts are markdown only (Facile Markdown: CommonMark with GFM tables and task lists plus callout, stat and chart fences), HTML is refused and an invalid document is refused with encre's reason"`
+	Content string `json:"content,omitempty" jsonschema:"inline markdown content to record as an artifact (alternative to path); HTML is refused and an invalid document is refused with encre's reason"`
 	Title   string `json:"title,omitempty" jsonschema:"overrides the document's own title as the artifact's name"`
 }
 

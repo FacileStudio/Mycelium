@@ -77,6 +77,8 @@ export const automation = {
 	'artifacts.deleted': ['Deleted artifact “{title}”.', 'Artefact « {title} » supprimé.', 'Artefacto «{title}» eliminado.', 'Artefakt „{title}“ gelöscht.'],
 	'artifacts.preview': ['Preview', 'Aperçu', 'Vista previa', 'Vorschau'],
 	'artifacts.source': ['Source', 'Source', 'Código fuente', 'Quelltext'],
+	'artifacts.degradedTitle': ['Shown as best it can be', 'Affiché au mieux', 'Mostrado lo mejor posible', 'So gut wie möglich angezeigt'],
+	'artifacts.degraded': ['This artifact does not follow the Facile document format ({reason}). Saving it again from Bulle or the CLI would be refused until it is fixed.', 'Cet artefact ne respecte pas le format de document Facile ({reason}). Le réenregistrer depuis Bulle ou la CLI sera refusé tant qu’il n’est pas corrigé.', 'Este artefacto no sigue el formato de documento Facile ({reason}). Volver a guardarlo desde Bulle o la CLI se rechazará hasta que se corrija.', 'Dieses Artefakt entspricht nicht dem Facile-Dokumentformat ({reason}). Ein erneutes Speichern aus Bulle oder der CLI wird abgelehnt, bis es korrigiert ist.'],
 	'artifacts.codeCopied': ['Code copied to clipboard', 'Code copié dans le presse-papiers', 'Código copiado al portapapeles', 'Code in die Zwischenablage kopiert'],
 	'artifacts.deleteTitle': ['Delete “{title}”?', 'Supprimer « {title} » ?', '¿Eliminar «{title}»?', '„{title}“ löschen?'],
 	'artifacts.deleteText': [

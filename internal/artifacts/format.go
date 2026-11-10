@@ -22,11 +22,12 @@ func stripFrontmatter(content string) string {
 	if end < 0 {
 		return content
 	}
-	rest := content[4+end:]
-	if cut := strings.Index(rest, "\n"); cut >= 0 {
-		rest = rest[cut+1:]
+	rest := content[4+end+1:]
+	cut := strings.Index(rest, "\n")
+	if cut < 0 {
+		return ""
 	}
-	return strings.TrimPrefix(rest, "\r\n")
+	return strings.TrimLeft(rest[cut+1:], "\r\n")
 }
 
 func frontmatterBlock(art Artifact) string {

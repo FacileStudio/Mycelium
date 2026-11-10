@@ -9,6 +9,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/FacileStudio/Mycelium/internal/artifacts"
+	"github.com/FacileStudio/Mycelium/internal/encre"
 	apierrors "github.com/FacileStudio/tronc/errors"
 	"github.com/FacileStudio/tronc/httpjson"
 )
@@ -90,10 +91,20 @@ func (s *Server) artifactCreate(w http.ResponseWriter, r *http.Request) {
 		Machine: strings.TrimSpace(req.Machine),
 	}, time.Now())
 	if err != nil {
-		httpjson.WriteError(w, apierrors.Internal("internal error", err))
+		httpjson.WriteError(w, writeFailure(err, apierrors.Internal("internal error", err)))
 		return
 	}
 	s.answerArtifact(w, art, http.StatusCreated)
+}
+
+// writeFailure maps a body encre refused to a 400 carrying its reason, so the
+// caller can fix the document; any other failure answers as the route would.
+func writeFailure(err error, otherwise *apierrors.Error) *apierrors.Error {
+	var invalid *encre.ValidationError
+	if errors.As(err, &invalid) {
+		return apierrors.Invalid(invalid.Error())
+	}
+	return otherwise
 }
 
 func (s *Server) artifactUpdate(w http.ResponseWriter, r *http.Request) {
@@ -117,7 +128,7 @@ func (s *Server) artifactUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 	art, err := artifacts.Update(root, id, req.Title, []byte(req.Content), time.Now())
 	if err != nil {
-		httpjson.WriteError(w, apierrors.NotFound("not found"))
+		httpjson.WriteError(w, writeFailure(err, apierrors.NotFound("not found")))
 		return
 	}
 	s.answerArtifact(w, art, http.StatusOK)

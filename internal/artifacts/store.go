@@ -199,6 +199,9 @@ func Update(dataDir, id, title string, raw []byte, now time.Time) (Artifact, err
 	if IsHTML("", raw) {
 		return Artifact{}, ErrNotMarkdown
 	}
+	if err := validateBody(raw); err != nil {
+		return Artifact{}, err
+	}
 	art, err := Find(dataDir, id)
 	if err != nil || !strings.EqualFold(art.ID, strings.TrimSpace(id)) {
 		return Artifact{}, fmt.Errorf("no artifact named %q", id)

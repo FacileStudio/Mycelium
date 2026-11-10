@@ -2,6 +2,7 @@ package artifacts
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha256"
 	"errors"
 	"fmt"
@@ -10,6 +11,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/FacileStudio/Mycelium/internal/encre"
 )
 
 const Dirname = "artifacts"
@@ -40,10 +43,15 @@ type Request struct {
 	Machine string
 }
 
-// AddContent registers a new artifact directly from byte content.
+// AddContent registers a new artifact directly from byte content. The body
+// must be a valid Facile document: encre's refusal comes back as a
+// *encre.ValidationError and nothing is written.
 func AddContent(dataDir string, raw []byte, filename string, req Request, now time.Time) (Artifact, error) {
 	if IsHTML(filename, raw) {
 		return Artifact{}, ErrNotMarkdown
+	}
+	if err := validateBody(raw); err != nil {
+		return Artifact{}, err
 	}
 	title := strings.TrimSpace(req.Title)
 	if title == "" {
@@ -79,6 +87,17 @@ func Add(dataDir string, req Request, now time.Time) (Artifact, error) {
 		return Artifact{}, fmt.Errorf("failed to read %s: %w", req.Source, err)
 	}
 	return AddContent(dataDir, raw, req.Source, req, now)
+}
+
+// validateBody asks encre whether the body under any frontmatter is a valid
+// document. Without encre on this machine the body is stored as it came and
+// the viewer renders it in degraded mode.
+func validateBody(raw []byte) error {
+	err := encre.ValidateMarkdown(context.Background(), []byte(stripFrontmatter(string(raw))))
+	if errors.Is(err, encre.ErrUnavailable) {
+		return nil
+	}
+	return err
 }
 
 // stored is t as the file records it: UTC, to the second. Returning anything
