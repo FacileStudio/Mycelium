@@ -35,9 +35,27 @@ func (i oidcIdentity) refresh(user User) User {
 	return user
 }
 
+// link records the issuer and subject on an account that was found through
+// them, so a record that only carried the subject's picture holds the
+// subject itself from then on.
+func (i oidcIdentity) link(user User) User {
+	user.Issuer, user.Subject = i.Issuer, i.Subject
+	return user
+}
+
+// findBySubject finds the account a Registre subject maps to: a stored
+// subject first, then the picture URL Registre publishes per subject, which is
+// the only mark of the subject on a record provisioned by a delegated call or a
+// snapshot before the subject was stored with it.
 func findBySubject(users map[string]User, issuer, subject string) (string, bool) {
 	for key, user := range users {
 		if user.Subject != "" && user.Subject == subject && user.Issuer == issuer {
+			return key, true
+		}
+	}
+	picture := subjectPictureURL(issuer, subject)
+	for key, user := range users {
+		if picture != "" && user.Subject == "" && user.AvatarURL == picture {
 			return key, true
 		}
 	}
@@ -63,7 +81,7 @@ func findByEmail(users map[string]User, email string) (string, bool) {
 // address cannot take over a live account.
 func resolveIdentity(users map[string]User, ident oidcIdentity, now time.Time) (string, User, error) {
 	if key, ok := findBySubject(users, ident.Issuer, ident.Subject); ok {
-		return key, ident.refresh(users[key]), nil
+		return key, ident.refresh(ident.link(users[key])), nil
 	}
 	if !ident.EmailVerified {
 		return "", User{}, errUnverifiedEmail
@@ -74,8 +92,7 @@ func resolveIdentity(users map[string]User, ident oidcIdentity, now time.Time) (
 		if user.Subject != "" && user.Issuer == ident.Issuer {
 			return "", User{}, errSubjectConflict
 		}
-		user.Issuer, user.Subject = ident.Issuer, ident.Subject
-		return key, ident.refresh(user), nil
+		return key, ident.refresh(ident.link(user)), nil
 	}
 	user := User{
 		Email: email, Admin: len(users) == 0, Issuer: ident.Issuer, Subject: ident.Subject,

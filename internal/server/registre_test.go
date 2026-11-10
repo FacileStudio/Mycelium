@@ -38,8 +38,8 @@ func seedRegistreStores(t *testing.T, srv *Server) {
 func registreSnapshot() directory.Snapshot {
 	team := []directory.Member{
 		{Email: "alice@x.io", Role: directory.RoleOwner},
-		{Email: "bob@x.io", Role: directory.RoleAdmin},
-		{Email: "dave@x.io", Name: "Dave", Picture: "https://sso.example/avatars/d", Role: "editor"},
+		{Subject: "b", Email: "bob@x.io", Role: directory.RoleAdmin},
+		{Subject: "d", Email: "dave@x.io", Name: "Dave", Picture: "https://sso.example/avatars/d", Role: "editor"},
 	}
 	notes := []directory.Member{{Email: "alice@x.io", Role: directory.RoleOwner}}
 	return directory.Snapshot{Version: 7, Spaces: []directory.Space{
@@ -75,10 +75,16 @@ func assertFirstApply(t *testing.T, srv *Server) {
 	if _, dup := users["bob@x.io"]; dup {
 		t.Fatal("bob was provisioned twice instead of matched case-insensitively")
 	}
+	for email, subject := range map[string]string{"Bob@X.io": "b", "dave@x.io": "d", "alice@x.io": ""} {
+		if user := users[email]; user.Subject != subject || (subject != "" && user.Issuer != testIssuer) {
+			t.Fatalf("%s holds subject %q of %q, want %q", email, user.Subject, user.Issuer, subject)
+		}
+	}
 }
 
 func TestApplySnapshotLinksProvisionsAndIsIdempotent(t *testing.T) {
 	srv := New(t.TempDir(), "pw")
+	srv.OIDC = &env.OIDC{Issuer: testIssuer, ClientID: "mycelium", ClientSecret: "secret", RedirectURL: "https://x/cb"}
 	seedRegistreStores(t, srv)
 	if err := srv.applySnapshot(context.Background(), registreSnapshot()); err != nil {
 		t.Fatal(err)

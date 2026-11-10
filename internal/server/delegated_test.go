@@ -160,8 +160,9 @@ func TestDelegatedCallBackfillsThePicture(t *testing.T) {
 	f := newDelegatedFixture(t, "mycelium")
 	expect(t, f, apiCall{Method: "GET", Path: "/api/spaces", Token: f.ro}, http.StatusOK)
 	want := f.issuer.url + "/avatars/registre-subject"
-	if got := f.srv.loadUsers()[delegatedEmail].AvatarURL; got != want {
-		t.Fatalf("picture after a delegated call: %q, want %q", got, want)
+	user := f.srv.loadUsers()[delegatedEmail]
+	if user.AvatarURL != want || user.Subject != "registre-subject" || user.Issuer != f.issuer.url {
+		t.Fatalf("account after a delegated call: %+v, want picture %q and the subject", user, want)
 	}
 	session, err := f.srv.mintSessionToken(delegatedEmail, scopeAdmin)
 	if err != nil {

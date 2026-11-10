@@ -440,5 +440,16 @@ heuristic-fallback mode works fully offline.
   Mycelium is registre's first consumer: it authenticates as the `mycelium`
   application client, and the redirect it is registered under is exact-match, so
   `OIDC_REDIRECT_URL` has to keep the `/api` prefix this server mounts its API on.
+  Registre also tells Mycelium when an account is erased, two ways that reach the same
+  idempotent erasure: a signed `user.deleted` security event token pushed to
+  `POST /api/registre/deletions` (RS256 against the issuer's JWKS, `aud` = the client id,
+  answered 202 once the person is erased or was already), and a poll of
+  `GET /api/directory/deletions` at boot and every five minutes with the client
+  credentials. `.deletions.json` in the data directory records the cursor and the handled
+  subjects. The account is found by its stored subject, or by the subject's picture URL on
+  a record that predates the subject being stored. Erasure removes the `.users.json`
+  record, the person's tokens and sessions, their memberships, and every space (artifacts
+  included) that nobody else uses and Registre does not own; shared content stays. The log
+  line carries no personal data.
 
 Back to the [documentation index](README.md).

@@ -108,6 +108,15 @@ func (s *Server) sharedSpaces() []directory.ImportSpace {
 	return out
 }
 
+// issuer is the identity provider every stored subject belongs to, or empty
+// when OIDC is not configured.
+func (s *Server) issuer() string {
+	if s.OIDC == nil {
+		return ""
+	}
+	return s.OIDC.Issuer
+}
+
 // registreSpacesURL is where a person manages spaces in Registre, or one
 // space when id is set. It is empty when OIDC is not configured.
 func (s *Server) registreSpacesURL(id string) string {
