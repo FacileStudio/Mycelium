@@ -1,6 +1,6 @@
 import type { Row } from '../row';
 
-/** The markdown viewer, diagrams and the device authorization page. */
+/** The markdown viewer and the device authorization page. */
 export const viewer = {
 	'md.note': ['Note', 'Note', 'Nota', 'Hinweis'],
 	'md.tip': ['Tip', 'Astuce', 'Consejo', 'Tipp'],
@@ -9,21 +9,6 @@ export const viewer = {
 	'md.warning': ['Warning', 'Attention', 'Advertencia', 'Warnung'],
 	'md.caution': ['Caution', 'Prudence', 'Precaución', 'Vorsicht'],
 	'md.drawbacks': ['Drawbacks', 'Inconvénients', 'Inconvenientes', 'Nachteile'],
-	'md.codeCopied': ['Code copied to clipboard', 'Code copié dans le presse-papiers', 'Código copiado al portapapeles', 'Code in die Zwischenablage kopiert'],
-	'mermaid.flowchart': ['Flowchart', 'Diagramme', 'Diagrama de flujo', 'Flussdiagramm'],
-	'mermaid.syntaxError': ['Syntax Error', 'Erreur de syntaxe', 'Error de sintaxis', 'Syntaxfehler'],
-	'mermaid.zoomOut': ['Zoom out', 'Zoom arrière', 'Alejar', 'Verkleinern'],
-	'mermaid.zoomIn': ['Zoom in', 'Zoom avant', 'Acercar', 'Vergrößern'],
-	'mermaid.resetZoom': ['Reset zoom', 'Réinitialiser le zoom', 'Restablecer zoom', 'Zoom zurücksetzen'],
-	'mermaid.fit': ['Fit to screen', 'Ajuster à l’écran', 'Ajustar a la pantalla', 'An Bildschirm anpassen'],
-	'mermaid.fitShort': ['Fit', 'Ajuster', 'Ajustar', 'Anpassen'],
-	'mermaid.fullscreen': ['Fullscreen', 'Plein écran', 'Pantalla completa', 'Vollbild'],
-	'mermaid.fullscreenView': ['Flowchart fullscreen view', 'Diagramme en plein écran', 'Diagrama a pantalla completa', 'Flussdiagramm im Vollbild'],
-	'mermaid.canvas': ['Fullscreen flowchart canvas', 'Zone du diagramme en plein écran', 'Lienzo del diagrama a pantalla completa', 'Vollbild-Zeichenfläche des Flussdiagramms'],
-	'mermaid.interactive': ['Interactive flowchart diagram', 'Diagramme interactif', 'Diagrama de flujo interactivo', 'Interaktives Flussdiagramm'],
-	'mermaid.viewDiagram': ['View Diagram', 'Voir le diagramme', 'Ver diagrama', 'Diagramm anzeigen'],
-	'mermaid.viewSource': ['View Source', 'Voir la source', 'Ver código fuente', 'Quelltext anzeigen'],
-	'mermaid.rendering': ['Rendering diagram…', 'Rendu du diagramme…', 'Renderizando diagrama…', 'Diagramm wird gerendert…'],
 	'authorize.title': ['Authorize a machine — Mycelium', 'Autoriser une machine — Mycelium', 'Autorizar una máquina — Mycelium', 'Maschine autorisieren — Mycelium'],
 	'authorize.heading': ['Authorize a machine', 'Autoriser une machine', 'Autorizar una máquina', 'Maschine autorisieren'],
 	'authorize.intro': [

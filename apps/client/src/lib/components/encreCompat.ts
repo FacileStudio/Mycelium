@@ -25,6 +25,12 @@ const ALERT_KINDS: Record<string, { tone: Tone; title: keyof AlertTitles }> = {
  * page renders and never on disk: `chart:bar` (or a `chart` whose body is not JSON) becomes a
  * `chart`, each `chart:metrics` card a `stat`, and a `> [!NOTE]`-style alert a `callout`.
  * Every other byte of the body is kept as it is.
+ *
+ * It stays with encre 0.8.0, which reads neither `chart:bar` nor `chart:metrics`, and which
+ * parses GFM alerts natively but with an empty title: the rewrite is what gives the reader a
+ * localized "Note" or "Astuce". Nothing else belongs here. `mermaid`, `diff`, `compare`,
+ * `columns`, `[badge:..]`, `[status:..]` and `==mark==` are encre's own since 0.8.0 and must
+ * reach it untouched, which they do: only `chart*` fences and alert blockquotes are touched.
  */
 export function toEncreMarkdown(body: string, titles: AlertTitles): string {
 	const tokens = marked.lexer(body) as Token[];

@@ -8,6 +8,19 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [Unreleased]
+
+### Added
+
+- Artifacts are validated and rendered by [encre](https://github.com/FacileStudio/encre) v0.8.0, whose markdown now carries diagrams (` ```mermaid `, ` ```d2 `, ` ```dot `), `columns` (and the `compare`, `pros-cons` and `vs` aliases), `[badge:tone text]`, `[status:state]`, `==highlight==`, per-line tones for `diff` code blocks and `stat.sub`. The web viewer draws `mermaid` diagrams with the app's mermaid, loaded only when a document holds one, in the app's theme; `d2` and `dot` show their source. Code blocks are highlighted with highlight.js through DOMPurify, and the viewer's copy follows the app's locale.
+- A document encre refuses is reported with its place: `invalid document: line L, column C: <reason>` on the API, the CLI and the `publish_artifact` tool.
+- Every write path (`POST` and `PUT /api/artifacts`, `mycelium artifact add`, `publish_artifact`) refuses a body over 1 MiB before validation runs: `413` on the API, a refusal on the CLI and the tool.
+
+### Changed
+
+- The server and the CLI call encre through its Go module (`github.com/FacileStudio/encre/go`) instead of their own subprocess code. `ENCRE_BIN` and the PATH lookup are unchanged.
+- The pre-encre markdown renderer (`MarkdownMuse`, its mermaid block and modal), which nothing rendered since 0.44.0, is removed. Legacy `chart:bar`, `chart:metrics` and `> [!NOTE]`-style alerts are still mapped when the page renders.
+
 ## [0.44.0] - 2026-11-10
 
 ### Added

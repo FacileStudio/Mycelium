@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { Alert, Spinner } from '@facile/muse';
 	import { Document, loadEncre, parseMarkdown, validateDocument, type EncreNode } from '@facile/encre';
-	import { t } from '$lib/i18n/index.svelte';
+	import { locale, t } from '$lib/i18n/index.svelte';
 	import { stripFrontmatter } from './artifactSource';
+	import { renderDiagram } from './diagram';
 	import { toEncreMarkdown } from './encreCompat';
+	import { highlight } from './highlight';
 
 	let { content }: { content: string } = $props();
 
@@ -56,7 +58,7 @@
 		<Alert tone="warning" title={t('artifacts.degradedTitle')} class="mb-4">{t('artifacts.degraded', { reason: parsed.reason })}</Alert>
 	{/if}
 	<svelte:boundary>
-		<Document doc={parsed.doc} />
+		<Document doc={parsed.doc} locale={locale()} {renderDiagram} {highlight} />
 		{#snippet failed()}
 			{@render source()}
 		{/snippet}

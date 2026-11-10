@@ -3,9 +3,9 @@
 	import { page } from '$app/state';
 	import { Alert, Button, ConfirmModal, Spinner, icons, toast } from '@facile/muse';
 	import { backend, type ArtifactDetail } from '$lib/backend';
-	import hljs from 'highlight.js';
 	import 'highlight.js/styles/github-dark.css';
 	import EncreArtifact from '$lib/components/EncreArtifact.svelte';
+	import { highlight } from '$lib/components/highlight';
 	import { formatDate } from '$lib/i18n/format';
 	import { t } from '$lib/i18n/index.svelte';
 
@@ -27,14 +27,6 @@
 			.catch((e) => (error = e instanceof Error ? e.message : t('artifacts.loadOne')))
 			.finally(() => (loading = false));
 	});
-
-	function highlight(code: string, lang: string): string {
-		try {
-			return hljs.highlight(code, { language: lang || 'plaintext', ignoreIllegals: true }).value;
-		} catch {
-			return code;
-		}
-	}
 
 	function fullDate(iso: string): string {
 		try {

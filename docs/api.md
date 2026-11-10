@@ -231,11 +231,12 @@ included, which a client strips before rendering.
 
 `POST` and `PUT` accept markdown only, in [encre](https://github.com/FacileStudio/encre)'s
 lossless Facile Markdown dialect. Content that looks like HTML (a doctype, `<html>`,
-`<head>`, `<body>`, `<script>` or `<iframe>`) answers `400`, content over 1 MB answers `413`,
-and a title over 200 characters answers `400`. The body under any frontmatter then goes
-through `encre validate --from markdown`: a document encre refuses answers `400` whose
-message is `invalid document: ` followed by encre's reason, so the caller can fix it. The
-frontmatter is never part of the validated body. An empty title on `POST` is taken from the
+`<head>`, `<body>`, `<script>` or `<iframe>`) answers `400`, content over 1 MiB answers `413`
+before any validation runs, and a title over 200 characters answers `400`. The body under any
+frontmatter then goes through `encre validate --from markdown`: a document encre refuses
+answers `400` whose message is `invalid document: ` followed by encre's reason, placed as
+`line L, column C: ` (1-based, where the block holding the problem starts) when encre knows
+where, so the caller can fix it. The frontmatter is never part of the validated body. An empty title on `POST` is taken from the
 first heading. `PUT` rewrites the file in place: it keeps the id and `created`, replaces the
 body, renames when a title is given, and sets `updated`. It needs the exact id. The body is stored byte for byte under the frontmatter. A `space_id` the caller is not a member of answers `403`.
 
