@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/FacileStudio/Journal/sdk/journal"
+	"github.com/FacileStudio/Mycelium/internal/encre"
 	"github.com/FacileStudio/Mycelium/internal/env"
 	"github.com/FacileStudio/Mycelium/internal/memory"
 	"github.com/FacileStudio/Mycelium/internal/server"
@@ -130,6 +131,9 @@ var serveCmd = &cobra.Command{
 
 		if cfg.Password == "" && cfg.OIDC == nil {
 			appLogger.Warn("no authentication configured, every request is served as admin (set PASSWORD or OIDC_ISSUER)")
+		}
+		if !encre.Available() {
+			appLogger.Error("encre is not installed: artifacts written through the API are stored without validation (set ENCRE_BIN or put encre on PATH)")
 		}
 
 		addr := ":" + strconv.Itoa(cfg.Port)

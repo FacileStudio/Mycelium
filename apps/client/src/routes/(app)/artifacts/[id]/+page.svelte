@@ -5,7 +5,7 @@
 	import { backend, type ArtifactDetail } from '$lib/backend';
 	import hljs from 'highlight.js';
 	import 'highlight.js/styles/github-dark.css';
-	import MarkdownMuse from '$lib/components/MarkdownMuse.svelte';
+	import EncreArtifact from '$lib/components/EncreArtifact.svelte';
 	import { formatDate } from '$lib/i18n/format';
 	import { t } from '$lib/i18n/index.svelte';
 
@@ -147,7 +147,7 @@
 	{:else if detail}
 		{#if viewMode === 'preview'}
 			<div class="py-2">
-				<MarkdownMuse content={detail.content} />
+				<EncreArtifact content={detail.content} />
 			</div>
 		{:else if viewMode === 'source'}
 			{@const srcLang = 'markdown'}

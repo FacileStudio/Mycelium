@@ -8,6 +8,17 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [Unreleased]
+
+### Added
+
+- Artifacts are validated by [encre](https://github.com/FacileStudio/encre) v0.7.0 on every write. `POST` and `PUT /api/artifacts`, `mycelium artifact add` and the `publish_artifact` MCP tool run `encre validate --from markdown` on the body under the frontmatter and refuse a document encre refuses with its reason (`400 invalid document: ...` on the API). The image downloads encre's static `encre` binary for the release `ENCRE_VERSION` in the Dockerfile and checks it against the release's `checksums.txt`; `ENCRE_BIN` points the server or the CLI at another binary. A machine without encre records artifacts with a warning, and the server logs an error at boot.
+- The web viewer renders artifacts with encre's `Document` component. Mycelium's older fences are mapped when the page renders, never on disk: `chart:bar` (and a non-JSON `chart`) become an encre `chart`, each `chart:metrics` card a `stat`, and `> [!NOTE]`-style alerts a `callout`. `mermaid`, `diff`, `compare`, badges and `==highlight==` have no encre block yet and show as plain code or text. An artifact encre cannot validate still opens, with a notice and its source as the fallback.
+
+### Fixed
+
+- `mycelium artifact add` of a file that carried its own frontmatter kept that frontmatter's closing `---` line at the top of the stored body.
+
 ## [0.43.0] - 2026-11-10
 
 ### Added

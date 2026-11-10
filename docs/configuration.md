@@ -37,6 +37,7 @@ deliberate — a half-configured server is worse than one that refuses to boot.
 | `LOG_LEVEL` | no | `info` | Level for the tronc structured logger |
 | `DATA_DIR` | no | `~/.local/share/mycelium` | Root of the markdown tree and the server's JSON state |
 | `CLIENT_DIR` | no | `./client` | Directory holding the built SPA. The image sets `/client` |
+| `ENCRE_BIN` | no | `encre` on `PATH` | The [encre](https://github.com/FacileStudio/encre) binary that validates artifact bodies on `POST` and `PUT /api/artifacts`. The image downloads the static binary of release `ENCRE_VERSION` (Dockerfile), checks it against the release's `checksums.txt` and sets `/usr/local/bin/encre`. Missing, the server logs an error at boot and stores bodies unvalidated. The CLI reads the same variable for `mycelium artifact add` |
 | `PASSWORD` | conditional | — | Shared password for `mycelium login --password` |
 | `CORS_ALLOWED_ORIGINS` | no | — | Comma-separated origins. Empty denies every cross-origin browser caller |
 | `OIDC_ISSUER` | no | — | Issuer URL of the identity provider. Setting it turns SSO on and makes the three below required |

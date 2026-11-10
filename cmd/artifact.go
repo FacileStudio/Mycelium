@@ -11,6 +11,7 @@ import (
 	"github.com/FacileStudio/Mycelium/internal/artifacts"
 	"github.com/FacileStudio/Mycelium/internal/browser"
 	"github.com/FacileStudio/Mycelium/internal/config"
+	"github.com/FacileStudio/Mycelium/internal/encre"
 	"github.com/FacileStudio/Mycelium/internal/ui"
 	"github.com/spf13/cobra"
 )
@@ -26,7 +27,8 @@ var artifactAddCmd = &cobra.Command{
 	Short: "Record a markdown artifact and open it",
 	Long: "Record a markdown artifact and open it.\n\n" +
 		"The document is copied into " + artifacts.Dir(config.DataDir()) + " and synced across machines, " +
-		"with YAML frontmatter above the body. Artifacts are markdown only: HTML files are refused.\n\n" +
+		"with YAML frontmatter above the body. Artifacts are markdown only: HTML files are refused, " +
+		"and encre (when installed) refuses a body that is not a valid Facile document.\n\n" +
 		"The identifier comes from the title with a date prefix to prevent collisions:\n\n" +
 		"Artifacts are permanent: nothing deletes one except mycelium artifact rm.\n\n" +
 		"  mycelium artifact add spec.md\n" +
@@ -40,6 +42,9 @@ var artifactAddCmd = &cobra.Command{
 		bodyStdin, _ := cmd.Flags().GetBool("body-stdin")
 		var art artifacts.Artifact
 		var err error
+		if !encre.Available() {
+			ui.Warn("encre is not installed: the artifact is recorded without validation")
+		}
 		fromStdin := bodyStdin || (len(args) == 1 && args[0] == "-")
 		if fromStdin {
 			raw, err := io.ReadAll(os.Stdin)
