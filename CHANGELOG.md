@@ -8,6 +8,12 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [Unreleased]
+
+### Changed
+
+- encre [v0.9.0](https://github.com/FacileStudio/encre/releases/tag/v0.9.0) validates and renders artifacts. Every markdown path of encre is now linear on hostile input, and encre refuses markdown that nests more than 64 levels or opens more than 8 `callout`, `columns` or `column` blocks on one path, with the line and column of the fence that crosses the limit: `400 invalid document: line L, column C: custom blocks nest more than 8 levels deep` on the API, the same text on the CLI and `publish_artifact`. The viewer shows such a document in degraded mode (the notice with encre's reason, then the source). A validation message no longer starts with the child's path (`content[0]: `); the `path` field says where the problem is. The 1 MiB cap stays.
+
 ## [0.45.0] - 2026-11-10
 
 ### Added

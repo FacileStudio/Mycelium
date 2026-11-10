@@ -4,8 +4,8 @@ github.com/FacileStudio/Journal/sdk/journal v0.0.0-20260805204822-d5d1dc94d458 h
 github.com/FacileStudio/Journal/sdk/journal v0.0.0-20260805204822-d5d1dc94d458/go.mod h1:mb3rZqpSwA4CMrP9LQe2eWdM/4np3xzkRy6l/WWSaUg=
 github.com/FacileStudio/antenne-client/go v0.0.0-20260824150250-7681849d44f9 h1:OMVGmz/Krx6qS0YFxrLvweuaXMlLCBd75PKewv7jjgI=
 github.com/FacileStudio/antenne-client/go v0.0.0-20260824150250-7681849d44f9/go.mod h1:NOjvg9/8LYsdw7bcNGccqfN4kAWss690I8FqvMX3eT4=
-github.com/FacileStudio/encre/go v0.8.0 h1:t1xoQZgeq6ec7fc9riCcctd8tykLiDSodHl8h8W8zq8=
-github.com/FacileStudio/encre/go v0.8.0/go.mod h1:JhJFzVL3yrl9a/FNyZxt0KRU9ORIdLCisdP4voatb9o=
+github.com/FacileStudio/encre/go v0.9.0 h1:792SLd7TvwiLH8qc0Gg5IhD7VL+SUDBDEKhrdXT51R0=
+github.com/FacileStudio/encre/go v0.9.0/go.mod h1:JhJFzVL3yrl9a/FNyZxt0KRU9ORIdLCisdP4voatb9o=
 github.com/FacileStudio/enveloppe/go v0.0.0-20260824150156-c6a22ad287ee h1:xEfz6XsCHem0XaQWhTSjgBlEspvmYDAf8n4pDCCwzAY=
 github.com/FacileStudio/enveloppe/go v0.0.0-20260824150156-c6a22ad287ee/go.mod h1:OxizkzJhMaBPcuHVba9z1wem5oROgwaEPikYowDQbmo=
 github.com/FacileStudio/porte v0.12.1 h1:O5qWol7P37F+aWYJO7QyxdoiffZ2bke05avXBsBXBZg=

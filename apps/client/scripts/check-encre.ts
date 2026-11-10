@@ -14,6 +14,24 @@ function render(markdown: string): { mapped: string; doc: EncreNode; reason: str
 	return { mapped, doc, reason: validateDocument(doc) };
 }
 
+function degraded(markdown: string): { doc: EncreNode | null; reason: string | null } {
+	try {
+		const doc = parseMarkdown(toEncreMarkdown(stripFrontmatter(markdown), titles));
+		return { doc, reason: validateDocument(doc) };
+	} catch (error) {
+		return { doc: null, reason: error instanceof Error ? error.message : String(error) };
+	}
+}
+
+function nestedCallouts(depth: number): string {
+	let inner = 'x\n';
+	for (let i = 0; i < depth; i++) {
+		const ticks = '`'.repeat(3 + i);
+		inner = `${ticks}callout tone="info"\n${inner}${ticks}\n`;
+	}
+	return `# Deep\n\n${inner}`;
+}
+
 const blocks = (doc: EncreNode) => doc.content ?? [];
 const attrs = (node: EncreNode) => node.attrs ?? {};
 const inline = (node: EncreNode) => node.content ?? [];
@@ -159,6 +177,22 @@ const cases: [string, () => boolean][] = [
 		() => {
 			const { doc, reason } = render('# Old\n\na\u0001b\n');
 			return blocks(doc).length === 2 && typeof reason === 'string' && reason.includes('forbidden');
+		}
+	],
+	[
+		'a document encre cannot read degrades to its reason and keeps the source, eight levels still parse',
+		() => {
+			const deep = nestedCallouts(9);
+			const fallback = degraded(deep);
+			const fine = degraded(nestedCallouts(8));
+			return (
+				toEncreMarkdown(deep, titles) === deep &&
+				fallback.doc === null &&
+				typeof fallback.reason === 'string' &&
+				fallback.reason.includes('nest more than 8') &&
+				fine.reason === null &&
+				blocks(fine.doc!)[1].type === 'callout'
+			);
 		}
 	]
 ];
