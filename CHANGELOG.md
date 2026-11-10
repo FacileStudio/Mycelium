@@ -14,6 +14,11 @@ records what shipped rather than what was written down at the time.
 
 - Mycelium is licensed under AGPL-3.0-only (`LICENSE`). A commercial licence is available from Facile Studio.
 
+### Fixed
+
+- Registre's `user.deleted` notice now erases an account that was provisioned by a delegated suite call (Bulle) or by a Registre space snapshot. Those paths stored no subject, so the notice found no account and erased nothing while the receiver recorded it as handled. The subject is now stored on every path that learns it, and an account that only carries the subject's picture URL (`<issuer>/avatars/<subject>`) is matched through it. The erasure removes the `.users.json` record, the person's tokens and sessions, their memberships, and every space, artifacts included, that nobody else uses and Registre does not own.
+- `scripts/erasure-check.sh <subject> <email>` counts, read-only, what every suite database on this host still holds for an erased person, with no row contents.
+
 ## [0.42.0] - 2026-11-10
 
 ### Removed
