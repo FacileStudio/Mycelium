@@ -1,5 +1,6 @@
 {
   "name": "mycelium-models",
+  "license": "AGPL-3.0-only",
   "private": true,
   "imports": {
     "#lib/*": "./_lib/*.ts"
