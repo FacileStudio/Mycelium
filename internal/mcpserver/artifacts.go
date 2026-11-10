@@ -15,8 +15,8 @@ import (
 )
 
 type publishArtifactInput struct {
-	Path    string `json:"path,omitempty" jsonschema:"path to the markdown (.md) or HTML (.html) file to record"`
-	Content string `json:"content,omitempty" jsonschema:"inline markdown or HTML content to record as an artifact (alternative to path)"`
+	Path    string `json:"path,omitempty" jsonschema:"path to the markdown (.md) file to record; artifacts are markdown only, HTML is refused"`
+	Content string `json:"content,omitempty" jsonschema:"inline markdown content to record as an artifact (alternative to path); HTML is refused"`
 	Title   string `json:"title,omitempty" jsonschema:"overrides the document's own title as the artifact's name"`
 }
 
@@ -25,7 +25,7 @@ type publishArtifactOutput struct {
 	Path     string   `json:"path" jsonschema:"where the page was written on this machine"`
 	URL      string   `json:"url,omitempty" jsonschema:"the canonical web URL of the artifact on the Mycelium server"`
 	Opened   bool     `json:"opened" jsonschema:"true when a browser was opened here, false when this machine has no browser to open"`
-	Unusable []string `json:"unresolved_refs,omitempty" jsonschema:"relative src or href values that cannot load from disk"`
+	Unusable []string `json:"unresolved_refs,omitempty" jsonschema:"relative markdown links or images that cannot load from disk"`
 }
 
 func recordArtifact(in publishArtifactInput) (artifacts.Artifact, []byte, error) {
@@ -40,11 +40,7 @@ func recordArtifact(in publishArtifactInput) (artifacts.Artifact, []byte, error)
 	}
 	if content != "" {
 		raw := []byte(in.Content)
-		filename := "inline.md"
-		if strings.HasPrefix(content, "<html") || strings.HasPrefix(content, "<!DOCTYPE") {
-			filename = "inline.html"
-		}
-		art, err := artifacts.AddContent(config.DataDir(), raw, filename, req, time.Now())
+		art, err := artifacts.AddContent(config.DataDir(), raw, "inline.md", req, time.Now())
 		return art, raw, err
 	}
 	req.Source = path

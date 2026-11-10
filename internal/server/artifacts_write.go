@@ -71,7 +71,7 @@ func validateArtifactWrite(req ArtifactWriteRequest) *apierrors.Error {
 	case strings.TrimSpace(req.Content) == "":
 		return apierrors.Invalid("content is required")
 	case looksLikeHTML(req.Content):
-		return apierrors.Invalid("content must be markdown, not HTML")
+		return apierrors.Invalid("artifacts are markdown only: HTML is not supported")
 	}
 	return nil
 }
@@ -113,10 +113,6 @@ func (s *Server) artifactUpdate(w http.ResponseWriter, r *http.Request) {
 	existing, err := artifacts.Find(root, id)
 	if err != nil || !strings.EqualFold(existing.ID, id) {
 		httpjson.WriteError(w, apierrors.NotFound("not found"))
-		return
-	}
-	if artifactFormat(existing.Path) != "markdown" {
-		httpjson.WriteError(w, apierrors.Invalid("only markdown artifacts can be updated"))
 		return
 	}
 	art, err := artifacts.Update(root, id, req.Title, []byte(req.Content), time.Now())

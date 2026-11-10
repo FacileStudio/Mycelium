@@ -17,28 +17,30 @@ func writeSource(t *testing.T, dir, name, body string) string {
 	return path
 }
 
-func TestAddRoundTripsItsMetadataHTML(t *testing.T) {
+func TestHTMLIsRefusedAndOldHTMLStaysUnlisted(t *testing.T) {
 	dir := t.TempDir()
-	src := writeSource(t, dir, "in.html", "<html><head><title>Suite drift</title></head><body>hi</body></html>")
 	now := time.Date(2026, 8, 26, 10, 0, 0, 0, time.UTC)
-
-	art, err := Add(dir, Request{Source: src, Machine: "ruche"}, now)
-	if err != nil {
-		t.Fatalf("add: %v", err)
+	src := writeSource(t, dir, "in.html", "<p>hi</p>")
+	if _, err := Add(dir, Request{Source: src}, now); err != ErrNotMarkdown {
+		t.Fatalf("an .html file: got %v, want ErrNotMarkdown", err)
 	}
-	if !strings.HasPrefix(art.ID, "2026-08-26-suite-drift-") {
-		t.Fatalf("id from <title>: got %q, want prefix 2026-08-26-suite-drift-", art.ID)
+	if _, err := AddContent(dir, []byte("  <!DOCTYPE html><html></html>"), "stdin.md", Request{}, now); err != ErrNotMarkdown {
+		t.Fatalf("an HTML document named .md: got %v, want ErrNotMarkdown", err)
 	}
-
-	back, err := Find(dir, "suite-drift")
-	if err != nil {
-		t.Fatalf("find: %v", err)
+	month := filepath.Join(Dir(dir), "2026", "08")
+	if err := os.MkdirAll(month, 0o755); err != nil {
+		t.Fatal(err)
 	}
-	if back.Title != "Suite drift" || back.Machine != "ruche" {
-		t.Fatalf("metadata lost: %+v", back)
+	old := writeSource(t, month, "2026-08-01-old-page-abc123.html", "<html><title>Old page</title></html>")
+	all, err := List(dir)
+	if err != nil || len(all) != 0 {
+		t.Fatalf("an old HTML file must not be listed, got %d (%v)", len(all), err)
 	}
-	if !back.Created.Equal(now) || !back.Updated.Equal(now) {
-		t.Fatalf("times lost: created %v updated %v", back.Created, back.Updated)
+	if _, err := Find(dir, "2026-08-01-old-page-abc123"); err == nil {
+		t.Fatal("an old HTML file must not be found")
+	}
+	if _, err := os.Stat(old); err != nil {
+		t.Fatalf("the old HTML file was touched: %v", err)
 	}
 }
 
@@ -72,12 +74,11 @@ func TestAddRoundTripsItsMetadataMarkdown(t *testing.T) {
 	}
 }
 
-func TestReAddingReplacesInPlaceWithoutStackingTags(t *testing.T) {
+func TestReAddingReplacesInPlaceWithoutStackingFrontmatter(t *testing.T) {
 	dir := t.TempDir()
-	page := "<html><head><title>Suite drift</title></head><body>%s</body></html>"
 	now := time.Date(2026, 8, 26, 10, 0, 0, 0, time.UTC)
 
-	src := writeSource(t, dir, "a.html", strings.Replace(page, "%s", "first", 1))
+	src := writeSource(t, dir, "a.md", "# Suite drift\n\nfirst")
 	firstArt, err := Add(dir, Request{Source: src, Machine: "ruche"}, now)
 	if err != nil {
 		t.Fatalf("first add: %v", err)
@@ -86,7 +87,7 @@ func TestReAddingReplacesInPlaceWithoutStackingTags(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read stamped: %v", err)
 	}
-	again := writeSource(t, dir, "b.html", string(stamped))
+	again := writeSource(t, dir, "b.md", string(stamped))
 	if _, err := Add(dir, Request{Source: again, Title: firstArt.ID, Machine: "lucy"}, now); err != nil {
 		t.Fatalf("second add: %v", err)
 	}
@@ -99,11 +100,25 @@ func TestReAddingReplacesInPlaceWithoutStackingTags(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read final: %v", err)
 	}
-	if n := strings.Count(string(final), `name="mycelium-created"`); n != 1 {
-		t.Fatalf("metadata stacked: %d created tags", n)
+	if n := strings.Count(string(final), "type: artifact"); n != 1 {
+		t.Fatalf("frontmatter stacked: %d blocks", n)
 	}
 	if all[0].Machine != "lucy" {
 		t.Fatalf("re-add kept the old machine: %q", all[0].Machine)
+	}
+}
+
+func TestBodyIsStoredByteForByte(t *testing.T) {
+	dir := t.TempDir()
+	body := "# Deploy\n\n````callout tone=\"warning\" title=\"Before you deploy\"\nCheck `x`.\n\n```sh\nmake\n```\n````\n\n" +
+		"```chart\n{\"kind\": \"bar\", \"data\": []}\n```\n\n~~~stat\nraw\n~~~\n"
+	art, err := AddContent(dir, []byte(body), "a.md", Request{}, time.Date(2026, 8, 26, 10, 0, 0, 0, time.UTC))
+	if err != nil {
+		t.Fatal(err)
+	}
+	raw, _ := os.ReadFile(art.Path)
+	if !strings.HasSuffix(string(raw), "---\n\n"+body) {
+		t.Fatalf("body changed on disk: %q", raw)
 	}
 }
 
@@ -160,8 +175,8 @@ func TestUpdateKeepsIDAndCreated(t *testing.T) {
 }
 
 func TestExternalRefsNamesOnlyWhatCannotResolveFromDisk(t *testing.T) {
-	page := `<link href="style.css"><img src="data:image/png;base64,AAA">` +
-		`<a href="#top"><script src="https://cdn.example/x.js"></script><img src="./logo.png">`
+	page := "[style](style.css) ![inline](data:image/png;base64,AAA) [top](#top) " +
+		"![cdn](https://cdn.example/x.png) ![logo](./logo.png)"
 
 	refs := ExternalRefs([]byte(page))
 

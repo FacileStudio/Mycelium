@@ -4,8 +4,6 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/FacileStudio/Mycelium/internal/artifacts"
@@ -18,7 +16,6 @@ type ArtifactSummary struct {
 	ID      string    `json:"id"`
 	Title   string    `json:"title"`
 	Machine string    `json:"machine"`
-	Format  string    `json:"format"`
 	Created time.Time `json:"created"`
 	Updated time.Time `json:"updated"`
 	// SpaceID and SpaceName name the tree an artifact lives in, and are set
@@ -39,20 +36,11 @@ type ArtifactDetail struct {
 // ReportDetail is a backward-compatible alias for ArtifactDetail.
 type ReportDetail = ArtifactDetail
 
-func artifactFormat(path string) string {
-	ext := strings.ToLower(filepath.Ext(path))
-	if ext == ".html" || ext == ".htm" {
-		return "html"
-	}
-	return "markdown"
-}
-
 func summaryOf(art artifacts.Artifact) ArtifactSummary {
 	return ArtifactSummary{
 		ID:      art.ID,
 		Title:   art.Title,
 		Machine: art.Machine,
-		Format:  artifactFormat(art.Path),
 		Created: art.Created,
 		Updated: art.Updated,
 	}

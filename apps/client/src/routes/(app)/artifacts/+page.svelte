@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Alert, Badge, EmptyState, Input, Spinner, icons } from '@facile/muse';
+	import { Alert, EmptyState, Input, Spinner, icons } from '@facile/muse';
 	import EntityCard from '$lib/components/EntityCard.svelte';
 	import { backend, type ArtifactSummary } from '$lib/backend';
 	import { formatDate } from '$lib/i18n/format';
@@ -77,15 +77,8 @@
 							href="/artifacts/{art.id}"
 							icon="solar:file-smile-linear"
 							title={art.title}
-							meta="artifacts/{art.id}.{art.format === 'html' ? 'html' : 'md'}"
+							meta="artifacts/{art.id}.md"
 						>
-							{#snippet trailing()}
-								<div class="flex min-w-0 flex-wrap items-center justify-end gap-1.5">
-									<Badge tone="neutral">
-										{art.format === 'html' ? 'HTML' : 'MD'}
-									</Badge>
-								</div>
-							{/snippet}
 							{#snippet footer()}
 								<span class="inline-flex min-w-0 items-center gap-1 truncate font-fc-mono">
 									<iconify-icon

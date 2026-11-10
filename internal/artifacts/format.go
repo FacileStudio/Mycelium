@@ -2,33 +2,16 @@ package artifacts
 
 import (
 	"fmt"
-	"html"
 	"regexp"
 	"strings"
 )
 
-var (
-	metaAny  = regexp.MustCompile(`(?i)\n?<meta name="mycelium-[a-z]+" content="[^"]*">`)
-	metaPair = regexp.MustCompile(`(?i)<meta name="mycelium-([a-z]+)" content="([^"]*)">`)
-	headEnd  = regexp.MustCompile(`(?i)</head>`)
-	mdLink   = regexp.MustCompile(`!?\[.*?\]\(([^)]+)\)`)
-)
+var mdLink = regexp.MustCompile(`!?\[.*?\]\(([^)]+)\)`)
 
-func stamp(raw []byte, art Artifact, isHTML bool) []byte {
-	if isHTML {
-		body := metaAny.ReplaceAll(raw, nil)
-		block := metaBlock(art)
-		if loc := headEnd.FindIndex(body); loc != nil {
-			out := append([]byte{}, body[:loc[0]]...)
-			return append(append(out, block...), body[loc[0]:]...)
-		}
-		return append(block, body...)
-	}
-
-	content := string(raw)
-	body := stripFrontmatter(content)
-	header := frontmatterBlock(art)
-	return []byte(header + body)
+// stamp writes the metadata frontmatter above the body. The body is kept
+// byte for byte, so fenced blocks of any kind survive untouched.
+func stamp(raw []byte, art Artifact) []byte {
+	return []byte(frontmatterBlock(art) + stripFrontmatter(string(raw)))
 }
 
 func stripFrontmatter(content string) string {
@@ -60,33 +43,12 @@ func frontmatterBlock(art Artifact) string {
 	return b.String()
 }
 
-func metaBlock(art Artifact) []byte {
-	var b strings.Builder
-	fmt.Fprintf(&b, "\n<meta name=\"mycelium-title\" content=\"%s\">", html.EscapeString(art.Title))
-	fmt.Fprintf(&b, "\n<meta name=\"mycelium-machine\" content=\"%s\">", html.EscapeString(art.Machine))
-	fmt.Fprintf(&b, "\n<meta name=\"mycelium-created\" content=\"%s\">", art.Created.UTC().Format(timeFormat))
-	fmt.Fprintf(&b, "\n<meta name=\"mycelium-updated\" content=\"%s\">", art.Updated.UTC().Format(timeFormat))
-	b.WriteString("\n")
-	return []byte(b.String())
-}
-
-var (
-	assetRef  = regexp.MustCompile(`(?i)(?:src|href)="([^"]+)"`)
-	schemeRef = regexp.MustCompile(`(?i)^[a-z][a-z0-9+.-]*:`)
-)
+var schemeRef = regexp.MustCompile(`(?i)^[a-z][a-z0-9+.-]*:`)
 
 // ExternalRefs scans raw content for relative links and assets that will not resolve from disk.
 func ExternalRefs(raw []byte) []string {
 	seen := map[string]bool{}
 	var out []string
-	for _, m := range assetRef.FindAllSubmatch(raw, -1) {
-		ref := strings.TrimSpace(string(m[1]))
-		if ref == "" || seen[ref] || strings.HasPrefix(ref, "#") || schemeRef.MatchString(ref) {
-			continue
-		}
-		seen[ref] = true
-		out = append(out, ref)
-	}
 	for _, m := range mdLink.FindAllSubmatch(raw, -1) {
 		ref := strings.TrimSpace(string(m[1]))
 		if ref == "" || seen[ref] || strings.HasPrefix(ref, "#") || schemeRef.MatchString(ref) {

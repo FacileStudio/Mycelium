@@ -8,6 +8,17 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [Unreleased]
+
+### Removed
+
+- HTML artifacts. Artifacts are markdown only: `mycelium artifact add` of an `.html` file or an HTML document, the `publish_artifact` MCP tool and `POST`/`PUT /api/artifacts` refuse HTML with "artifacts are markdown only". `.html` files already in a tree stay on disk untouched but are no longer listed, found, served or rendered. The `format` field is gone from the artifact API.
+
+### Changed
+
+- The web viewer renders raw HTML inside markdown as literal text, never as markup, and shows a `chart` fence holding JSON (encre's chart block) as plain code instead of an empty bar chart. Unknown fences stay plain code.
+- An artifact body is stored byte for byte under the frontmatter, so fenced custom blocks survive untouched.
+
 ## [0.41.0] - 2026-11-10
 
 ### Added

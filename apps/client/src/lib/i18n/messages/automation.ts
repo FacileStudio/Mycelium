@@ -86,5 +86,4 @@ export const automation = {
 		'Das Artefakt wird dauerhaft von dieser Maschine und aus dem Sync gelöscht.'
 	],
 	'artifacts.unknownMachine': ['unknown', 'inconnue', 'desconocida', 'unbekannt'],
-	'artifacts.markdown': ['Markdown', 'Markdown', 'Markdown', 'Markdown']
 } as const satisfies Record<string, Row>;

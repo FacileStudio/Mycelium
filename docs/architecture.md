@@ -60,7 +60,7 @@ skills/          reusable agent skills
 machines/        per-machine context blocks
 sessions/        <machine>/<YYYY-MM>.jsonl sealed session blocks, plus live.json
 usage/           <machine>/current.json latest snapshot, <YYYY-MM>.jsonl history
-artifacts/       <YYYY>/<MM>/<id>.md or .html rendered documents
+artifacts/       <YYYY>/<MM>/<id>.md markdown documents
 ```
 
 Artifacts are permanent. Their metadata rides in the file (YAML frontmatter for markdown,

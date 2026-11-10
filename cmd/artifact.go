@@ -18,16 +18,15 @@ import (
 var artifactCmd = &cobra.Command{
 	Use:     "artifact",
 	Aliases: []string{"artifacts", "report", "reports"},
-	Short:   "Manage rendered artifacts and reports that travel between your machines",
+	Short:   "Manage markdown artifacts and reports that travel between your machines",
 }
 
 var artifactAddCmd = &cobra.Command{
 	Use:   "add [file]",
-	Short: "Record a markdown or HTML artifact and open it",
-	Long: "Record a markdown or HTML artifact and open it.\n\n" +
-		"The document is copied into " + artifacts.Dir(config.DataDir()) + " and synced across machines. " +
-		"Markdown files (.md) are formatted with YAML frontmatter, and HTML files (.html) " +
-		"are preserved for standalone viewing.\n\n" +
+	Short: "Record a markdown artifact and open it",
+	Long: "Record a markdown artifact and open it.\n\n" +
+		"The document is copied into " + artifacts.Dir(config.DataDir()) + " and synced across machines, " +
+		"with YAML frontmatter above the body. Artifacts are markdown only: HTML files are refused.\n\n" +
 		"The identifier comes from the title with a date prefix to prevent collisions:\n\n" +
 		"Artifacts are permanent: nothing deletes one except mycelium artifact rm.\n\n" +
 		"  mycelium artifact add spec.md\n" +
@@ -136,7 +135,7 @@ func warnExternalRefs(source string) {
 		return
 	}
 	ui.Warn("%d reference(s) will not resolve from disk: %s", len(refs), strings.Join(refs, ", "))
-	ui.Hint("embed images as data: URIs or ensure paths are valid")
+	ui.Hint("use absolute URLs or data: URIs")
 }
 
 func artifactTarget(art artifacts.Artifact) string {

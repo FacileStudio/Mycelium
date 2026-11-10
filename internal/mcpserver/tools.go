@@ -84,8 +84,9 @@ func publishArtifactTool() *mcp.Tool {
 	return &mcp.Tool{
 		Name:  "publish_artifact",
 		Title: "Publish an artifact",
-		Description: "Record a markdown or HTML document in the synced tree, open it in the browser, " +
-			"and return its canonical web URL and file path. Accepts either inline 'content' or a file 'path'.\n\n" +
+		Description: "Record a markdown document in the synced tree, open it in the browser, " +
+			"and return its canonical web URL and file path. Accepts either inline 'content' or a file 'path'. " +
+			"Artifacts are markdown only: HTML is refused.\n\n" +
 			"Use it when the answer is structural rather than linear: a comparison across many items, " +
 			"a timeline, a graph, or an extensive overview. Answer in the conversation first and " +
 			"record an artifact as an attachment to that answer, never in place of it. A durable finding belongs " +

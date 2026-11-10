@@ -8,7 +8,7 @@ import AlertBlock from './AlertBlock.svelte';
 import MermaidBlock from './MermaidBlock.svelte';
 import ListItem from './ListItem.svelte';
 import { parseAlert, parseBarChart, parseCompare, parseDiff, parseListItem, parseMetrics, stripFrontmatter } from './MarkdownMuseUtils';
-import { richInline, richBlock, safeHtml } from './MarkdownMuseRich';
+import { richInline, richBlock } from './MarkdownMuseRich';
 
 function highlightCode(code: string, lang: string): string {
 	if (!hljs) return code;
@@ -115,7 +115,7 @@ const tokens = $derived(marked.lexer(cleanBody) as Token[]);
 				{/if}
 			{:else}
 				<div class="rounded-fc-lg bg-fc-surface/60 p-4 text-fc-sm text-fc-fg-muted italic">
-					{@html safeHtml(marked.parse(b.text) as string)}
+					{@html richBlock(b.text)}
 				</div>
 			{/if}
 
@@ -218,7 +218,7 @@ const tokens = $derived(marked.lexer(cleanBody) as Token[]);
 			{@const c = token as Tokens.Code}
 			{@const lang = (c.lang || '').toLowerCase().trim()}
 
-			{#if lang.startsWith('chart:bar') || lang.startsWith('chart:bars') || lang === 'chart'}
+			{#if lang.startsWith('chart:bar') || (lang === 'chart' && !c.text.trimStart().startsWith('{'))}
 				{@const chart = parseBarChart(c.text)}
 				<div class="my-4 rounded-fc-lg bg-fc-surface p-5 shadow-fc-xs">
 					{#if chart.title}
@@ -310,6 +310,9 @@ const tokens = $derived(marked.lexer(cleanBody) as Token[]);
 					<pre class="overflow-x-auto p-4 font-fc-mono text-fc-xs leading-relaxed text-fc-fg"><code>{c.text}</code></pre>
 				</div>
 			{/if}
+
+		{:else if token.type === 'html'}
+			<p class="whitespace-pre-wrap break-words">{(token as Tokens.HTML).text.trim()}</p>
 
 		{:else if token.type === 'hr'}
 			<hr class="my-6 border-0" />

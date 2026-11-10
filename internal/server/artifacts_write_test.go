@@ -45,7 +45,7 @@ func TestArtifactCreateLandsInTheSpace(t *testing.T) {
 
 	detail := f.create(t, `{"title":"Weekly plan","content":"# Plan\n\n- ship","machine":"bulle"}`)
 
-	if detail.Title != "Weekly plan" || detail.Machine != "bulle" || detail.Format != "markdown" {
+	if detail.Title != "Weekly plan" || detail.Machine != "bulle" {
 		t.Fatalf("unexpected detail: %+v", detail)
 	}
 	if !detail.Created.Equal(detail.Updated) || !strings.Contains(detail.Content, "- ship") {

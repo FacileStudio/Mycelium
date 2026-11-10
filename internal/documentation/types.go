@@ -328,7 +328,6 @@ type ArtifactSummary struct {
 	ID      string `json:"id"`
 	Title   string `json:"title"`
 	Machine string `json:"machine"`
-	Format  string `json:"format"`
 	Created string `json:"created"`
 	Updated string `json:"updated"`
 }
@@ -338,7 +337,6 @@ type ArtifactDetail struct {
 	ID      string `json:"id"`
 	Title   string `json:"title"`
 	Machine string `json:"machine"`
-	Format  string `json:"format"`
 	Created string `json:"created"`
 	Updated string `json:"updated"`
 	Content string `json:"content"`
