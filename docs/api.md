@@ -197,7 +197,7 @@ label.
 | Method | Path | Auth | Body | Returns |
 |---|---|---|---|---|
 | GET | `/api/users` | any | — | `[{email, name, admin, created_at}]` |
-| GET | `/api/spaces` | any | — | `{spaces: [{id, name, description, role, created_at, updated_at}]}` |
+| GET | `/api/spaces` | any | — | `{spaces: [{id, name, description, role, created_at, updated_at}], registre_url, common_artifacts}` |
 | POST | `/api/spaces` | any | `{name, description}` | 201 with the space, caller as `owner` |
 | PUT | `/api/spaces/{id}` | any | `{name, description}` | The updated space |
 | DELETE | `/api/spaces/{id}` | any | — | 204 |
@@ -219,7 +219,7 @@ Rendered markdown and HTML documents. Artifacts are permanent: nothing deletes o
 
 | Method | Path | Auth | Query | Body | Returns |
 |---|---|---|---|---|---|
-| GET | `/api/artifacts` | any | `space_id` | — | `[ArtifactSummary]`, newest first |
+| GET | `/api/artifacts` | any | `space_id` or `all=true` | — | `[ArtifactSummary]`, newest first |
 | POST | `/api/artifacts` | any | `space_id` | `{title, content, machine?}` | 201 `ArtifactDetail` |
 | GET | `/api/artifacts/{id}` | any | `space_id` | — | `ArtifactDetail` |
 | PUT | `/api/artifacts/{id}` | any | `space_id` | `{title?, content}` | 200 `ArtifactDetail` |
@@ -235,6 +235,15 @@ and a title over 200 characters answers `400`. An empty title on `POST` is taken
 first heading. `PUT` rewrites the file in place: it keeps the id and `created`, replaces the
 body, renames when a title is given, and sets `updated`. It needs the exact id, and an HTML
 artifact cannot be updated. A `space_id` the caller is not a member of answers `403`.
+
+`GET /api/artifacts?all=true` lists every artifact the caller can read: the common tree when
+the caller may use it, then every space they are a member of. Each summary there also carries
+`space_id` and `space_name`; an absent `space_id` is the common tree.
+
+A delegated suite token (Bulle acting for a user) reaches the common tree on the artifact
+routes only, and only when its user is an admin: for an admin the common tree is their
+personal tree. `common_artifacts` on `GET /api/spaces` says whether the caller may. Rules,
+memory, skills and sync stay closed to every delegated token.
 
 Files written before artifacts became permanent may still carry an `expires:` line or a
 `mycelium-expires` meta tag. Both are ignored.

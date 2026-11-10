@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 	"time"
 
@@ -17,17 +16,15 @@ import (
 
 func (s *Server) spacesList(w http.ResponseWriter, r *http.Request) {
 	id := identityFrom(r)
-	s.mu.RLock()
-	spaces := s.loadSpaces()
-	s.mu.RUnlock()
 	out := []SpaceResponse{}
-	for _, space := range spaces {
-		if role, ok := space.Members[id.Email]; ok && id.Email != "" {
-			out = append(out, spaceResponse(space, role))
-		}
+	for _, space := range s.memberSpaces(id) {
+		out = append(out, spaceResponse(space, space.Members[id.Email]))
 	}
-	sort.Slice(out, func(i, j int) bool { return out[i].Name < out[j].Name })
-	httpjson.WriteJSON(w, http.StatusOK, map[string]any{"spaces": out, "registre_url": s.registreSpacesURL("")})
+	httpjson.WriteJSON(w, http.StatusOK, map[string]any{
+		"spaces":           out,
+		"registre_url":     s.registreSpacesURL(""),
+		"common_artifacts": s.artifactCommonAllowed(id),
+	})
 }
 
 func (s *Server) spacesCreate(w http.ResponseWriter, r *http.Request) {

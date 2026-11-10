@@ -77,7 +77,7 @@ func validateArtifactWrite(req ArtifactWriteRequest) *apierrors.Error {
 }
 
 func (s *Server) artifactCreate(w http.ResponseWriter, r *http.Request) {
-	root, ok := s.scopeRoot(w, r)
+	root, ok := s.artifactRoot(w, r)
 	if !ok {
 		return
 	}
@@ -102,7 +102,7 @@ func (s *Server) artifactUpdate(w http.ResponseWriter, r *http.Request) {
 		httpjson.WriteError(w, apierrors.Invalid("invalid artifact id"))
 		return
 	}
-	root, ok := s.scopeRoot(w, r)
+	root, ok := s.artifactRoot(w, r)
 	if !ok {
 		return
 	}

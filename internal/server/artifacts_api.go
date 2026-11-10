@@ -21,6 +21,10 @@ type ArtifactSummary struct {
 	Format  string    `json:"format"`
 	Created time.Time `json:"created"`
 	Updated time.Time `json:"updated"`
+	// SpaceID and SpaceName name the tree an artifact lives in, and are set
+	// only by the all=true listing; an empty SpaceID there is the common tree.
+	SpaceID   string `json:"space_id,omitempty"`
+	SpaceName string `json:"space_name,omitempty"`
 }
 
 // ReportSummary is a backward-compatible alias for ArtifactSummary.
@@ -65,7 +69,11 @@ func detailOf(art artifacts.Artifact) (ArtifactDetail, error) {
 }
 
 func (s *Server) artifactsList(w http.ResponseWriter, r *http.Request) {
-	root, ok := s.scopeRoot(w, r)
+	if r.URL.Query().Get("all") == "true" {
+		s.artifactsListAll(w, r)
+		return
+	}
+	root, ok := s.artifactRoot(w, r)
 	if !ok {
 		return
 	}
@@ -88,7 +96,7 @@ func (s *Server) artifactGet(w http.ResponseWriter, r *http.Request) {
 		httpjson.WriteError(w, apierrors.Invalid("invalid artifact id"))
 		return
 	}
-	root, rootOK := s.scopeRoot(w, r)
+	root, rootOK := s.artifactRoot(w, r)
 	if !rootOK {
 		return
 	}
@@ -111,7 +119,7 @@ func (s *Server) artifactDelete(w http.ResponseWriter, r *http.Request) {
 		httpjson.WriteError(w, apierrors.Invalid("invalid artifact id"))
 		return
 	}
-	root, rootOK := s.scopeRoot(w, r)
+	root, rootOK := s.artifactRoot(w, r)
 	if !rootOK {
 		return
 	}

@@ -8,6 +8,17 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [Unreleased]
+
+### Added
+
+- `GET /api/artifacts?all=true` lists every artifact the caller can read, newest first: the common tree when they may use it, then each space they belong to. Each entry carries `space_id` and `space_name`.
+- `GET /api/spaces` answers `common_artifacts`: whether the caller's personal artifacts live in the common tree.
+
+### Changed
+
+- A delegated suite token of an admin (Bulle acting for that admin) reaches the common tree on the artifact routes only, so Bulle lists the same artifacts as `mycelium artifact list` and what Bulle saves syncs to the admin's machines. Rules, memory, skills and sync stay closed to every delegated token, and a non-admin still never reaches the common tree.
+
 ## [0.40.4] - 2026-11-07
 
 ### Changed
