@@ -26,9 +26,10 @@ const (
 // delegatedRoutes is the whole of what a delegated token reaches, as
 // "METHOD pattern" against the chi route pattern that matched. It is an
 // allowlist on purpose: a route added later stays closed to delegated callers
-// until someone writes it here. None of these routes touches the common tree
-// for a delegated identity, because commonAllowed refuses it and every one of
-// them resolves its tree through scopeRoot.
+// until someone writes it here. Only the artifact routes reach the common
+// tree for a delegated identity, and only for an admin (artifactRoot); every
+// other route resolves its tree through scopeRoot, whose commonAllowed refuses
+// a delegated caller.
 var delegatedRoutes = map[string]bool{
 	"GET /api/spaces":            true,
 	"POST /api/spaces":           true,
