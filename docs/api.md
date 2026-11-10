@@ -214,8 +214,9 @@ exists in `.users.json`.
 
 ## Artifacts
 
-Rendered markdown and HTML documents. Artifacts are permanent: nothing deletes one except
-`DELETE`. `{id}` is a bare name with no slash, backslash, or `..`.
+Markdown documents. HTML is not supported: the CLI, the MCP tool and the API refuse it, and
+`.html` files left in a tree by older versions are neither listed nor served. Artifacts are
+permanent: nothing deletes one except `DELETE`. `{id}` is a bare name with no slash, backslash, or `..`.
 
 | Method | Path | Auth | Query | Body | Returns |
 |---|---|---|---|---|---|
@@ -225,16 +226,14 @@ Rendered markdown and HTML documents. Artifacts are permanent: nothing deletes o
 | PUT | `/api/artifacts/{id}` | any | `space_id` | `{title?, content}` | 200 `ArtifactDetail` |
 | DELETE | `/api/artifacts/{id}` | any | `space_id` | — | 204 |
 
-`ArtifactSummary` is `{id, title, machine, format, created, updated}`, where `format` is
-`markdown` or `html`. `ArtifactDetail` adds `content`: the file as stored, frontmatter
+`ArtifactSummary` is `{id, title, machine, created, updated}`. `ArtifactDetail` adds `content`: the file as stored, frontmatter
 included, which a client strips before rendering.
 
 `POST` and `PUT` accept markdown only. Content that looks like HTML (a doctype, `<html>`,
 `<head>`, `<body>`, `<script>` or `<iframe>`) answers `400`, content over 1 MB answers `413`,
 and a title over 200 characters answers `400`. An empty title on `POST` is taken from the
 first heading. `PUT` rewrites the file in place: it keeps the id and `created`, replaces the
-body, renames when a title is given, and sets `updated`. It needs the exact id, and an HTML
-artifact cannot be updated. A `space_id` the caller is not a member of answers `403`.
+body, renames when a title is given, and sets `updated`. It needs the exact id. The body is stored byte for byte under the frontmatter. A `space_id` the caller is not a member of answers `403`.
 
 `GET /api/artifacts?all=true` lists every artifact the caller can read: the common tree when
 the caller may use it, then every space they are a member of. Each summary there also carries

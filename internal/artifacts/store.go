@@ -3,7 +3,6 @@ package artifacts
 import (
 	"cmp"
 	"fmt"
-	"html"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -40,12 +39,6 @@ func applyField(art *Artifact, key, value string) {
 	}
 }
 
-func parseHTMLMeta(raw []byte, art *Artifact) {
-	for _, m := range metaPair.FindAllSubmatch(raw, -1) {
-		applyField(art, strings.ToLower(string(m[1])), html.UnescapeString(string(m[2])))
-	}
-}
-
 func parseFrontmatter(content string, art *Artifact) {
 	if !strings.HasPrefix(content, "---\n") && !strings.HasPrefix(content, "---\r\n") {
 		return
@@ -67,15 +60,9 @@ func parseFrontmatter(content string, art *Artifact) {
 }
 
 func parse(path string, raw []byte) Artifact {
-	ext := strings.ToLower(filepath.Ext(path))
 	id := strings.TrimSuffix(filepath.Base(path), filepath.Ext(path))
 	art := Artifact{ID: id, Path: path}
-
-	if ext == ".html" || ext == ".htm" {
-		parseHTMLMeta(raw, &art)
-	} else {
-		parseFrontmatter(string(raw), &art)
-	}
+	parseFrontmatter(string(raw), &art)
 
 	if art.Title == "" {
 		art.Title = titleFrom(raw, path)
@@ -135,14 +122,14 @@ func matchesID(base, target, cleanSlug string) bool {
 }
 
 // walkArtifacts calls visit with the path and id of every artifact file under
-// root, and stops as soon as visit returns true.
+// root, and stops as soon as visit returns true. Only .md files are artifacts:
+// HTML files left over from older versions stay on disk, unlisted.
 func walkArtifacts(root string, visit func(path, base string) bool) {
 	_ = filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
 		if err != nil || d == nil || d.IsDir() {
 			return nil
 		}
-		ext := strings.ToLower(filepath.Ext(d.Name()))
-		if ext != ".md" && ext != ".html" && ext != ".htm" {
+		if !strings.EqualFold(filepath.Ext(d.Name()), ".md") {
 			return nil
 		}
 		if visit(path, strings.TrimSuffix(d.Name(), filepath.Ext(d.Name()))) {
@@ -209,6 +196,9 @@ func Remove(dataDir, id string) error {
 // are kept; the body is replaced, the title changes when one is given, and
 // updated is set to now. Only an exact id is accepted.
 func Update(dataDir, id, title string, raw []byte, now time.Time) (Artifact, error) {
+	if IsHTML("", raw) {
+		return Artifact{}, ErrNotMarkdown
+	}
 	art, err := Find(dataDir, id)
 	if err != nil || !strings.EqualFold(art.ID, strings.TrimSpace(id)) {
 		return Artifact{}, fmt.Errorf("no artifact named %q", id)
@@ -217,8 +207,7 @@ func Update(dataDir, id, title string, raw []byte, now time.Time) (Artifact, err
 		art.Title = t
 	}
 	art.Updated = stored(now)
-	ext := strings.ToLower(filepath.Ext(art.Path))
-	stamped := stamp(raw, art, ext == ".html" || ext == ".htm")
+	stamped := stamp(raw, art)
 	if err := os.WriteFile(art.Path, stamped, 0o644); err != nil {
 		return Artifact{}, fmt.Errorf("failed to write %s: %w", art.Path, err)
 	}

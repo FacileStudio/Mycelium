@@ -23,7 +23,6 @@ export interface ArtifactSummary {
 	id: string;
 	title: string;
 	machine: string;
-	format?: 'markdown' | 'html';
 	created: string;
 	updated: string;
 }

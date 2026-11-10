@@ -3,6 +3,7 @@ package artifacts
 import (
 	"bytes"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -15,7 +16,7 @@ const Dirname = "artifacts"
 
 const timeFormat = time.RFC3339
 
-// Artifact represents a recorded markdown or HTML document. Artifacts are
+// Artifact represents a recorded markdown document. Artifacts are
 // permanent: nothing deletes one except an explicit remove.
 type Artifact struct {
 	ID      string    `json:"id"`
@@ -29,6 +30,9 @@ type Artifact struct {
 // Report is a backward-compatible alias for Artifact.
 type Report = Artifact
 
+// ErrNotMarkdown is returned for HTML content: artifacts are markdown only.
+var ErrNotMarkdown = errors.New("artifacts are markdown only, HTML is not supported: write the document as markdown (.md)")
+
 // Request holds parameters for adding a new artifact.
 type Request struct {
 	Source  string
@@ -38,6 +42,9 @@ type Request struct {
 
 // AddContent registers a new artifact directly from byte content.
 func AddContent(dataDir string, raw []byte, filename string, req Request, now time.Time) (Artifact, error) {
+	if IsHTML(filename, raw) {
+		return Artifact{}, ErrNotMarkdown
+	}
 	title := strings.TrimSpace(req.Title)
 	if title == "" {
 		title = titleFrom(raw, filename)
@@ -46,10 +53,6 @@ func AddContent(dataDir string, raw []byte, filename string, req Request, now ti
 	if id == "" {
 		return Artifact{}, fmt.Errorf("cannot derive a name from %q, pass --title", filename)
 	}
-	ext := ".md"
-	if isHTML(filename, raw) {
-		ext = ".html"
-	}
 	targetDir := filepath.Join(Dir(dataDir), now.UTC().Format("2006/01"))
 	if err := os.MkdirAll(targetDir, 0o755); err != nil {
 		return Artifact{}, fmt.Errorf("failed to create target directory: %w", err)
@@ -57,12 +60,12 @@ func AddContent(dataDir string, raw []byte, filename string, req Request, now ti
 	art := Artifact{
 		ID:      id,
 		Title:   title,
-		Path:    filepath.Join(targetDir, id+ext),
+		Path:    filepath.Join(targetDir, id+".md"),
 		Machine: req.Machine,
 		Created: stored(now),
 		Updated: stored(now),
 	}
-	stamped := stamp(raw, art, ext == ".html")
+	stamped := stamp(raw, art)
 	if err := os.WriteFile(art.Path, stamped, 0o644); err != nil {
 		return Artifact{}, fmt.Errorf("failed to write %s: %w", art.Path, err)
 	}
@@ -92,7 +95,6 @@ func URL(serverURL, id string) string {
 }
 
 var (
-	titleTag     = regexp.MustCompile(`(?is)<title[^>]*>(.*?)</title>`)
 	mdHeading    = regexp.MustCompile(`(?m)^#\s+(.+)$`)
 	slugTrim     = regexp.MustCompile(`[^a-z0-9]+`)
 	datePrefix   = regexp.MustCompile(`^\d{4}-\d{2}-\d{2}-`)
@@ -113,23 +115,18 @@ func idFor(title, machine string, now time.Time) string {
 	return now.UTC().Format("2006-01-02") + "-" + baseSlug + "-" + hashStr
 }
 
-func isHTML(source string, raw []byte) bool {
-	if strings.HasSuffix(strings.ToLower(source), ".html") || strings.HasSuffix(strings.ToLower(source), ".htm") {
+// IsHTML reports whether a source is an HTML document, by its extension or
+// by an opening doctype or html tag.
+func IsHTML(source string, raw []byte) bool {
+	ext := strings.ToLower(filepath.Ext(source))
+	if ext == ".html" || ext == ".htm" {
 		return true
 	}
-	trimmed := bytes.TrimSpace(raw)
-	return bytes.HasPrefix(trimmed, []byte("<!DOCTYPE")) || bytes.HasPrefix(trimmed, []byte("<html"))
+	head := bytes.ToLower(bytes.TrimSpace(raw))
+	return bytes.HasPrefix(head, []byte("<!doctype")) || bytes.HasPrefix(head, []byte("<html"))
 }
 
 func titleFrom(raw []byte, source string) string {
-	if isHTML(source, raw) {
-		if m := titleTag.FindSubmatch(raw); m != nil {
-			if t := strings.TrimSpace(string(m[1])); t != "" {
-				return t
-			}
-		}
-		return strings.TrimSuffix(filepath.Base(source), filepath.Ext(source))
-	}
 	text := string(raw)
 	if title := extractFrontmatterTitle(text); title != "" {
 		return title

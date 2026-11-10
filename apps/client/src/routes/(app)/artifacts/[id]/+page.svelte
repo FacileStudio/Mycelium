@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { Alert, Badge, Button, ConfirmModal, Spinner, icons, toast } from '@facile/muse';
+	import { Alert, Button, ConfirmModal, Spinner, icons, toast } from '@facile/muse';
 	import { backend, type ArtifactDetail } from '$lib/backend';
 	import hljs from 'highlight.js';
 	import 'highlight.js/styles/github-dark.css';
@@ -82,15 +82,12 @@
 				<div class="flex min-w-0 flex-col gap-1">
 					<div class="flex min-w-0 flex-wrap items-center gap-2">
 						<h1 class="min-w-0 truncate text-fc-2xl font-bold text-fc-fg">{detail.title}</h1>
-						<Badge tone="neutral">
-							{detail.format === 'html' ? 'HTML' : t('artifacts.markdown')}
-						</Badge>
 					</div>
 					<p
 						class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 font-fc-mono text-fc-xs text-fc-fg-muted"
 					>
 						<span class="break-all">
-							artifacts/{detail.id}.{detail.format === 'html' ? 'html' : 'md'}
+							artifacts/{detail.id}.md
 						</span>
 						<span class="shrink-0" aria-hidden="true">•</span>
 						<span class="inline-flex min-w-0 items-center gap-1">
@@ -149,22 +146,11 @@
 		<Alert tone="danger" title={t('artifacts.loadOne')}>{error}</Alert>
 	{:else if detail}
 		{#if viewMode === 'preview'}
-			{#if detail.format === 'html'}
-				<div class="overflow-hidden rounded-fc-lg bg-fc-bg">
-					<iframe
-						title={detail.title}
-						srcdoc={detail.content}
-						sandbox="allow-same-origin allow-scripts allow-popups"
-						class="h-[75dvh] w-full bg-fc-bg"
-					></iframe>
-				</div>
-			{:else}
-				<div class="py-2">
-					<MarkdownMuse content={detail.content} />
-				</div>
-			{/if}
+			<div class="py-2">
+				<MarkdownMuse content={detail.content} />
+			</div>
 		{:else if viewMode === 'source'}
-			{@const srcLang = detail.format === 'html' ? 'html' : 'markdown'}
+			{@const srcLang = 'markdown'}
 			{@const srcContent = detail.content}
 			<div class="my-3 overflow-hidden rounded-fc-lg bg-fc-surface">
 				<div class="flex items-center justify-between bg-fc-surface-hover/40 px-4 py-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-fc-fg-muted">

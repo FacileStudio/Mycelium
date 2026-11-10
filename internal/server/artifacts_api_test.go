@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -14,8 +15,8 @@ import (
 
 func seedArtifact(t *testing.T, dataDir string) string {
 	t.Helper()
-	src := filepath.Join(t.TempDir(), "audit.html")
-	if err := os.WriteFile(src, []byte("<html><head><title>Audit 2026</title></head><body><h1>Audit</h1></body></html>"), 0o644); err != nil {
+	src := filepath.Join(t.TempDir(), "audit.md")
+	if err := os.WriteFile(src, []byte("# Audit 2026\n\nFindings."), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	art, err := artifacts.Add(dataDir, artifacts.Request{
@@ -50,8 +51,34 @@ func TestArtifactsListAPI(t *testing.T) {
 	if len(list) != 1 || list[0].ID != id {
 		t.Fatalf("expected %s in list, got %+v", id, list)
 	}
-	if list[0].Format != "html" {
-		t.Fatalf("expected format html, got %s", list[0].Format)
+}
+
+func TestOldHTMLFilesAreNeitherListedNorServed(t *testing.T) {
+	dataDir := t.TempDir()
+	handler := New(dataDir, "password").Handler()
+	token := loginAs(t, handler, "password", "lucy")
+	stray := filepath.Join(artifacts.Dir(dataDir), "2026", "08", "2026-08-01-old-page-abc123.html")
+	if err := os.MkdirAll(filepath.Dir(stray), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(stray, []byte("<html><title>Old page</title></html>"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	for _, path := range []string{"/api/artifacts", "/api/artifacts/2026-08-01-old-page-abc123"} {
+		req := httptest.NewRequest("GET", path, nil)
+		req.Header.Set("Authorization", "Bearer "+token)
+		w := httptest.NewRecorder()
+		handler.ServeHTTP(w, req)
+		if path == "/api/artifacts" && strings.TrimSpace(w.Body.String()) != "[]" {
+			t.Fatalf("an old HTML file was listed: %s", w.Body.String())
+		}
+		if path != "/api/artifacts" && w.Code != http.StatusNotFound {
+			t.Fatalf("an old HTML file was served: got %d", w.Code)
+		}
+	}
+	if _, err := os.Stat(stray); err != nil {
+		t.Fatalf("the old HTML file was touched: %v", err)
 	}
 }
 
