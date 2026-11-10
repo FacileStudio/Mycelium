@@ -52,9 +52,14 @@ func newSuiteIssuer(t *testing.T) suiteIssuer {
 
 func (i suiteIssuer) token(t *testing.T, aud, scope string) string {
 	t.Helper()
+	return i.tokenFor(t, delegatedEmail, aud, scope)
+}
+
+func (i suiteIssuer) tokenFor(t *testing.T, email, aud, scope string) string {
+	t.Helper()
 	now := time.Now()
 	return signJWT(t, i.key, map[string]any{
-		"iss": i.url, "aud": aud, "sub": "registre-subject", "email": delegatedEmail,
+		"iss": i.url, "aud": aud, "sub": "registre-subject", "email": email,
 		"scope": scope, "act": map[string]string{"sub": "bulle"},
 		"iat": now.Unix(), "exp": now.Add(5 * time.Minute).Unix(),
 	})
@@ -146,7 +151,7 @@ func TestDelegatedManagesArtifactsInOwnSpaceOnly(t *testing.T) {
 	expect(t, f, apiCall{Method: "GET", Path: "/api/artifacts/" + art.ID + q, Token: f.ro}, http.StatusOK)
 	expect(t, f, apiCall{Method: "PUT", Path: "/api/artifacts/" + art.ID + q, Token: f.rw, Body: `{"content":"# Plan\n\nnew\n"}`}, http.StatusOK)
 	expect(t, f, apiCall{Method: "PUT", Path: "/api/artifacts/" + art.ID + q, Token: f.ro, Body: `{"content":"x"}`}, http.StatusForbidden)
-	expect(t, f, apiCall{Method: "GET", Path: "/api/artifacts", Token: f.ro}, http.StatusForbidden)
+	expect(t, f, apiCall{Method: "GET", Path: "/api/artifacts", Token: f.issuer.tokenFor(t, otherEmail, "mycelium", "mycelium.read")}, http.StatusForbidden)
 	expect(t, f, apiCall{Method: "GET", Path: "/api/artifacts?space_id=" + f.foreign, Token: f.ro}, http.StatusForbidden)
 	expect(t, f, apiCall{Method: "DELETE", Path: "/api/artifacts/" + art.ID + q, Token: f.rw}, http.StatusNoContent)
 }
