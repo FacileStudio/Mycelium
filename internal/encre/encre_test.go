@@ -21,11 +21,11 @@ func TestValidateMarkdownPlacesEncreRefusals(t *testing.T) {
 	if !errors.As(err, &invalid) {
 		t.Fatalf("a verdict on stdout must become a ValidationError, got %v", err)
 	}
-	want := "invalid document: line 3, column 1: content[0]: text is empty or holds a forbidden character"
+	want := "invalid document: line 3, column 1: text is empty or holds a forbidden character"
 	if err.Error() != want {
 		t.Fatalf("got %q, want %q", err.Error(), want)
 	}
-	if p := invalid.Problems[0]; p.Path != "doc.content[0]" || p.Line != 3 || p.Column != 1 {
+	if p := invalid.Problems[0]; p.Path != "doc.content[1]" || p.Line != 3 || p.Column != 1 {
 		t.Fatalf("the position is lost: %+v", p)
 	}
 	err = encre.ValidateMarkdown(ctx, []byte("OVERSIZE"))
@@ -58,9 +58,20 @@ func TestRealEncrePlacesRefusals(t *testing.T) {
 	if err := encre.ValidateMarkdown(ctx, []byte(body)); err != nil {
 		t.Fatalf("the schema 2 constructs are valid: %v", err)
 	}
+	if err := encre.ValidateMarkdown(ctx, []byte(encretest.NestedCallouts(8))); err != nil {
+		t.Fatalf("eight nested custom blocks are allowed: %v", err)
+	}
 	var invalid *encre.ValidationError
 	err := encre.ValidateMarkdown(ctx, []byte("# Hi\n\na\x01b\n"))
-	if !errors.As(err, &invalid) || !strings.HasPrefix(err.Error(), "invalid document: line 3, column 1: ") {
+	want := "invalid document: line 3, column 1: text is empty or holds a forbidden character"
+	if !errors.As(err, &invalid) || err.Error() != want {
 		t.Fatalf("a control character must be refused at its line, got %v", err)
+	}
+	err = encre.ValidateMarkdown(ctx, []byte(encretest.NestedCallouts(9)))
+	if !errors.As(err, &invalid) || !strings.HasPrefix(err.Error(), "invalid document: line 11, column 1: custom blocks nest") {
+		t.Fatalf("nine nested custom blocks must be refused at the ninth fence, got %v", err)
+	}
+	if p := invalid.Problems[0]; p.Path != "doc" || p.Line != 11 || p.Column != 1 {
+		t.Fatalf("the position is lost: %+v", p)
 	}
 }

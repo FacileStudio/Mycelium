@@ -236,7 +236,9 @@ before any validation runs, and a title over 200 characters answers `400`. The b
 frontmatter then goes through `encre validate --from markdown`: a document encre refuses
 answers `400` whose message is `invalid document: ` followed by encre's reason, placed as
 `line L, column C: ` (1-based, where the block holding the problem starts) when encre knows
-where, so the caller can fix it. The frontmatter is never part of the validated body. An empty title on `POST` is taken from the
+where, so the caller can fix it. Markdown that nests more than 64 levels, or opens more than 8
+`callout`, `columns` or `column` blocks on one path, is refused the same way at the fence that
+crosses the limit. The frontmatter is never part of the validated body. An empty title on `POST` is taken from the
 first heading. `PUT` rewrites the file in place: it keeps the id and `created`, replaces the
 body, renames when a title is given, and sets `updated`. It needs the exact id. The body is stored byte for byte under the frontmatter. A `space_id` the caller is not a member of answers `403`.
 
