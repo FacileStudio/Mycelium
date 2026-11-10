@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	maxArtifactContent = 1 << 20
+	maxArtifactContent = artifacts.MaxBodyBytes
 	maxArtifactTitle   = 200
 	maxArtifactBody    = 8 << 20
 )
@@ -49,7 +49,7 @@ func decodeArtifactWrite(w http.ResponseWriter, r *http.Request) (ArtifactWriteR
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, maxArtifactBody)).Decode(&req); err != nil {
 		var tooBig *http.MaxBytesError
 		if errors.As(err, &tooBig) {
-			httpjson.WriteError(w, apierrors.TooLarge("content exceeds 1 MB"))
+			httpjson.WriteError(w, apierrors.TooLarge(artifacts.ErrTooLarge.Error()))
 			return req, false
 		}
 		httpjson.WriteError(w, apierrors.Invalid("invalid body"))
@@ -66,7 +66,7 @@ func decodeArtifactWrite(w http.ResponseWriter, r *http.Request) (ArtifactWriteR
 func validateArtifactWrite(req ArtifactWriteRequest) *apierrors.Error {
 	switch {
 	case len(req.Content) > maxArtifactContent:
-		return apierrors.TooLarge("content exceeds 1 MB")
+		return apierrors.TooLarge(artifacts.ErrTooLarge.Error())
 	case utf8.RuneCountInString(req.Title) > maxArtifactTitle:
 		return apierrors.Invalid("title exceeds 200 characters")
 	case strings.TrimSpace(req.Content) == "":
@@ -98,11 +98,15 @@ func (s *Server) artifactCreate(w http.ResponseWriter, r *http.Request) {
 }
 
 // writeFailure maps a body encre refused to a 400 carrying its reason, so the
-// caller can fix the document; any other failure answers as the route would.
+// caller can fix the document, and a body over the cap to a 413; any other
+// failure answers as the route would.
 func writeFailure(err error, otherwise *apierrors.Error) *apierrors.Error {
 	var invalid *encre.ValidationError
-	if errors.As(err, &invalid) {
+	switch {
+	case errors.As(err, &invalid):
 		return apierrors.Invalid(invalid.Error())
+	case errors.Is(err, artifacts.ErrTooLarge):
+		return apierrors.TooLarge(err.Error())
 	}
 	return otherwise
 }

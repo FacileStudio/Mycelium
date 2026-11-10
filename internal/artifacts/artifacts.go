@@ -36,6 +36,14 @@ type Report = Artifact
 // ErrNotMarkdown is returned for HTML content: artifacts are markdown only.
 var ErrNotMarkdown = errors.New("artifacts are markdown only, HTML is not supported: write the document as markdown (.md)")
 
+// MaxBodyBytes caps an artifact as received, frontmatter included, on every
+// write path: validation costs CPU in proportion to the body, and no artifact
+// of the suite comes near it.
+const MaxBodyBytes = 1 << 20
+
+// ErrTooLarge is returned for a body over MaxBodyBytes, before encre runs.
+var ErrTooLarge = errors.New("content exceeds 1 MiB: split the artifact")
+
 // Request holds parameters for adding a new artifact.
 type Request struct {
 	Source  string
@@ -89,10 +97,14 @@ func Add(dataDir string, req Request, now time.Time) (Artifact, error) {
 	return AddContent(dataDir, raw, req.Source, req, now)
 }
 
-// validateBody asks encre whether the body under any frontmatter is a valid
-// document. Without encre on this machine the body is stored as it came and
-// the viewer renders it in degraded mode.
+// validateBody refuses a body over MaxBodyBytes, then asks encre whether the
+// body under any frontmatter is a valid document. Without encre on this
+// machine the body is stored as it came and the viewer renders it in degraded
+// mode; the cap holds either way.
 func validateBody(raw []byte) error {
+	if len(raw) > MaxBodyBytes {
+		return ErrTooLarge
+	}
 	err := encre.ValidateMarkdown(context.Background(), []byte(stripFrontmatter(string(raw))))
 	if errors.Is(err, encre.ErrUnavailable) {
 		return nil

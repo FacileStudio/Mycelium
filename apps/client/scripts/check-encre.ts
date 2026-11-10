@@ -16,6 +16,7 @@ function render(markdown: string): { mapped: string; doc: EncreNode; reason: str
 
 const blocks = (doc: EncreNode) => doc.content ?? [];
 const attrs = (node: EncreNode) => node.attrs ?? {};
+const inline = (node: EncreNode) => node.content ?? [];
 
 const legacy = [
 	'---',
@@ -52,26 +53,81 @@ const legacy = [
 	''
 ].join('\n');
 
+const modern = [
+	'# New',
+	'',
+	'```mermaid',
+	'flowchart LR',
+	'  A-->B',
+	'```',
+	'',
+	'Shipped as [badge:success Shipped], still [status:pending], ==x== here.',
+	'',
+	'```compare',
+	'### Advantages',
+	'Fast',
+	'### Drawbacks',
+	'Slow',
+	'```',
+	'',
+	'> [!TIP]',
+	'> Mind it',
+	''
+].join('\n');
+
 const cases: [string, () => boolean][] = [
 	[
-		'legacy fences and alerts become encre blocks, the rest stays',
+		'legacy fences and alerts become encre blocks, the rest reaches encre as it is',
 		() => {
 			const { doc, reason } = render(legacy);
 			const types = blocks(doc).map((node) => node.type);
 			const chart = attrs(blocks(doc)[1]);
 			const active = attrs(blocks(doc)[3]);
 			const callout = blocks(doc)[4];
-			const text = blocks(doc)[6].content?.map((node) => node.text).join('') ?? '';
+			const badge = inline(blocks(doc)[6]).find((node) => node.type === 'badge');
 			return (
 				reason === null &&
-				types.join() === 'heading,chart,stat,stat,callout,codeBlock,paragraph' &&
+				types.join() === 'heading,chart,stat,stat,callout,diagram,paragraph' &&
 				JSON.stringify(chart.labels) === '["Jan","Feb"]' &&
 				JSON.stringify(chart.series) === '[{"data":[10,25],"name":"Sales"}]' &&
 				active.delta === 'In production' &&
 				attrs(callout).tone === 'warning' &&
 				attrs(callout).title === 'Warning' &&
 				attrs(blocks(doc)[5]).language === 'mermaid' &&
-				text === 'A [badge:success kept] line.'
+				badge !== undefined &&
+				attrs(badge).tone === 'success'
+			);
+		}
+	],
+	[
+		'diagrams, badges, status, highlight, columns and alerts parse as encre nodes',
+		() => {
+			const { mapped, doc, reason } = render(modern);
+			const types = blocks(doc).map((node) => node.type);
+			const badges = inline(blocks(doc)[2]).filter((node) => node.type === 'badge');
+			const marked = inline(blocks(doc)[2]).find((node) => node.marks?.some((mark) => mark.type === 'highlight'));
+			const columns = inline(blocks(doc)[3]);
+			const callout = attrs(blocks(doc)[4]);
+			return (
+				reason === null &&
+				types.join() === 'heading,diagram,paragraph,columns,callout' &&
+				mapped.includes('```mermaid\nflowchart LR') &&
+				mapped.includes('[badge:success Shipped]') &&
+				mapped.includes('==x==') &&
+				mapped.includes('```compare') &&
+				inline(blocks(doc)[1])[0]?.text === 'flowchart LR\n  A-->B' &&
+				badges.length === 2 &&
+				attrs(badges[0]).tone === 'success' &&
+				inline(badges[0])[0]?.text === 'Shipped' &&
+				attrs(badges[1]).dot === true &&
+				attrs(badges[1]).tone === 'warning' &&
+				marked?.text === 'x' &&
+				columns.length === 2 &&
+				attrs(columns[0]).tone === 'success' &&
+				attrs(columns[1]).tone === 'danger' &&
+				attrs(columns[1]).title === 'Drawbacks' &&
+				callout.tone === 'success' &&
+				callout.title === 'Tip'
 			);
 		}
 	],
@@ -93,7 +149,7 @@ const cases: [string, () => boolean][] = [
 	[
 		'the mapped document round-trips through the canonical writer',
 		() => {
-			const { doc } = render(legacy);
+			const { doc } = render(legacy + '\n' + modern);
 			const again = parseMarkdown(serializeMarkdown(doc));
 			return JSON.stringify(again) === JSON.stringify(doc) && validateDocument(again) === null;
 		}

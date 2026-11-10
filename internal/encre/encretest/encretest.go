@@ -20,7 +20,7 @@ const script = `#!/bin/sh
 input=$(cat)
 if [ -n "${FAKE_ENCRE_LOG:-}" ]; then printf '%s\n---\n' "$input" >> "$FAKE_ENCRE_LOG"; fi
 case "$input" in
-  *INVALID*) printf '%s\n' '{"errors":[{"message":"content[0]: text is empty or holds a forbidden character","path":"doc.content[0]"}],"valid":false}'; exit 1 ;;
+  *INVALID*) printf '%s\n' '{"errors":[{"message":"content[0]: text is empty or holds a forbidden character","path":"doc.content[0]","line":3,"column":1}],"valid":false}'; exit 1 ;;
   *OVERSIZE*) printf '%s\n' '{"error":{"code":"invalid","exit":1,"message":"input is larger than 8388608 bytes; send less or raise --max-bytes","path":null}}' >&2; exit 1 ;;
   *CRASH*) printf '%s\n' '{"error":{"code":"internal","exit":3,"message":"panic","path":null}}' >&2; exit 3 ;;
 esac
@@ -28,9 +28,9 @@ printf '%s\n' '{"errors":[],"valid":true}'
 `
 
 // Install writes the fake and points ENCRE_BIN at it for the rest of the
-// test. The fake refuses any input holding INVALID with a verdict, any input
-// holding OVERSIZE with an input error, and exits 3 on CRASH. It answers the
-// path of the log file every input is appended to.
+// test. The fake refuses any input holding INVALID with a verdict placed at
+// line 3, column 1, any input holding OVERSIZE with an input error, and exits
+// 3 on CRASH. It answers the path of the log file every input is appended to.
 func Install(t *testing.T) string {
 	t.Helper()
 	dir := t.TempDir()
