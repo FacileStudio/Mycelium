@@ -50,7 +50,7 @@
 	$effect(() => {
 		const token = localStorage.getItem(TOKEN_KEY);
 		if (!token) {
-			goto('/login');
+			goto('/login?redirect=' + encodeURIComponent(page.url.pathname + page.url.search));
 			return;
 		}
 
@@ -62,7 +62,7 @@
 			me = await backend.authMe();
 			setSessionLocale(me.locale ?? null);
 		} catch {
-			goto('/login');
+			goto('/login?redirect=' + encodeURIComponent(page.url.pathname + page.url.search));
 			return;
 		}
 

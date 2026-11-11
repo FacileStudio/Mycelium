@@ -276,8 +276,26 @@ else reaches only their spaces. Delegated restrictions do not apply: the identit
 | `mycelium_read_artifact` | read | One artifact's stored markdown, in windows |
 | `mycelium_add_finding` | write | `mycelium memory add` on an existing page: finding, `updated:`, index pointer, log line |
 | `mycelium_publish_artifact` | write | Records an artifact, or replaces the tree's artifact of the same title |
+| `mycelium_list_memory_pages` | read | One tree's pages by path, 200 a page, with title, size and last change; `index.md` and `log.md` left out |
+| `mycelium_write_memory_page` | write | Creates or replaces a whole page: frontmatter with `title:` and a descriptive `type:` required, `updated:` and `created:` stamped, index line for a page the index does not name, log line (`create-page` or `lint`) |
+| `mycelium_delete_memory_page` | write | Deletes a page after the person confirms, drops its index line and logs the reason |
+| `mycelium_create_space` | write | Creates a space the caller owns, or returns the one of that name they already own |
 
-Nothing deletes, forgets or ratifies. A publish keeps every check of `POST /api/artifacts`: the
+`index.md`, `log.md`, pages under `standards/` and any page declaring `type: standard` are refused
+by the write and the delete, with a tool error saying why. A page is English, at most 256 KiB.
+Nothing forgets or ratifies.
+
+A delete never runs on the first call. A client that can elicit on protocol 2026-07-28 gets MRTR
+`input_required` and the delete runs once on the accepted retry. Any other client gets
+`status: pending_confirmation` and a `confirm_url` (`/pending?action=<id>`), where the person
+confirms or dismisses it within 7 days. The confirm page's API, `GET /api/mcp/pending` and
+`POST /api/mcp/pending/{id}/confirm|dismiss`, answers only a browser session (`session:` token) of
+an account linked to Registre: CLI, API and delegated tokens get 403. A page edited after the
+question closes the action instead of deleting it. Waiting actions live in `.mcp-actions.json`
+in the data directory, the confirmation state is signed with a key derived from
+`OIDC_CLIENT_SECRET`, and a Registre erasure drops the person's actions.
+
+A publish keeps every check of `POST /api/artifacts`: the
 1 MiB cap, the 200-character title, markdown only, and encre's validation, whose refusal comes
 back as a tool error reading `invalid document: line L, column C: <reason>`. Flows stay on the
 local stdio `mycelium mcp`, which runs shell on the user's own machine.

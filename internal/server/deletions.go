@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"sync"
 
 	"github.com/FacileStudio/porte/directory"
@@ -67,10 +68,15 @@ func (s *Server) deletionsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // erasePerson deletes the account behind a Registre identity and what it owns:
-// its sessions and tokens, its memberships, and the spaces only it used and
+// its pending MCP actions, its sessions and tokens, its memberships, and the spaces only it used and
 // Registre does not own. Space data shared with others stays. A subject with no
 // account is a no-op, so a replayed notice changes nothing.
-func (s *Server) erasePerson(_ context.Context, issuer, subject string) error {
+func (s *Server) erasePerson(ctx context.Context, issuer, subject string) error {
+	if s.mcp != nil {
+		if err := s.mcp.pending.Erase(ctx, strconv.FormatInt(subjectNumber(issuer, subject), 10)); err != nil {
+			return err
+		}
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	users := s.loadUsers()

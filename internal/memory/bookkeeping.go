@@ -94,7 +94,12 @@ func insertInSection(index, section, line string) string {
 // appendLog adds the history line. log.md is append-only by invariant, so this
 // only grows the file.
 func appendLog(content, day, description string) string {
-	line := fmt.Sprintf("## [%s] %s | %s\n", day, logOperation, strings.TrimSpace(description))
+	return appendLogAs(content, day, logOperation, description)
+}
+
+// appendLogAs adds a history line for operation op.
+func appendLogAs(content, day, op, description string) string {
+	line := fmt.Sprintf("## [%s] %s | %s\n", day, op, strings.TrimSpace(description))
 	if strings.TrimSpace(content) == "" {
 		return line
 	}

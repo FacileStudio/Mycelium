@@ -24,6 +24,7 @@ var claimMachineParam = Field{Name: "machine", Type: "string", Description: "Mac
 var claimAgentParam = Field{Name: "agent", Type: "string", Description: "Agent that holds the claim."}
 var spaceParam = Field{Name: "id", Type: "string", Description: "Space ID."}
 var artifactIdParam = Field{Name: "id", Type: "string", Description: "Artifact identifier."}
+var pendingParam = Field{Name: "id", Type: "string", Description: "Pending action id, from the confirm link."}
 var memberParam = Field{Name: "email", Type: "string", Description: "Member's email address."}
 
 var Registry = Response{Modules: []Module{
@@ -193,6 +194,15 @@ var Registry = Response{Modules: []Module{
 		Routes: []Route{
 			{Method: "POST", Path: "/registre/sync", Summary: "Nudge a pull of Registre's space snapshot", Description: "Unauthenticated and body-less: it only schedules the authenticated pull sooner.", Status: http.StatusAccepted},
 			{Method: "POST", Path: "/registre/deletions", Summary: "Receive Registre's signed user.deleted notice", Description: "Unauthenticated by session: the body is a signed security event token that porte verifies against the issuer's keys. Erasing a person is idempotent.", Status: http.StatusAccepted, Errors: []Error{badRequest}},
+		},
+	},
+	{
+		Name:        "mcp",
+		Description: "The confirm page of the remote MCP server. An agent's request to delete a wiki page waits here until the person confirms or dismisses it in their own browser session; CLI, API and delegated tokens are refused.",
+		Routes: []Route{
+			{Method: "GET", Path: "/mcp/pending", Summary: "List the actions waiting for you", Description: "Newest first, each with the page it would delete and whether that page still matches what you were asked about.", Auth: "bearer (browser session)", ResponseBody: PendingList{}, Errors: append(anyToken, forbidden, notFound)},
+			{Method: "POST", Path: "/mcp/pending/{id}/confirm", Summary: "Confirm a waiting action", Description: "Runs it once. A page edited since the question closes the action instead.", Auth: "bearer (browser session)", PathParams: []Field{pendingParam}, RequestBody: EmptyRequest{}, ResponseBody: PendingResult{}, Errors: append(anyToken, forbidden, notFound)},
+			{Method: "POST", Path: "/mcp/pending/{id}/dismiss", Summary: "Dismiss a waiting action", Description: "Closes it without running it.", Auth: "bearer (browser session)", PathParams: []Field{pendingParam}, RequestBody: EmptyRequest{}, ResponseBody: PendingResult{}, Errors: append(anyToken, forbidden, notFound)},
 		},
 	},
 }}

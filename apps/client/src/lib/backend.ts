@@ -13,6 +13,7 @@ import type {
 	MemoryIndexState,
 	MemorySearchResponse,
 	ModelInfo,
+	PendingAction,
 	ArtifactDetail,
 	ArtifactSummary,
 	ReportDetail,
@@ -131,6 +132,10 @@ export const backend = {
 	usersList: () => request<UserInfo[]>('GET', '/users'),
 	userUpdate: (email: string, payload: { name?: string; admin?: boolean }) =>
 		request<UserInfo>('PUT', `/users/${encodeURIComponent(email)}`, payload),
+
+	pendingList: () => request<{ actions: PendingAction[] }>('GET', '/mcp/pending').then((r) => r.actions ?? []),
+	pendingConfirm: (id: string) => request<{ status: string }>('POST', `/mcp/pending/${encodeURIComponent(id)}/confirm`),
+	pendingDismiss: (id: string) => request<{ status: string }>('POST', `/mcp/pending/${encodeURIComponent(id)}/dismiss`),
 
 	deviceInfo: (code: string) =>
 		request<{ user_code: string; machine: string; ip: string; status: string }>(

@@ -8,6 +8,7 @@ import { viewer } from './viewer';
 import { common } from './common';
 import { memory } from './memory';
 import { shell } from './shell';
+import { pending } from './pending';
 import type { Row } from '../row';
 
 const rows = {
@@ -19,7 +20,8 @@ const rows = {
 	...spaces,
 	...settings,
 	...bus,
-	...viewer
+	...viewer,
+	...pending
 };
 
 export type AppKey = keyof typeof rows;
