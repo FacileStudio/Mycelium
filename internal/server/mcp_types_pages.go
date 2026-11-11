@@ -69,3 +69,26 @@ type mcpCreateSpaceOutput struct {
 	Role    string `json:"role"`
 	Created bool   `json:"created" jsonschema:"false when a space of yours with this name already existed"`
 }
+
+// mcpUpdateArtifactInput is what mycelium_update_artifact takes.
+type mcpUpdateArtifactInput struct {
+	ID      string `json:"id" jsonschema:"the artifact's exact id, from mycelium_list_artifacts"`
+	Title   string `json:"title,omitempty" jsonschema:"a new title; empty keeps the current one"`
+	Content string `json:"content" jsonschema:"the whole new Facile Markdown, at most 1 MiB; it replaces the old content"`
+	SpaceID string `json:"space_id,omitempty" jsonschema:"the artifact's space_id; empty for your personal tree"`
+}
+
+// mcpDeleteArtifactInput is what mycelium_delete_artifact takes.
+type mcpDeleteArtifactInput struct {
+	ID      string `json:"id" jsonschema:"the artifact's exact id, from mycelium_list_artifacts"`
+	SpaceID string `json:"space_id,omitempty" jsonschema:"the artifact's space_id; empty for your personal tree"`
+}
+
+// mcpDeleteArtifactOutput is where an artifact delete stands.
+type mcpDeleteArtifactOutput struct {
+	Status     string `json:"status" jsonschema:"pending_confirmation, declined or deleted"`
+	SpaceID    string `json:"space_id,omitempty"`
+	ID         string `json:"id,omitempty"`
+	ConfirmURL string `json:"confirm_url,omitempty" jsonschema:"the page where the user confirms, when status is pending_confirmation"`
+	Message    string `json:"message"`
+}

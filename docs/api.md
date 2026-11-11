@@ -280,12 +280,14 @@ else reaches only their spaces. Delegated restrictions do not apply: the identit
 | `mycelium_write_memory_page` | write | Creates or replaces a whole page: frontmatter with `title:` and a descriptive `type:` required, `updated:` and `created:` stamped, index line for a page the index does not name, log line (`create-page` or `lint`) |
 | `mycelium_delete_memory_page` | write | Deletes a page after the person confirms, drops its index line and logs the reason |
 | `mycelium_create_space` | write | Creates a space the caller owns, or returns the one of that name they already own |
+| `mycelium_update_artifact` | write | `PUT /api/artifacts/{id}` by exact id: new content, optional new title, same checks as a publish |
+| `mycelium_delete_artifact` | write | Deletes an artifact by exact id after the person confirms |
 
 `index.md`, `log.md`, pages under `standards/` and any page declaring `type: standard` are refused
 by the write and the delete, with a tool error saying why. A page is English, at most 256 KiB.
 Nothing forgets or ratifies.
 
-A delete never runs on the first call. A client that can elicit on protocol 2026-07-28 gets MRTR
+Neither delete runs on the first call. A client that can elicit on protocol 2026-07-28 gets MRTR
 `input_required` and the delete runs once on the accepted retry. Any other client gets
 `status: pending_confirmation` and a `confirm_url` (`/pending?action=<id>`), where the person
 confirms or dismisses it within 7 days. The confirm page's API, `GET /api/mcp/pending` and

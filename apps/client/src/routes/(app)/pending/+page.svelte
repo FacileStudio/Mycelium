@@ -34,7 +34,7 @@
 		busy = action.id;
 		try {
 			await backend.pendingConfirm(action.id);
-			toast.success(t('pending.deleted'));
+			toast.success(t(isArtifact(action) ? 'pending.artifactDeleted' : 'pending.deleted'));
 			actions = actions.filter((item) => item.id !== action.id);
 		} catch (err) {
 			toast.danger(err instanceof Error ? err.message : t('pending.failed'));
@@ -54,6 +54,11 @@
 			toast.danger(err instanceof Error ? err.message : t('pending.failed'));
 		}
 		busy = '';
+	}
+
+	/** Tells an artifact delete from a page delete. */
+	function isArtifact(action: PendingAction): boolean {
+		return action.kind === 'delete_artifact';
 	}
 
 	/** Names the client that asked: the host of a client URL, else its id. */
@@ -87,7 +92,7 @@
 				{#each ordered as action (action.id)}
 					<Card class="flex flex-col gap-4">
 						<div class="flex flex-wrap items-center justify-between gap-2">
-							<Badge tone="danger">{t('pending.deletePage')}</Badge>
+							<Badge tone="danger">{t(isArtifact(action) ? 'pending.deleteArtifact' : 'pending.deletePage')}</Badge>
 							<span class="text-fc-xs text-fc-fg-muted">
 								{t('pending.askedBy', { client: clientName(action.client_id) })} · {formatDate(action.created_at, {
 									day: 'numeric',
@@ -100,9 +105,14 @@
 
 						{#if action.path}
 							<div class="flex flex-col gap-1 rounded-fc-md bg-fc-surface p-4">
+								{#if action.title}
+									<p class="break-words text-fc-md font-medium text-fc-fg">{action.title}</p>
+								{/if}
 								<p class="break-all font-mono text-fc-sm text-fc-fg">{action.path}</p>
 								<p class="text-fc-sm text-fc-fg-muted">{action.space_name}</p>
-								<p class="break-words text-fc-sm text-fc-fg-muted">{t('pending.reason', { log: action.log })}</p>
+								{#if action.log}
+									<p class="break-words text-fc-sm text-fc-fg-muted">{t('pending.reason', { log: action.log })}</p>
+								{/if}
 							</div>
 						{:else}
 							<p class="break-words text-fc-sm text-fc-fg-muted">{action.summary}</p>
@@ -126,7 +136,7 @@
 									icon={icons.remove}
 									onclick={() => confirm(action)}
 								>
-									{t('pending.confirmDelete')}
+									{t(isArtifact(action) ? 'pending.confirmArtifact' : 'pending.confirmDelete')}
 								</Button>
 							{/if}
 						</div>

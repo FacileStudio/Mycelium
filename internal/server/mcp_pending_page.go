@@ -32,22 +32,30 @@ func (s *Server) pendingUser(r *http.Request) (string, error) {
 	return strconv.FormatInt(subjectNumber(user.Issuer, user.Subject), 10), nil
 }
 
-// mcpPendingItem is one action on the confirm page, with the page it
-// would delete as it is now.
+// mcpPendingItem is one action on the confirm page, with what it would
+// delete as it is now: a page by its path, or an artifact by its id and
+// title.
 type mcpPendingItem struct {
 	mcpkit.PendingItem
 	SpaceID   string `json:"space_id"`
 	SpaceName string `json:"space_name"`
 	Path      string `json:"path"`
-	Log       string `json:"log"`
+	Title     string `json:"title,omitempty"`
+	Log       string `json:"log,omitempty"`
 }
 
-// describe adds the page an action targets to its item.
+// describe adds what an action targets to its item.
 func (s *Server) describe(_ context.Context, item mcpkit.PendingItem, a mcpkit.Action) mcpPendingItem {
 	out := mcpPendingItem{PendingItem: item}
 	target, tree, err := s.actionTree(a)
-	if err == nil {
-		out.SpaceID, out.SpaceName, out.Path, out.Log = tree.SpaceID, tree.Name, target.Path, target.Log
+	if err != nil {
+		return out
+	}
+	out.SpaceID, out.SpaceName, out.Path, out.Log = tree.SpaceID, tree.Name, target.Path, target.Log
+	if a.Kind == kindDeleteArtifact {
+		if art, err := artifactIn(tree, target.Path); err == nil {
+			out.Title = art.Title
+		}
 	}
 	return out
 }

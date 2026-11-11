@@ -296,7 +296,7 @@ export interface ModelInfo {
 	path: string;
 }
 
-/** One action an agent asked for over MCP that waits for the person: today, deleting a wiki page. */
+/** One action an agent asked for over MCP that waits for the person: deleting a wiki page or an artifact. */
 export interface PendingAction {
 	id: string;
 	kind: string;
@@ -308,5 +308,6 @@ export interface PendingAction {
 	space_id: string;
 	space_name: string;
 	path: string;
-	log: string;
+	title?: string;
+	log?: string;
 }

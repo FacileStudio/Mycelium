@@ -13,6 +13,7 @@ records what shipped rather than what was written down at the time.
 ### Added
 
 - MCP: `mycelium_write_memory_page` creates or replaces a whole wiki page with the wiki's rules (frontmatter with `title:` and a descriptive `type:`, `updated:` and `created:` stamped, index line, `create-page` or `lint` log line, English only, 256 KiB cap). `mycelium_delete_memory_page` deletes a page only after the person confirms, through MRTR `input_required` or a pending action and the new `/pending` confirm page (`GET /api/mcp/pending`, `POST /api/mcp/pending/{id}/confirm|dismiss`, browser sessions only). `mycelium_list_memory_pages` lists a tree's pages, and `mycelium_create_space` creates a space the caller owns, reusing one of the same name. Both page tools refuse `index.md`, `log.md` and standards with a tool error. Nothing forgets or ratifies.
+- MCP: `mycelium_update_artifact` rewrites an artifact by exact id (optional rename, encre validation and the 1 MiB cap as on `PUT /api/artifacts/{id}`), and `mycelium_delete_artifact` deletes one only after the person confirms, like a page delete.
 - A Registre erasure also drops the person's pending MCP actions.
 
 ### Changed
