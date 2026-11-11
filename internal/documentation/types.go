@@ -435,6 +435,35 @@ type FileEntry struct {
 	ModTime  string `json:"mod_time"`
 }
 
+// PendingAction is one action an agent asked for over MCP that waits for the
+// person: today only deleting a wiki page.
+type PendingAction struct {
+	ID        string `json:"id"`
+	Kind      string `json:"kind"`
+	ClientID  string `json:"client_id"`
+	Summary   string `json:"summary"`
+	CreatedAt string `json:"created_at"`
+	ExpiresAt string `json:"expires_at"`
+	State     string `json:"state"`
+	SpaceID   string `json:"space_id"`
+	SpaceName string `json:"space_name"`
+	Path      string `json:"path"`
+	Log       string `json:"log"`
+}
+
+// PendingList is the person's waiting actions, newest first.
+type PendingList struct {
+	Actions []PendingAction `json:"actions"`
+}
+
+// EmptyRequest documents a route that takes no body.
+type EmptyRequest struct{}
+
+// PendingResult is what confirming or dismissing an action answers.
+type PendingResult struct {
+	Status string `json:"status"`
+}
+
 // Reference is the configuration the /docs page and its OpenAPI document are
 // served from. Both internal/server and the drift test read it, so the document
 // under test is the document that ships.

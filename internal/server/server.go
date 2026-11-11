@@ -215,6 +215,10 @@ func (s *Server) mountSyncRoutes(r chi.Router) {
 	r.Delete("/sync/files/*", s.auth(false, s.syncDeleteFile))
 	r.Post("/registre/sync", s.directorySyncer().Handler().ServeHTTP)
 	r.Post("/registre/deletions", s.deletionsHandler)
+
+	r.Get("/mcp/pending", s.auth(false, s.pendingList))
+	r.Post("/mcp/pending/{id}/confirm", s.auth(false, s.pendingConfirm))
+	r.Post("/mcp/pending/{id}/dismiss", s.auth(false, s.pendingDismiss))
 }
 
 // dataDirCheck is the one dependency Mycelium has: a writable data directory. A

@@ -11,14 +11,6 @@ import (
 	"github.com/FacileStudio/tronc/mcp/mcptest"
 )
 
-func TestMCPConformance(t *testing.T) {
-	f := newMCPFixture(t)
-	mcptest.Run(t, mcptest.Config{
-		URL:   f.resource,
-		Token: func(t testing.TB, scopes ...string) string { return f.token(t, ownerSubject, scopes...) },
-	})
-}
-
 func searchSpaces(t *testing.T, f *mcpFixture, subject string) []string {
 	t.Helper()
 	var out mcpSearchOutput

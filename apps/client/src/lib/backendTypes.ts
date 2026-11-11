@@ -295,3 +295,18 @@ export interface ModelInfo {
 	type: string;
 	path: string;
 }
+
+/** One action an agent asked for over MCP that waits for the person: today, deleting a wiki page. */
+export interface PendingAction {
+	id: string;
+	kind: string;
+	client_id: string;
+	summary: string;
+	created_at: string;
+	expires_at: string;
+	state: 'ready' | 'changed' | 'missing';
+	space_id: string;
+	space_name: string;
+	path: string;
+	log: string;
+}

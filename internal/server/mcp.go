@@ -23,6 +23,8 @@ var errMCPVerifierDown = errors.New("token verification is unavailable")
 // mcpRuntime is the remote MCP server, nil when MCP_RESOURCE is unset.
 type mcpRuntime struct {
 	server   *mcpkit.Server
+	confirm  *mcpkit.Confirmations
+	pending  *filePending
 	verifier lazyVerifier
 	resource string
 }
@@ -61,7 +63,7 @@ func (s *Server) EnableMCP() error {
 	if s.OIDC == nil || s.OIDC.MCPResource == "" {
 		return nil
 	}
-	rt := &mcpRuntime{resource: s.OIDC.MCPResource}
+	rt := &mcpRuntime{resource: s.OIDC.MCPResource, pending: newFilePending(s.DataDir)}
 	rt.verifier = lazyVerifier{logger: s.Log, build: func(ctx context.Context) (auth.TokenVerifier, error) {
 		return mcpauth.Verifier(ctx, mcpauth.Config{
 			Issuer: s.OIDC.Issuer, Resource: s.OIDC.MCPResource, ScopePrefix: mcpScopePrefix,
@@ -72,11 +74,14 @@ func (s *Server) EnableMCP() error {
 	app, err := mcpkit.NewApp(mcpkit.AppConfig{
 		Resource: s.OIDC.MCPResource, Issuer: s.OIDC.Issuer, Version: s.Version,
 		Origins: s.CORSAllowedOrigins, Verifier: rt.verifier.verify, Logger: s.Log,
-	}, mcpkit.AppSpec{Name: mcpScopePrefix, Title: "Mycelium", Instructions: mcpInstructions, Tools: tools.list()})
+		StateKey: mcpStateKey(s.OIDC.ClientSecret), Pending: rt.pending,
+	}, mcpkit.AppSpec{
+		Name: mcpScopePrefix, Title: "Mycelium", Instructions: mcpInstructions, Tools: tools.list(), Kinds: tools.kinds(),
+	})
 	if err != nil {
 		return err
 	}
-	tools.appURL, rt.server = app.URL, app.Server
+	tools.appURL, tools.confirm, rt.server, rt.confirm = app.URL, app.Confirmations, app.Server, app.Confirmations
 	s.mcp = rt
 	s.Log.Info("mcp server on", slog.String("resource", rt.resource))
 	return nil

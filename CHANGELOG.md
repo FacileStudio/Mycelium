@@ -8,6 +8,17 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [Unreleased]
+
+### Added
+
+- MCP: `mycelium_write_memory_page` creates or replaces a whole wiki page with the wiki's rules (frontmatter with `title:` and a descriptive `type:`, `updated:` and `created:` stamped, index line, `create-page` or `lint` log line, English only, 256 KiB cap). `mycelium_delete_memory_page` deletes a page only after the person confirms, through MRTR `input_required` or a pending action and the new `/pending` confirm page (`GET /api/mcp/pending`, `POST /api/mcp/pending/{id}/confirm|dismiss`, browser sessions only). `mycelium_list_memory_pages` lists a tree's pages, and `mycelium_create_space` creates a space the caller owns, reusing one of the same name. Both page tools refuse `index.md`, `log.md` and standards with a tool error. Nothing forgets or ratifies.
+- A Registre erasure also drops the person's pending MCP actions.
+
+### Changed
+
+- The web app keeps the page you opened through sign-in: a signed-out visit to `/pending?action=...` comes back there.
+
 ## [0.46.0] - 2026-11-11
 
 ### Added
