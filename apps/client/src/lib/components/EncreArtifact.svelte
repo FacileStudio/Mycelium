@@ -1,16 +1,18 @@
 <script lang="ts">
 	import { Alert, Spinner } from '@facile/muse';
-	import { Document, loadEncre, parseMarkdown, validateDocument, type EncreNode } from '@facile/encre';
+	import { Document, loadEncre, parseMarkdown, validateDocument, validateMarkdown } from '@facile/encre';
 	import { locale, t } from '$lib/i18n/index.svelte';
 	import { stripFrontmatter } from './artifactSource';
 	import { renderDiagram } from './diagram';
 	import { toEncreMarkdown } from './encreCompat';
+	import { readArtifact, type Reading } from './encreRefusal';
 	import { highlight } from './highlight';
 
 	let { content }: { content: string } = $props();
 
+	const stored = $derived(stripFrontmatter(content));
 	const body = $derived(
-		toEncreMarkdown(stripFrontmatter(content), {
+		toEncreMarkdown(stored, {
 			note: t('md.note'),
 			tip: t('md.tip'),
 			important: t('md.important'),
@@ -29,15 +31,9 @@
 		);
 	});
 
-	const parsed = $derived.by((): { doc: EncreNode | null; reason: string | null } | null => {
-		if (wasm !== 'ready') return null;
-		try {
-			const doc = parseMarkdown(body);
-			return { doc, reason: validateDocument(doc) };
-		} catch (error) {
-			return { doc: null, reason: error instanceof Error ? error.message : String(error) };
-		}
-	});
+	const parsed = $derived.by((): Reading | null =>
+		wasm === 'ready' ? readArtifact(stored, body, { parseMarkdown, validateDocument, validateMarkdown }) : null
+	);
 </script>
 
 {#snippet source()}

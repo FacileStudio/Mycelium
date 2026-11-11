@@ -2,13 +2,16 @@ export type BarItem = { label: string; value: number; formatted: string };
 
 export type Metric = { label: string; val: string; sub: string };
 
-/** Drops the YAML frontmatter Mycelium stamps above every artifact body. */
+/**
+ * Drops the YAML frontmatter Mycelium stamps above every artifact body and the blank lines under it, as the
+ * server does before validation, so a line number in the viewer is the one the API reports.
+ */
 export function stripFrontmatter(raw: string): string {
 	if (raw.startsWith('---\n') || raw.startsWith('---\r\n')) {
 		const end = raw.indexOf('\n---', 4);
 		if (end >= 0) {
 			const cut = raw.indexOf('\n', end + 4);
-			return cut >= 0 ? raw.slice(cut + 1) : '';
+			return cut >= 0 ? raw.slice(cut + 1).replace(/^[\r\n]+/, '') : '';
 		}
 	}
 	return raw;

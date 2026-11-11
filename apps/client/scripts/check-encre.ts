@@ -1,6 +1,7 @@
 import { stripFrontmatter } from '../src/lib/components/artifactSource';
 import { toEncreMarkdown, type AlertTitles } from '../src/lib/components/encreCompat';
-import { loadEncre, parseMarkdown, serializeMarkdown, validateDocument } from '../node_modules/@facile/encre/src/lib/wasm';
+import { readArtifact } from '../src/lib/components/encreRefusal';
+import { EncreMarkdownError, loadEncre, parseMarkdown, serializeMarkdown, validateDocument, validateMarkdown } from '../node_modules/@facile/encre/src/lib/wasm';
 import type { EncreNode } from '../node_modules/@facile/encre/src/lib/schema';
 
 const wasm = await Bun.file(new URL('../node_modules/@facile/encre/src/lib/encre-wasm/encre_wasm_bg.wasm', import.meta.url)).arrayBuffer();
@@ -14,13 +15,9 @@ function render(markdown: string): { mapped: string; doc: EncreNode; reason: str
 	return { mapped, doc, reason: validateDocument(doc) };
 }
 
-function degraded(markdown: string): { doc: EncreNode | null; reason: string | null } {
-	try {
-		const doc = parseMarkdown(toEncreMarkdown(stripFrontmatter(markdown), titles));
-		return { doc, reason: validateDocument(doc) };
-	} catch (error) {
-		return { doc: null, reason: error instanceof Error ? error.message : String(error) };
-	}
+function degraded(markdown: string) {
+	const stored = stripFrontmatter(markdown);
+	return readArtifact(stored, toEncreMarkdown(stored, titles), { parseMarkdown, validateDocument, validateMarkdown });
 }
 
 function nestedCallouts(depth: number): string {
@@ -173,26 +170,34 @@ const cases: [string, () => boolean][] = [
 		}
 	],
 	[
-		'an invalid body still parses and names its reason',
-		() => {
-			const { doc, reason } = render('# Old\n\na\u0001b\n');
-			return blocks(doc).length === 2 && typeof reason === 'string' && reason.includes('forbidden');
-		}
-	],
-	[
-		'a document encre cannot read degrades to its reason and keeps the source, eight levels still parse',
+		'a document encre cannot read degrades to the placed reason the API gives, eight levels still parse',
 		() => {
 			const deep = nestedCallouts(9);
 			const fallback = degraded(deep);
 			const fine = degraded(nestedCallouts(8));
+			let thrown: unknown;
+			try {
+				parseMarkdown(deep);
+			} catch (error) {
+				thrown = error;
+			}
 			return (
 				toEncreMarkdown(deep, titles) === deep &&
+				thrown instanceof EncreMarkdownError &&
+				thrown.line === 11 &&
+				thrown.column === 1 &&
 				fallback.doc === null &&
-				typeof fallback.reason === 'string' &&
-				fallback.reason.includes('nest more than 8') &&
+				fallback.reason === 'line 11, column 1: custom blocks nest more than 8 levels deep' &&
 				fine.reason === null &&
 				blocks(fine.doc!)[1].type === 'callout'
 			);
+		}
+	],
+	[
+		'a document that parses but does not validate keeps its tree and the placed reason',
+		() => {
+			const { doc, reason } = degraded('---\ntitle: "x"\n---\n\n# Hi\n\na\u0001b\n');
+			return doc !== null && reason === 'line 3, column 1: text is empty or holds a forbidden character';
 		}
 	]
 ];
