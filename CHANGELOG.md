@@ -8,6 +8,12 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [Unreleased]
+
+### Changed
+
+- encre [v0.9.2](https://github.com/FacileStudio/encre/releases/tag/v0.9.2) validates and renders artifacts. Its new `EncreDocumentError` only concerns serializing, which the viewer never does.
+
 ## [0.45.2] - 2026-11-11
 
 ### Changed
