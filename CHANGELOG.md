@@ -8,6 +8,12 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [0.47.2] - 2026-11-11
+
+### Fixed
+
+- Brand assets come from the muse v0.19.0 generator: favicon.svg, favicon.ico, the touch and manifest icons, og-image.png and site.webmanifest now match the rest of the suite. `src/app.html` carries the generated head block, so the title, description, theme colours and every Open Graph and Twitter tag appear once, with the catalog's wording. The landing page title and description follow the catalog in every locale. `scripts/icons.ts` is gone: it regenerated the old set.
+
 ## [0.47.1] - 2026-11-11
 
 ### Fixed
