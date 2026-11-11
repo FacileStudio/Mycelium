@@ -7,14 +7,15 @@ require (
 	github.com/FacileStudio/antenne-client/go v0.0.0-20260824150250-7681849d44f9
 	github.com/FacileStudio/encre/go v0.9.2
 	github.com/FacileStudio/enveloppe/go v0.0.0-20260824150156-c6a22ad287ee
-	github.com/FacileStudio/porte v0.12.1
-	github.com/FacileStudio/porte/directory v0.3.0
-	github.com/FacileStudio/tronc v0.17.1
+	github.com/FacileStudio/porte v0.18.4
+	github.com/FacileStudio/porte/directory v0.4.0
+	github.com/FacileStudio/porte/mcpauth v0.2.1
+	github.com/FacileStudio/tronc v0.22.1
 	github.com/coreos/go-oidc/v3 v3.20.0
 	github.com/fatih/color v1.19.0
 	github.com/go-chi/chi/v5 v5.3.1
 	github.com/go-git/go-git/v5 v5.19.2
-	github.com/modelcontextprotocol/go-sdk v1.7.0
+	github.com/modelcontextprotocol/go-sdk v1.8.0
 	github.com/spf13/cobra v1.10.2
 	golang.org/x/oauth2 v0.36.0
 	golang.org/x/term v0.47.0
@@ -23,6 +24,7 @@ require (
 
 require (
 	dario.cat/mergo v1.0.0 // indirect
+	github.com/FacileStudio/porte/forfait v0.1.1 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/ProtonMail/go-crypto v1.1.6 // indirect
 	github.com/cloudflare/circl v1.6.3 // indirect

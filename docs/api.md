@@ -254,6 +254,34 @@ memory, skills and sync stay closed to every delegated token.
 Files written before artifacts became permanent may still carry an `expires:` line or a
 `mycelium-expires` meta tag. Both are ignored.
 
+## Remote MCP
+
+With `MCP_RESOURCE` set, `POST /mcp` (outside `/api`) speaks the Model Context Protocol
+(2026-07-28, stateless) to any MCP client holding a Registre access token bound to that URI,
+with scope `mycelium.read` or `mycelium.write`. `/.well-known/oauth-protected-resource/mcp`
+describes how to get one. It is built on `tronc/mcp` and `porte/mcpauth`: Origin check, 405 on
+`GET`, a per-person rate limit (120 calls a minute) and one audit record per write.
+
+A caller sees what the same person sees in the web app. The token's Registre subject names the
+account, created on the first call when the person never signed in (never as admin). An admin
+reaches the common tree, shown as the `Personal` tree, and every space they are a member of; anyone
+else reaches only their spaces. Delegated restrictions do not apply: the identity is the person's.
+
+| Tool | Scope | Does |
+|---|---|---|
+| `mycelium_read_memory_index` | read | Lists the trees (`space_id`, name, role) and reads one tree's `index.md` |
+| `mycelium_search_memory` | read | Hybrid search, as `POST /api/memory/search`, over one tree or all of them |
+| `mycelium_read_memory_page` | read | One wiki page, in windows of about 60 kB (`from_line`, `next_line`) |
+| `mycelium_list_artifacts` | read | Artifacts, newest first, 50 a page, filtered by title words |
+| `mycelium_read_artifact` | read | One artifact's stored markdown, in windows |
+| `mycelium_add_finding` | write | `mycelium memory add` on an existing page: finding, `updated:`, index pointer, log line |
+| `mycelium_publish_artifact` | write | Records an artifact, or replaces the tree's artifact of the same title |
+
+Nothing deletes, forgets or ratifies. A publish keeps every check of `POST /api/artifacts`: the
+1 MiB cap, the 200-character title, markdown only, and encre's validation, whose refusal comes
+back as a tool error reading `invalid document: line L, column C: <reason>`. Flows stay on the
+local stdio `mycelium mcp`, which runs shell on the user's own machine.
+
 ## Tokens
 
 | Method | Path | Auth | Body | Returns |

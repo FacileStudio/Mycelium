@@ -63,3 +63,12 @@ func TestMachineAudienceRequiresIssuer(t *testing.T) {
 		t.Fatalf("got %v, want a refusal naming OIDC_ISSUER", err)
 	}
 }
+
+func TestMCPResourceRequiresIssuer(t *testing.T) {
+	t.Setenv("OIDC_ISSUER", "")
+	t.Setenv("OIDC_MACHINE_AUDIENCE", "")
+	t.Setenv("MCP_RESOURCE", "https://mycelium.example/mcp")
+	if _, err := loadOIDC(); err == nil || !strings.Contains(err.Error(), "MCP_RESOURCE requires OIDC_ISSUER") {
+		t.Fatalf("got %v, want a refusal naming OIDC_ISSUER", err)
+	}
+}

@@ -107,6 +107,10 @@ var serveCmd = &cobra.Command{
 		srv.JournalBrowserKey = cfg.JournalBrowserKey
 		srv.Log = appLogger
 
+		if err := srv.EnableMCP(); err != nil {
+			appLogger.Error("invalid MCP configuration", slog.Any("error", err))
+			os.Exit(1)
+		}
 		if err := attachSemantic(srv, cfg); err != nil {
 			appLogger.Error("semantic search unavailable, memory search stays lexical", slog.Any("error", err))
 		}

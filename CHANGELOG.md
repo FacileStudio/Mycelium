@@ -8,6 +8,16 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [Unreleased]
+
+### Added
+
+- Remote MCP server at `/mcp` (set `MCP_RESOURCE`), on `tronc/mcp` v0.22.1 and `porte/mcpauth` v0.2.1, for Registre access tokens bound to it with `mycelium.read` or `mycelium.write`. Seven tools: `mycelium_read_memory_index`, `mycelium_search_memory`, `mycelium_read_memory_page`, `mycelium_list_artifacts`, `mycelium_read_artifact`, `mycelium_add_finding` and `mycelium_publish_artifact` (create, or replace by title, with the 1 MiB cap and encre's refusal placed at a line and column). A caller reaches exactly the trees the same person reaches in the web app, and the first call creates a non-admin account. Nothing deletes, forgets or ratifies; flows stay on the local stdio `mycelium mcp`.
+
+### Changed
+
+- build(deps): `tronc` v0.17.1 to v0.22.1, `porte` v0.12.1 to v0.18.4, `porte/directory` v0.3.0 to v0.4.0, `modelcontextprotocol/go-sdk` v1.7.0 to v1.8.0.
+
 ## [0.45.4] - 2026-11-11
 
 ### Security
