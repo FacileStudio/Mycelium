@@ -19,9 +19,9 @@ const kindDeletePage = "delete_page"
 // webActor marks, in the audit, a confirmation made on the confirm page.
 const webActor = "mycelium-web"
 
-// errPageGone is the refusal for a pending delete whose page or tree is no
-// longer the person's.
-var errPageGone = apierrors.NotFound("this page is gone, or no longer yours")
+// errPageGone is the refusal for a pending delete whose page, artifact or
+// tree is no longer the person's.
+var errPageGone = apierrors.NotFound("this is gone, or no longer yours")
 
 // errBrowserOnly refuses a confirm page call that is not a browser session:
 // a CLI or API token is what agents hold, and an agent never confirms its
@@ -51,7 +51,8 @@ func mcpStateKey(secret string) []byte {
 // nobody saw.
 func (t *mcpTools) kinds() map[string]mcpkit.Kind {
 	return map[string]mcpkit.Kind{
-		kindDeletePage: {Tool: toolDeleteMemoryPage, Fingerprint: t.pageDigest, Run: t.removePage},
+		kindDeletePage:     {Tool: toolDeleteMemoryPage, Fingerprint: t.pageDigest, Run: t.removePage},
+		kindDeleteArtifact: {Tool: toolDeleteArtifact, Fingerprint: t.artifactDigest, Run: t.removeArtifact},
 	}
 }
 

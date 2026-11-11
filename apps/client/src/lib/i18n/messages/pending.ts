@@ -4,10 +4,10 @@ import type { Row } from '../row';
 export const pending = {
 	'pending.title': ['Waiting for you', 'En attente de vous', 'Esperando tu respuesta', 'Wartet auf dich'],
 	'pending.intro': [
-		'An agent asked to delete these memory pages. Nothing happens until you confirm here.',
-		'Un agent a demandé à supprimer ces pages de mémoire. Rien ne se passe tant que vous ne confirmez pas ici.',
-		'Un agente pidió borrar estas páginas de memoria. No pasa nada hasta que confirmes aquí.',
-		'Ein Agent möchte diese Gedächtnisseiten löschen. Nichts passiert, bis du hier bestätigst.'
+		'An agent asked to delete what is listed here. Nothing happens until you confirm.',
+		'Un agent a demandé à supprimer ce qui figure ici. Rien ne se passe tant que vous ne confirmez pas.',
+		'Un agente pidió borrar lo que aparece aquí. No pasa nada hasta que confirmes.',
+		'Ein Agent möchte löschen, was hier steht. Nichts passiert, bis du bestätigst.'
 	],
 	'pending.none': ['Nothing waiting', 'Rien en attente', 'Nada pendiente', 'Nichts offen'],
 	'pending.noneBody': [
@@ -23,6 +23,9 @@ export const pending = {
 		'Offene Aktionen konnten nicht geladen werden.'
 	],
 	'pending.deletePage': ['Delete a page', 'Supprimer une page', 'Borrar una página', 'Seite löschen'],
+	'pending.deleteArtifact': ['Delete an artifact', 'Supprimer un artefact', 'Borrar un artefacto', 'Artefakt löschen'],
+	'pending.confirmArtifact': ['Delete the artifact', 'Supprimer l’artefact', 'Borrar el artefacto', 'Artefakt löschen'],
+	'pending.artifactDeleted': ['Artifact deleted.', 'Artefact supprimé.', 'Artefacto borrado.', 'Artefakt gelöscht.'],
 	'pending.askedBy': ['Asked by {client}', 'Demandé par {client}', 'Pedido por {client}', 'Angefragt von {client}'],
 	'pending.reason': ['Reason: {log}', 'Motif : {log}', 'Motivo: {log}', 'Grund: {log}'],
 	'pending.changed': [
