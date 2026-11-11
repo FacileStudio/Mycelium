@@ -25,7 +25,7 @@ RUN set -eu; apk add --no-cache curl; \
     tar -xzf "$archive" -C /usr/local/bin encre; rm "$archive" checksums.txt; \
     /usr/local/bin/encre --version
 
-FROM golang:1.26-alpine AS api-build
+FROM golang:1.26.11-alpine AS api-build
 
 ARG TARGETOS=linux
 ARG TARGETARCH
