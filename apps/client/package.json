@@ -20,7 +20,7 @@
 		"svelte-check": "^4.0.0",
 		"tailwindcss": "^4.2.0",
 		"typescript": "^5.9.0",
-		"vite": "^7.0.0"
+		"vite": "^7.3.8"
 	},
 	"dependencies": {
 		"@facile/encre": "github:FacileStudio/encre#v0.9.4",
@@ -32,5 +32,11 @@
 		"iconify-icon": "^3.0.2",
 		"marked": "^18.0.11",
 		"mermaid": "^11.17.2"
+	},
+	"overrides": {
+		"devalue": "^5.9.3",
+		"nanoid": "^3.3.18",
+		"postcss": "^8.5.18",
+		"source-map-js": "^1.2.2"
 	}
 }

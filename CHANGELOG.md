@@ -10,6 +10,10 @@ records what shipped rather than what was written down at the time.
 
 ## [Unreleased]
 
+### Security
+
+- build(deps): `github.com/go-jose/go-jose/v4` v4.1.4 to v4.1.6, `vite` 7.3.5 to 7.3.8, and client overrides for the transitive `devalue` (5.9.4), `nanoid` (3.3.20), `postcss` (8.5.32) and `source-map-js` (1.2.2), which a Sonde scan reported as critical or high. `douane scan` reports only low findings after.
+
 ### Added
 
 - MCP: `mycelium_write_memory_page` creates or replaces a whole wiki page with the wiki's rules (frontmatter with `title:` and a descriptive `type:`, `updated:` and `created:` stamped, index line, `create-page` or `lint` log line, English only, 256 KiB cap). `mycelium_delete_memory_page` deletes a page only after the person confirms, through MRTR `input_required` or a pending action and the new `/pending` confirm page (`GET /api/mcp/pending`, `POST /api/mcp/pending/{id}/confirm|dismiss`, browser sessions only). `mycelium_list_memory_pages` lists a tree's pages, and `mycelium_create_space` creates a space the caller owns, reusing one of the same name. Both page tools refuse `index.md`, `log.md` and standards with a tool error. Nothing forgets or ratifies.
