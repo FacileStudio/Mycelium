@@ -27,13 +27,14 @@ const (
 var ErrPageMissing = errors.New("there is no such page")
 
 // Page is one page written whole: its key, its full markdown with the
-// frontmatter, the index hook for a page the index does not name yet, and
-// the log line.
+// frontmatter, the index hook for a page the index does not name yet, the
+// log line, and the language rule of the tree it lands in.
 type Page struct {
-	Key     string
-	Content string
-	Summary string
-	Log     string
+	Key      string
+	Content  string
+	Summary  string
+	Log      string
+	Language Language
 }
 
 // PageResult reports what one WritePage did.
@@ -62,7 +63,7 @@ func Protected(key string) error {
 // gets: the `updated:` stamp, `created:` kept from the old page or set
 // today, an index pointer when the index does not name the page, and the log
 // line. The page must carry YAML frontmatter with a title and a descriptive
-// type, and be English, like everything else the wiki holds.
+// type, and be English unless its Language says otherwise.
 func WritePage(dataDir string, p Page, now time.Time) (PageResult, error) {
 	path, key, err := pagePath(dataDir, p.Key)
 	if err != nil {
@@ -134,7 +135,7 @@ func commitPage(dataDir string, w pageWrite, p Page) (PageResult, error) {
 // CheckDelete runs every refusal DeletePage would, without touching the
 // wiki, so a person is never asked to confirm a delete that would fail. It
 // returns the page's key and its current bytes.
-func CheckDelete(dataDir, page, log string) (string, []byte, error) {
+func CheckDelete(dataDir, page, log string, lang Language) (string, []byte, error) {
 	path, key, err := pagePath(dataDir, page)
 	if err != nil {
 		return "", nil, err
@@ -145,7 +146,7 @@ func CheckDelete(dataDir, page, log string) (string, []byte, error) {
 	if strings.TrimSpace(log) == "" {
 		return "", nil, fmt.Errorf("log is empty: pass one line for log.md saying why the page goes")
 	}
-	if err := refuseFrench(log); err != nil {
+	if err := lang.check(log); err != nil {
 		return "", nil, err
 	}
 	old, err := os.ReadFile(path)
@@ -162,13 +163,13 @@ func CheckDelete(dataDir, page, log string) (string, []byte, error) {
 }
 
 // DeletePage removes one page, drops its index line and logs why.
-func DeletePage(dataDir, page, log string, now time.Time) (string, error) {
+func DeletePage(dataDir, page, log string, lang Language, now time.Time) (string, error) {
 	release, err := lockWiki(dataDir)
 	if err != nil {
 		return "", err
 	}
 	defer release()
-	key, _, err := CheckDelete(dataDir, page, log)
+	key, _, err := CheckDelete(dataDir, page, log, lang)
 	if err != nil {
 		return "", err
 	}
@@ -187,7 +188,7 @@ func DeletePage(dataDir, page, log string, now time.Time) (string, error) {
 
 // checkPage refuses a page that breaks the wiki's rules before anything is
 // locked: empty or too large, no frontmatter, no title, a type that is not a
-// descriptive one, no log line, or French prose.
+// descriptive one, no log line, or French prose where the tree wants English.
 func checkPage(p Page) error {
 	switch {
 	case strings.TrimSpace(p.Content) == "":
@@ -208,7 +209,7 @@ func checkPage(p Page) error {
 		return fmt.Errorf("the frontmatter type: must be one of %s; standards are never written through this tool",
 			strings.Join(pageTypes, ", "))
 	}
-	return refuseFrench(p.Content + "\n" + p.Log + "\n" + p.Summary)
+	return p.Language.check(p.Content + "\n" + p.Log + "\n" + p.Summary)
 }
 
 // isStandard reports whether a page declares itself normative.

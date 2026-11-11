@@ -27,7 +27,7 @@ const mcpInstructions = `Mycelium is the user's shared agent wiki and artifact s
 	`run agents on. The wiki holds durable findings: read it before non-trivial work instead of rediscovering ` +
 	`what is written down. Start with mycelium_read_memory_index (it also lists the spaces you can use and their ` +
 	`space_id), mycelium_search_memory, then mycelium_read_memory_page. File a durable, non-obvious, sourced ` +
-	`finding with mycelium_add_finding, in English, on an existing page. mycelium_list_memory_pages lists a ` +
+	`finding with mycelium_add_finding on an existing page, in English in your personal tree (a space takes any language). mycelium_list_memory_pages lists a ` +
 	`tree's pages, mycelium_write_memory_page creates or replaces a whole page (frontmatter required, index.md ` +
 	`and log.md kept for you), and mycelium_delete_memory_page deletes one only after the user confirms. ` +
 	`index.md, log.md and standards/ pages are never written or deleted here. mycelium_create_space makes a ` +
@@ -71,8 +71,8 @@ func (t *mcpTools) pageWrites() []mcpkit.Tool {
 			Description: "Create a wiki page, or replace one whole: read it first and write it back with your change " +
 				"merged in. The content starts with YAML frontmatter holding at least title: and type: (bug, tool, " +
 				"project, convention, synthesis or actor); updated: and created: are stamped for you, index.md gains a " +
-				"line for a page it does not name, and log.md gets your log line. English only, at most 256 KiB, no " +
-				"secrets. index.md, log.md and standards/ pages are refused.",
+				"line for a page it does not name, and log.md gets your log line. English in your personal tree, any " +
+				"language in a space; at most 256 KiB, no secrets. index.md, log.md and standards/ pages are refused.",
 			Annotations: &mcpkit.Annotations{Destructive: true},
 		}, t.writeMemoryPage),
 		mcpkit.NewTool(mcpkit.ToolSpec{
@@ -155,7 +155,7 @@ func (t *mcpTools) writes() []mcpkit.Tool {
 			Name: toolAddFinding, Title: "Add a finding",
 			Description: "File one finding on an existing wiki page: it is appended under a dated heading with its " +
 				"source, the page's updated stamp moves, index.md gains a pointer when the page had none, and " +
-				"log.md gets your log line. English only. File only what is durable, non-obvious, sourced and " +
+				"log.md gets your log line. English in your personal tree, any language in a space. File only what is durable, non-obvious, sourced and " +
 				"free of secrets. Every machine of the tree's members syncs it.",
 			Annotations: &mcpkit.Annotations{},
 		}, t.addFinding),

@@ -95,7 +95,7 @@ func (t *mcpTools) pageDigest(_ context.Context, a mcpkit.Action) (string, error
 	if err != nil {
 		return "", err
 	}
-	key, data, err := memory.CheckDelete(tree.Root, target.Path, target.Log)
+	key, data, err := memory.CheckDelete(tree.Root, target.Path, target.Log, tree.language())
 	if err != nil {
 		return "", errPageGone
 	}
@@ -108,7 +108,7 @@ func (t *mcpTools) removePage(_ context.Context, a mcpkit.Action) error {
 	if err != nil {
 		return err
 	}
-	key, err := memory.DeletePage(tree.Root, target.Path, target.Log, time.Now())
+	key, err := memory.DeletePage(tree.Root, target.Path, target.Log, tree.language(), time.Now())
 	if err != nil {
 		return t.s.pageFailure(err, target.Path, tree)
 	}

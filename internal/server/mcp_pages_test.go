@@ -206,3 +206,24 @@ func TestMCPErasureDropsPendingActions(t *testing.T) {
 		t.Fatalf("erasure must drop the person's actions, %d left", len(open))
 	}
 }
+
+func TestMCPEnglishOnlyHoldsInTheCommonTreeAlone(t *testing.T) {
+	f := newMCPFixture(t)
+	french := "Elle préfère les réponses courtes et nous avons décidé de garder cela pour la suite."
+	page := map[string]any{"path": "people/alice", "content": alicePage + "\n" + french + "\n", "log": "personnes : ajout d'Alice"}
+	if res := mcptest.Call(t, f.session(t, ownerSubject), toolWriteMemoryPage, page); !res.IsError || !strings.Contains(mcptest.Text(res), "English-only") {
+		t.Fatalf("the common tree must refuse a French page: %s", mcptest.Text(res))
+	}
+	member := f.session(t, memberSubject)
+	page["space_id"] = sharedSpace
+	var written mcpWritePageOutput
+	mcptest.Decode(t, mcptest.Call(t, member, toolWriteMemoryPage, page), &written)
+	finding := map[string]any{"page": "notes", "title": "Jetons", "source": "observation directe",
+		"body": french, "log": "notes : rotation des jetons", "space_id": sharedSpace}
+	var filed mcpFindingOutput
+	mcptest.Decode(t, mcptest.Call(t, member, toolAddFinding, finding), &filed)
+	stored, _ := os.ReadFile(filepath.Join(f.srv.spaceDir(sharedSpace), "memory", "people", "alice.md"))
+	if !written.Created || filed.Page != "notes.md" || !strings.Contains(string(stored), french) {
+		t.Fatalf("a space must take French pages and findings: %+v %+v\n%s", written, filed, stored)
+	}
+}

@@ -51,11 +51,12 @@ var memoryAddCmd = &cobra.Command{
 			return err
 		}
 		finding := memory.Finding{
-			Page:   args[0],
-			Title:  memoryAddTitle,
-			Source: memoryAddSource,
-			Body:   body,
-			Log:    memoryAddLog,
+			Page:     args[0],
+			Title:    memoryAddTitle,
+			Source:   memoryAddSource,
+			Body:     body,
+			Log:      memoryAddLog,
+			Language: localLanguage(),
 		}
 		res, err := memory.Add(config.DataDir(), finding, time.Now(), pushAfterWrite)
 		if err != nil {
@@ -64,6 +65,17 @@ var memoryAddCmd = &cobra.Command{
 		reportAdd(res)
 		return nil
 	},
+}
+
+// localLanguage is the rule of the wiki on this machine: English for the
+// common tree, any language on a machine bound to a space, whose wiki is
+// its members'.
+func localLanguage() memory.Language {
+	cfg, err := config.LoadMyceliumConfig()
+	if err != nil || cfg.SpaceID() == "" {
+		return memory.EnglishOnly
+	}
+	return memory.AnyLanguage
 }
 
 // findingBody reads the finding's prose, from stdin when asked, following the

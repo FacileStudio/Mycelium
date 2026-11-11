@@ -3,7 +3,7 @@ package server
 // mcpWritePageInput is what mycelium_write_memory_page takes.
 type mcpWritePageInput struct {
 	Path    string `json:"path" jsonschema:"page path such as projects/mycelium.md; a missing page is created"`
-	Content string `json:"content" jsonschema:"the whole page in English markdown, starting with YAML frontmatter that holds at least title: and type: (bug, tool, project, convention, synthesis or actor); updated: and created: are stamped for you"`
+	Content string `json:"content" jsonschema:"the whole page in markdown (English in your personal tree, any language in a space), starting with YAML frontmatter that holds at least title: and type: (bug, tool, project, convention, synthesis or actor); updated: and created: are stamped for you"`
 	Summary string `json:"summary,omitempty" jsonschema:"one line describing the page, for its index.md entry when the index does not name it yet; empty uses log"`
 	Log     string `json:"log" jsonschema:"one line for log.md saying what changed"`
 	SpaceID string `json:"space_id,omitempty" jsonschema:"a space_id from mycelium_read_memory_index; empty for your personal tree"`

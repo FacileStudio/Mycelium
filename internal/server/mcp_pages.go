@@ -30,7 +30,7 @@ func (t *mcpTools) writeMemoryPage(_ context.Context, req *sdk.CallToolRequest, 
 	if err != nil {
 		return nil, mcpWritePageOutput{}, err
 	}
-	page := memory.Page{Key: key, Content: in.Content, Summary: in.Summary, Log: in.Log}
+	page := memory.Page{Key: key, Content: in.Content, Summary: in.Summary, Log: in.Log, Language: tree.language()}
 	res, err := memory.WritePage(tree.Root, page, time.Now())
 	if err != nil {
 		return nil, mcpWritePageOutput{}, t.s.pageFailure(err, key, tree)
@@ -56,7 +56,7 @@ func (t *mcpTools) deleteMemoryPage(ctx context.Context, req *sdk.CallToolReques
 	if err != nil {
 		return nil, mcpDeletePageOutput{}, err
 	}
-	if _, _, err := memory.CheckDelete(tree.Root, key, in.Log); err != nil {
+	if _, _, err := memory.CheckDelete(tree.Root, key, in.Log, tree.language()); err != nil {
 		return nil, mcpDeletePageOutput{}, t.s.pageFailure(err, key, tree)
 	}
 	target := encodeTarget(pageTarget{SpaceID: tree.SpaceID, Path: key, Log: strings.TrimSpace(in.Log)})

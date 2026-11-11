@@ -29,7 +29,9 @@ func (t *mcpTools) addFinding(_ context.Context, req *sdk.CallToolRequest, in mc
 	if err != nil {
 		return nil, mcpFindingOutput{}, err
 	}
-	finding := memory.Finding{Page: key, Title: in.Title, Source: in.Source, Body: in.Body, Log: in.Log}
+	finding := memory.Finding{
+		Page: key, Title: in.Title, Source: in.Source, Body: in.Body, Log: in.Log, Language: tree.language(),
+	}
 	res, err := memory.Add(tree.Root, finding, time.Now(), nil)
 	if err != nil {
 		return nil, mcpFindingOutput{}, t.s.findingFailure(err, key, tree)
