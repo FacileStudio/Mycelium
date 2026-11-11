@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/FacileStudio/Mycelium/internal/memory"
 	"github.com/FacileStudio/porte/mcpauth"
 	sdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
@@ -27,6 +28,15 @@ type mcpTree struct {
 	Name    string
 	Role    string
 	Root    string
+}
+
+// language is the rule the tree's prose follows: English in the common
+// tree, the owner's wiki, any language in a space, which is its members'.
+func (t mcpTree) language() memory.Language {
+	if t.SpaceID == "" {
+		return memory.EnglishOnly
+	}
+	return memory.AnyLanguage
 }
 
 // mcpCaller resolves the person a tool call acts for to the Identity a

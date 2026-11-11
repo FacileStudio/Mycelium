@@ -48,13 +48,17 @@ func printResult(res *hsync.Result) {
 // warnFrenchPages reports French prose in the pages this sync touched. The wiki
 // is English-only (rules/20-memory.md) and a French page is unreachable from the
 // English query an agent writes, so drift is worth surfacing the moment it
-// crosses the wire.
+// crosses the wire. A machine bound to a space holds that space's wiki, which
+// takes any language, so it gets no warning.
 //
 // It only ever warns. Sync pulls as well as pushes, so failing here would lock a
 // machine out of fetching the very fix it needs, and the daemon runs this every
 // 60 seconds with nobody watching. The blocking gate lives in the mycelium-health
 // flow, where a human ran it and can act on the answer.
-func warnFrenchPages(dataDir string, res *hsync.Result) {
+func warnFrenchPages(dataDir, space string, res *hsync.Result) {
+	if space != "" {
+		return
+	}
 	touched := append(append([]string{}, res.Uploaded...), res.Downloaded...)
 	findings := memory.ScanPaths(dataDir, touched)
 	if len(findings) == 0 {
@@ -150,7 +154,7 @@ var syncCmd = &cobra.Command{
 		} else {
 			fmt.Printf("Synced %d change(s).\n", res.Total())
 		}
-		warnFrenchPages(dataDir, res)
+		warnFrenchPages(dataDir, client.Space, res)
 		if len(res.Conflicts) > 0 {
 			color.Yellow("Resolve conflicts by editing the page, then delete its copy under .conflicts/ and sync again.")
 		}
@@ -174,7 +178,7 @@ var pushCmd = &cobra.Command{
 		if res.Total() == 0 {
 			fmt.Println("Nothing to push.")
 		}
-		warnFrenchPages(dataDir, res)
+		warnFrenchPages(dataDir, client.Space, res)
 		return nil
 	},
 }

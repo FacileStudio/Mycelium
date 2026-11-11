@@ -75,7 +75,7 @@ func TestDeletePageDropsTheIndexLineAndLogs(t *testing.T) {
 	if _, err := WritePage(dir, Page{Key: "people/alice.md", Content: wholePage, Log: "people: add Alice"}, time.Now()); err != nil {
 		t.Fatal(err)
 	}
-	key, err := DeletePage(dir, "people/alice", "Alice asked to be forgotten", time.Now())
+	key, err := DeletePage(dir, "people/alice", "Alice asked to be forgotten", EnglishOnly, time.Now())
 	if err != nil || key != "people/alice.md" {
 		t.Fatalf("delete failed: %q %v", key, err)
 	}
@@ -88,12 +88,39 @@ func TestDeletePageDropsTheIndexLineAndLogs(t *testing.T) {
 	if history := readWiki(t, dir, "log.md"); !strings.Contains(history, "lint | deleted people/alice.md: Alice asked to be forgotten") {
 		t.Fatalf("delete not logged:\n%s", history)
 	}
-	if _, err := DeletePage(dir, "people/alice", "again", time.Now()); !errors.Is(err, ErrPageMissing) {
+	if _, err := DeletePage(dir, "people/alice", "again", EnglishOnly, time.Now()); !errors.Is(err, ErrPageMissing) {
 		t.Fatalf("a missing page must be ErrPageMissing: %v", err)
 	}
 	for _, page := range []string{"log.md", "index.md", "standards/go.md"} {
-		if _, err := DeletePage(dir, page, "why", time.Now()); err == nil || errors.Is(err, ErrPageMissing) {
+		if _, err := DeletePage(dir, page, "why", EnglishOnly, time.Now()); err == nil || errors.Is(err, ErrPageMissing) {
 			t.Errorf("%s must be refused before it is looked up: %v", page, err)
 		}
+	}
+}
+
+func TestASpaceTreeTakesFrenchWhereTheCommonTreeRefusesIt(t *testing.T) {
+	french := "Elle préfère les réponses courtes et nous avons décidé de garder cela pour la suite."
+	dir := wikiWithPage(t)
+	page := Page{Key: "people/alice.md", Content: wholePage + "\n" + french + "\n", Log: "personnes : ajout d'Alice"}
+	if _, err := WritePage(dir, page, time.Now()); err == nil {
+		t.Fatal("the common tree must refuse a French page")
+	}
+	f := aFinding()
+	f.Body = french
+	if _, err := Add(dir, f, time.Now(), nil); err == nil {
+		t.Fatal("the common tree must refuse a French finding")
+	}
+	page.Language, f.Language = AnyLanguage, AnyLanguage
+	if _, err := WritePage(dir, page, time.Now()); err != nil {
+		t.Fatalf("a space must take a French page: %v", err)
+	}
+	if _, err := Add(dir, f, time.Now(), nil); err != nil {
+		t.Fatalf("a space must take a French finding: %v", err)
+	}
+	if _, err := DeletePage(dir, "people/alice", "elle a demandé à être oubliée de tout cela", EnglishOnly, time.Now()); err == nil {
+		t.Fatal("the common tree must refuse a French delete reason")
+	}
+	if _, err := DeletePage(dir, "people/alice", "elle a demandé à être oubliée de tout cela", AnyLanguage, time.Now()); err != nil {
+		t.Fatalf("a space must take a French delete reason: %v", err)
 	}
 }

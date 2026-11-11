@@ -35,11 +35,12 @@ const (
 // than something derived from the change, because the convention asks a log line
 // for what was wrong before and what still holds, and a diff carries neither.
 type Finding struct {
-	Page   string
-	Title  string
-	Source string
-	Body   string
-	Log    string
+	Page     string
+	Title    string
+	Source   string
+	Body     string
+	Log      string
+	Language Language
 }
 
 // Result reports what one Add did. SyncErr is the outcome of the follow-up sync
@@ -70,7 +71,7 @@ func Add(dataDir string, f Finding, now time.Time, push Push) (Result, error) {
 	}
 	day := now.Format(dayLayout)
 	block := findingBlock(f, day)
-	if err := refuseFrench(block + "\n" + f.Log); err != nil {
+	if err := f.Language.check(block + "\n" + f.Log); err != nil {
 		return Result{}, err
 	}
 	res, err := fileFinding(dataDir, f, day, block)
@@ -159,11 +160,26 @@ func (f Finding) validate() error {
 	return nil
 }
 
-// refuseFrench blocks a write carrying French prose. The sync-side check in
-// language.go only warns, because failing there would lock a machine out of
-// pulling the very fix it needs; this is the blocking gate that comment points
-// at, where the writer is still here and the text still in hand.
-func refuseFrench(text string) error {
+// Language is the rule a tree's prose follows. EnglishOnly is the common
+// tree's, the owner's wiki, whose search model reads English only.
+// AnyLanguage is a space's: its pages belong to its members, who may write
+// them in their own language.
+type Language int
+
+const (
+	EnglishOnly Language = iota
+	AnyLanguage
+)
+
+// check blocks a write carrying French prose into an English-only tree.
+// The sync-side check in language.go only warns, because failing there would
+// lock a machine out of pulling the very fix it needs; this is the blocking
+// gate that comment points at, where the writer is still here and the text
+// still in hand.
+func (l Language) check(text string) error {
+	if l == AnyLanguage {
+		return nil
+	}
 	found := FrenchLines(text)
 	if len(found) == 0 {
 		return nil

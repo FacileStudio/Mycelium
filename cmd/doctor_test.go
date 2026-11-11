@@ -126,3 +126,33 @@ func TestConsolidateHealthStates(t *testing.T) {
 		t.Fatalf("after run: %q %v", msg, ok)
 	}
 }
+
+func TestWikiLanguageChecksTheCommonTreeOnly(t *testing.T) {
+	dataDir := t.TempDir()
+	path := filepath.Join(dataDir, "memory", "people.md")
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	french := "---\ntitle: People\ntype: actor\n---\n\nElle préfère les réponses courtes et nous avons décidé de garder cela pour la suite.\n"
+	if err := os.WriteFile(path, []byte(french), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if msg, ok := wikiLanguage(dataDir, ""); ok || !strings.Contains(msg, "French line") {
+		t.Fatalf("the common tree must fail on French: %q", msg)
+	}
+	if msg, ok := wikiLanguage(dataDir, "a-space"); !ok {
+		t.Fatalf("a space wiki takes any language: %q", msg)
+	}
+}
+
+func TestLocalLanguageFollowsTheBoundSpace(t *testing.T) {
+	config.IsolateHome(t, t.TempDir())
+	t.Setenv(config.SpaceEnv, "")
+	if got := localLanguage(); got != memory.EnglishOnly {
+		t.Fatalf("a machine on the common tree writes English: %v", got)
+	}
+	t.Setenv(config.SpaceEnv, "a-space")
+	if got := localLanguage(); got != memory.AnyLanguage {
+		t.Fatalf("a machine bound to a space takes any language: %v", got)
+	}
+}

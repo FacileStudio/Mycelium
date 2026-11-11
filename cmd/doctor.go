@@ -184,25 +184,8 @@ var doctorCmd = &cobra.Command{
 			return "none", true
 		})
 
-		// The wiki is English-only (rules/20-memory.md). doctor is where this
-		// belongs rather than the sync path alone: the daemon shells out to
-		// `mycelium sync` every 60s and discards its output on success, so a
-		// warning printed there reaches nobody. doctor is read by a human and
-		// by the mycelium-health flow.
 		check("wiki language", func() (string, bool) {
-			memoryDir := filepath.Join(dataDir, "memory")
-			if _, err := os.Stat(memoryDir); err != nil {
-				return "no wiki on this machine", true
-			}
-			findings, err := memory.ScanWiki(memoryDir)
-			if err != nil {
-				return err.Error(), false
-			}
-			if len(findings) > 0 {
-				return fmt.Sprintf("%d French line(s), first at %s:%d — the wiki is English-only",
-					len(findings), findings[0].Path, findings[0].Line), false
-			}
-			return "English only", true
+			return wikiLanguage(dataDir, cfg.SpaceID())
 		})
 
 		check("standards", func() (string, bool) {
@@ -278,4 +261,29 @@ func historyState(dataDir string) (string, bool) {
 func newDoctorCmd() *cobra.Command {
 	rootCmd.AddCommand(doctorCmd)
 	return doctorCmd
+}
+
+// wikiLanguage is doctor's English-only check (rules/20-memory.md). doctor is
+// where it belongs rather than the sync path alone: the daemon shells out to
+// `mycelium sync` every 60s and discards its output on success, so a warning
+// printed there reaches nobody, while doctor is read by a human and by the
+// mycelium-health flow. It covers the common tree alone: a machine bound to a
+// space holds that space's wiki, which takes any language.
+func wikiLanguage(dataDir, space string) (string, bool) {
+	if space != "" {
+		return "space wiki, any language", true
+	}
+	memoryDir := filepath.Join(dataDir, "memory")
+	if _, err := os.Stat(memoryDir); err != nil {
+		return "no wiki on this machine", true
+	}
+	findings, err := memory.ScanWiki(memoryDir)
+	if err != nil {
+		return err.Error(), false
+	}
+	if len(findings) > 0 {
+		return fmt.Sprintf("%d French line(s), first at %s:%d — the wiki is English-only",
+			len(findings), findings[0].Path, findings[0].Line), false
+	}
+	return "English only", true
 }
