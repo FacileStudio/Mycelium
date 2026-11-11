@@ -26,7 +26,7 @@
 		"@facile/encre": "github:FacileStudio/encre#v0.9.2",
 		"@facile/journal": "github:FacileStudio/Journal#ts",
 		"@facile/muse": "github:FacileStudio/muse#v0.16.1",
-		"dompurify": "^3.4.14",
+		"dompurify": "^3.4.17",
 		"gsap": "^3.15.0",
 		"highlight.js": "^11.11.1",
 		"iconify-icon": "^3.0.2",
