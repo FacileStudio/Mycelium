@@ -70,7 +70,7 @@ func titleHolds(title string, words []string) bool {
 // that space is the selected one.
 func (t *mcpTools) summary(art artifacts.Artifact, tree mcpTree) mcpArtifact {
 	out := mcpArtifact{
-		ID: art.ID, Title: art.Title, SpaceID: tree.SpaceID, SpaceName: tree.Name,
+		ID: art.ID, Title: art.Title, SpaceID: tree.SpaceID, SpaceName: tree.Name, Machine: art.Machine,
 		Created: art.Created.UTC().Format(time.RFC3339), Updated: art.Updated.UTC().Format(time.RFC3339),
 	}
 	if tree.SpaceID == "" {
