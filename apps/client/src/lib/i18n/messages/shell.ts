@@ -26,16 +26,16 @@ export const shell = {
 	'nav.personal': ['Personal', 'Personnel', 'Personal', 'Persönlich'],
 	'nav.user': ['user', 'utilisateur', 'usuario', 'Benutzer'],
 	'landing.title': [
-		'Mycelium — One brain for your agents',
-		'Mycelium — Un cerveau pour vos agents',
-		'Mycelium — Un cerebro para tus agentes',
-		'Mycelium — Ein Gehirn für deine Agenten'
+		'Mycelium · One brain for your coding agents',
+		'Mycelium · Un cerveau pour vos agents de code',
+		'Mycelium · Un cerebro para tus agentes de código',
+		'Mycelium · Ein Gehirn für deine Coding-Agenten'
 	],
 	'landing.description': [
-		'Shared memory, rules and skills for your AI agents, synced across pi, Claude, Gemini, Codex and every machine.',
-		'Mémoire, règles et compétences partagées pour vos agents IA, synchronisées entre pi, Claude, Gemini, Codex et toutes vos machines.',
-		'Memoria, reglas y habilidades compartidas para tus agentes de IA, sincronizadas entre pi, Claude, Gemini, Codex y todas tus máquinas.',
-		'Geteiltes Gedächtnis, Regeln und Skills für deine KI-Agenten, synchronisiert zwischen pi, Claude, Gemini, Codex und allen Maschinen.'
+		'One store of memory, rules and skills for every AI coding agent, synced across all your machines.',
+		'Une seule réserve de mémoire, de règles et de compétences pour chaque agent IA de code, synchronisée sur toutes vos machines.',
+		'Un único almacén de memoria, reglas y habilidades para cada agente de IA de código, sincronizado en todas tus máquinas.',
+		'Ein Speicher für Gedächtnis, Regeln und Skills aller KI-Coding-Agenten, synchronisiert auf allen deinen Maschinen.'
 	],
 	'landing.badge': [
 		'Local-first · Multi-agent · Open source',
