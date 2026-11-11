@@ -18,6 +18,7 @@ records what shipped rather than what was written down at the time.
 
 ### Changed
 
+- encre [v0.9.4](https://github.com/FacileStudio/encre/releases/tag/v0.9.4) validates and renders artifacts (`@facile/encre`, `ENCRE_VERSION`, `github.com/FacileStudio/encre/go`). An oversized input now comes back as an invalid verdict, which the adapter already reads as a refusal; Mycelium's own 1 MiB cap still answers first. Pasted tables are normalized in the editor and a failed wasm load is no longer cached.
 - The web app keeps the page you opened through sign-in: a signed-out visit to `/pending?action=...` comes back there.
 
 ## [0.46.0] - 2026-11-11
