@@ -8,6 +8,16 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [Unreleased]
+
+### Changed
+
+- encre [v0.9.1](https://github.com/FacileStudio/encre/releases/tag/v0.9.1) validates and renders artifacts.
+
+### Fixed
+
+- The viewer's notice for an artifact encre refuses (one stored through the unvalidated sync path) now places the refusal as the API does: `line L, column C: <message>`, from encre's `validateMarkdown` on the stored body, for a document encre cannot read as for one that reads but does not validate. Line numbers count from the first line under the frontmatter, as on the server: the viewer now drops the blank lines under the frontmatter too.
+
 ## [0.45.1] - 2026-11-11
 
 ### Changed
