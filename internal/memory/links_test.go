@@ -1,40 +1,8 @@
 package memory
 
 import (
-	"os"
-	"path/filepath"
 	"testing"
 )
-
-// pageRankOf is the position of a page in a chunk-level search counting each
-// page once, where freshness_test.go's rankOf counts result rows and so returns
-// a chunk's position. A link moves whole pages, and a page with three matching
-// chunks would otherwise appear to have moved two places by holding still.
-//
-// It refuses to report a rank for a page that is not in the corpus. Returning 0
-// there is what once let a link case pass vacuously on a renamed answer.
-func pageRankOf(t *testing.T, dir, query, page string) int {
-	t.Helper()
-	if _, err := os.Stat(filepath.Join(dir, filepath.FromSlash(page))); err != nil {
-		t.Fatalf("asked for the rank of %s, which is not in the corpus", page)
-	}
-	results, err := SearchChunks(dir, query)
-	if err != nil {
-		t.Fatalf("search %q: %v", query, err)
-	}
-	seen, position := map[string]bool{}, 0
-	for _, r := range results {
-		if seen[r.Path] {
-			continue
-		}
-		seen[r.Path] = true
-		position++
-		if r.Path == filepath.FromSlash(page) {
-			return position
-		}
-	}
-	return 0
-}
 
 const (
 	answerPage = "conventions/hold-the-lock-for-the-shortest-span.md"

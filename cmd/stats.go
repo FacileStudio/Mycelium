@@ -42,7 +42,7 @@ var statsCmd = &cobra.Command{
 			return nil
 		}
 
-		color.New(color.Bold).Printf("%-24s %8s %10s %12s %12s\n", strings.Title(by), "Sessions", "Active", "Tokens in", "Tokens out")
+		color.New(color.Bold).Printf("%-24s %8s %10s %12s %12s\n", strings.ToUpper(by[:1])+by[1:], "Sessions", "Active", "Tokens in", "Tokens out")
 		var totalSec, totalIn, totalOut int64
 		totalSessions := 0
 		for _, r := range rows {
