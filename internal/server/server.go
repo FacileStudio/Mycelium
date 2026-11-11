@@ -53,6 +53,7 @@ type Server struct {
 	delegated          delegatedVerifier
 	registre           registreRuntime
 	erasure            deletionRuntime
+	mcp                *mcpRuntime
 
 	// Semantic is the vector half of memory search. Nil leaves it dormant:
 	// the server starts, search answers lexically, and nothing enqueues.
@@ -96,6 +97,9 @@ func (s *Server) Handler() *chi.Mux {
 	health.Mount(router, s.dataDirCheck())
 	router.Get("/version", s.versionHandler)
 	apiref.Mount(router, docs.Reference())
+	if s.mcp != nil {
+		s.mcp.server.Mount(router)
+	}
 
 	router.Route("/api", func(r chi.Router) {
 		r.NotFound(func(w http.ResponseWriter, _ *http.Request) {

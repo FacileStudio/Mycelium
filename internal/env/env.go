@@ -47,6 +47,11 @@ type OIDC struct {
 	// MachineAudience is the aud a delegated suite JWT must carry to be
 	// accepted as a bearer. Empty leaves the delegated path off.
 	MachineAudience string
+
+	// MCPResource is the canonical URI of the remote MCP endpoint, such as
+	// https://mycelium.facile.studio/mcp. Registre binds MCP access tokens to
+	// it. Empty leaves /mcp off.
+	MCPResource string
 }
 
 // Config is the server configuration.
@@ -121,13 +126,19 @@ func Load() (Config, error) {
 func loadOIDC() (*OIDC, error) {
 	issuer := troncenv.String("OIDC_ISSUER", "")
 	audience := troncenv.String("OIDC_MACHINE_AUDIENCE", "")
+	resource := troncenv.String("MCP_RESOURCE", "")
 	if issuer == "" {
 		if audience != "" {
 			return nil, fmt.Errorf("env: OIDC_MACHINE_AUDIENCE requires OIDC_ISSUER, otherwise there is no issuer to verify delegated tokens against")
 		}
+		if resource != "" {
+			return nil, fmt.Errorf("env: MCP_RESOURCE requires OIDC_ISSUER, otherwise there is no issuer to verify MCP tokens against")
+		}
 		return nil, nil
 	}
-	oidc := OIDC{Issuer: issuer, SuccessURL: troncenv.String("OIDC_SUCCESS_URL", ""), MachineAudience: audience}
+	oidc := OIDC{
+		Issuer: issuer, SuccessURL: troncenv.String("OIDC_SUCCESS_URL", ""), MachineAudience: audience, MCPResource: resource,
+	}
 	for _, required := range []struct {
 		key   string
 		field *string

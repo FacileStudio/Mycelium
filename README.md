@@ -38,6 +38,8 @@ and fans it out. The agents stay thin; the brain is shared.
   charts on the Memory, Machines and Sessions pages
 - Keeps permanent markdown artifacts (no HTML) that sync like the rest of the tree, written from
   the CLI, the `publish_artifact` MCP tool, or `POST /api/artifacts`
+- Serves a remote MCP endpoint at `/mcp` for any MCP client signed in through Registre: memory
+  search, pages, the index, findings and artifacts, scoped exactly like the web app
 - Authorizes new machines from the browser, with per-machine scoped tokens hashed at rest
 - Publishes sealed sessions to the Antenne as `agent_session.created` events, and subscription
   windows crossing their threshold as `usage_alert.created`
