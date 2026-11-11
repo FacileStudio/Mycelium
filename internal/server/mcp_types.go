@@ -69,7 +69,7 @@ type mcpFindingInput struct {
 	Page    string `json:"page" jsonschema:"an existing page such as projects/mycelium.md; findings are never filed on a new page"`
 	Title   string `json:"title" jsonschema:"a short heading for the finding"`
 	Source  string `json:"source" jsonschema:"where it comes from: a URL, a file path or direct observation"`
-	Body    string `json:"body" jsonschema:"two to six lines of English markdown: what was learned and how it changes what to do"`
+	Body    string `json:"body" jsonschema:"two to six lines of markdown (English in your personal tree): what was learned and how it changes what to do"`
 	Log     string `json:"log" jsonschema:"one line for log.md saying what changed"`
 	SpaceID string `json:"space_id,omitempty" jsonschema:"a space_id from mycelium_read_memory_index; empty for your personal tree"`
 }
@@ -97,6 +97,7 @@ type mcpArtifact struct {
 	Created   string `json:"created"`
 	Updated   string `json:"updated"`
 	URL       string `json:"url,omitempty" jsonschema:"the web page, for artifacts of your personal tree"`
+	Machine   string `json:"machine,omitempty" jsonschema:"the machine or app that recorded it, when known"`
 }
 
 // mcpArtifactListOutput is one page of artifacts.

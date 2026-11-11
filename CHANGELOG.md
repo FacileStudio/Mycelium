@@ -8,6 +8,13 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [Unreleased]
+
+### Fixed
+
+- The English-only rule now covers the common tree alone, the owner's wiki whose search model reads English. A page, finding or delete reason in a space takes any language: `mycelium_write_memory_page`, `mycelium_add_finding` and `mycelium_delete_memory_page` used to refuse a French member writing their own space's memory. The CLI follows the same split: `mycelium memory add`, the sync warning and `mycelium doctor`'s `wiki language` check apply only on a machine on the common tree, not one bound to a space. The REST sync path never checked the language and still does not.
+- MCP: `mycelium_list_artifacts` and `mycelium_read_artifact` answer the `machine` that recorded the artifact when it has one, so Bulle's Artifacts page shows its machine badge again. Additive: no other field changed.
+
 ## [0.47.0] - 2026-11-11
 
 ### Security

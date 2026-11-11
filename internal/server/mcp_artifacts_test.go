@@ -3,7 +3,9 @@ package server
 import (
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/FacileStudio/Mycelium/internal/artifacts"
 	"github.com/FacileStudio/Mycelium/internal/encre/encretest"
 	"github.com/FacileStudio/tronc/mcp/mcptest"
 )
@@ -70,5 +72,26 @@ func TestLineWindowContinues(t *testing.T) {
 	rest, _, after := lineWindow(text, next)
 	if total != 100 || next == 0 || after != 0 || first+rest != text {
 		t.Fatalf("windows must cover the text once: total %d next %d after %d", total, next, after)
+	}
+}
+
+func TestMCPArtifactToolsNameTheMachine(t *testing.T) {
+	f := newMCPFixture(t)
+	art, err := artifacts.AddContent(f.srv.DataDir, []byte("# Report\n\nbody"), "report.md",
+		artifacts.Request{Title: "Report", Machine: "ruche"}, time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	owner := f.session(t, ownerSubject)
+	var list mcpArtifactListOutput
+	mcptest.Decode(t, mcptest.Call(t, owner, toolListArtifacts, map[string]any{"query": "report"}), &list)
+	var read mcpArtifactReadOutput
+	mcptest.Decode(t, mcptest.Call(t, owner, toolReadArtifact, map[string]any{"id": art.ID}), &read)
+	if list.Total != 1 || list.Artifacts[0].Machine != "ruche" || read.Machine != "ruche" || read.ID != art.ID {
+		t.Fatalf("list and read must carry the machine: %+v %+v", list, read.mcpArtifact)
+	}
+	raw := mcptest.Text(mcptest.Call(t, owner, toolListArtifacts, map[string]any{"query": "report"}))
+	if !strings.Contains(raw, `"machine":"ruche"`) {
+		t.Fatalf("the wire key is machine: %s", raw)
 	}
 }
