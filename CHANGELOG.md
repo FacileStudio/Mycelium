@@ -8,6 +8,19 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [0.45.4] - 2026-11-11
+
+### Security
+
+- build: Go 1.26.11 (`go` directive, `golang:1.26.11-alpine` builder, mise pin and lock). It fixes GO-2026-6848 to GO-2026-6859 in the standard library and toolchain, which douane reported as unscored gaps and which failed the gate.
+- build(deps): `golang.org/x/net` v0.56.0 to v0.62.0 (GO-2026-6612, critical; GO-2026-6860, GO-2026-6866), which requires `golang.org/x/crypto` v0.58.0 (from v0.54.0, clearing GO-2026-6303); `x/sys` and `x/term` follow.
+- build(client): `dompurify` 3.4.14 to 3.4.17 (CVE-2026-116804, critical).
+- `douane.yml` permits GO-2026-5932 on `golang.org/x/crypto` until 2027-02-09: its fix exists only as an unreleased x/crypto commit, and Mycelium links `ssh`, `argon2`, `blake2b`, `hkdf`, `sha3` and `cast5`, never `openpgp`.
+
+### Changed
+
+- refactor: `mycelium stats` capitalises its column header without the deprecated `strings.Title` (SA1019), and the unused `pageRankOf` test helper is gone (U1000). Both failed `filet gate`.
+
 ## [0.45.3] - 2026-11-11
 
 ### Changed
