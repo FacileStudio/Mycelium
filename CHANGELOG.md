@@ -8,6 +8,13 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [Unreleased]
+
+### Fixed
+
+- Erasure: an account re-created for a subject Registre already erased (a sign-in, an MCP call or a delegated call racing the deletion notice) is erased again on the next push or poll, without a restart. porte v0.19.0 asks Mycelium whether `.users.json` holds the subject again.
+- Erasure: a browser or CLI sign-in, the first MCP call, a delegated Bulle call and a Registre snapshot all refuse a subject this instance already erased, so none of them can give it an account again. A delegated call for it answers 401, an MCP call gets an invalid token, and a sign-in lands on the login page.
+
 ## [0.47.3] - 2026-11-12
 
 ### Fixed

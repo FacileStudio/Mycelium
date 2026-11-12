@@ -13,7 +13,7 @@ const testIssuer = "https://sso.example"
 
 func mustLink(t *testing.T, srv *Server, email, name string) User {
 	t.Helper()
-	user, err := srv.linkIdentity(oidcIdentity{
+	user, err := srv.linkIdentity(context.Background(), oidcIdentity{
 		Issuer: testIssuer, Subject: "sub-" + email, Email: email, EmailVerified: true, Name: name,
 	})
 	if err != nil {
@@ -25,7 +25,7 @@ func mustLink(t *testing.T, srv *Server, email, name string) User {
 func TestLinkRefusesAnUnverifiedEmail(t *testing.T) {
 	srv := New(t.TempDir(), "pw")
 	mustLink(t, srv, "owner@facile.studio", "Owner")
-	_, err := srv.linkIdentity(oidcIdentity{Issuer: testIssuer, Subject: "squat", Email: "owner@facile.studio"})
+	_, err := srv.linkIdentity(context.Background(), oidcIdentity{Issuer: testIssuer, Subject: "squat", Email: "owner@facile.studio"})
 	if err != errUnverifiedEmail {
 		t.Fatalf("an unverified email linked: %v", err)
 	}
@@ -34,7 +34,7 @@ func TestLinkRefusesAnUnverifiedEmail(t *testing.T) {
 func TestLinkRefusesASecondSubjectOfTheSameIssuer(t *testing.T) {
 	srv := New(t.TempDir(), "pw")
 	mustLink(t, srv, "owner@facile.studio", "Owner")
-	_, err := srv.linkIdentity(oidcIdentity{
+	_, err := srv.linkIdentity(context.Background(), oidcIdentity{
 		Issuer: testIssuer, Subject: "recycled", Email: "Owner@facile.studio", EmailVerified: true,
 	})
 	if err != errSubjectConflict {
@@ -48,7 +48,7 @@ func TestLinkAdoptsAnAccountWithoutSubjectByVerifiedEmail(t *testing.T) {
 	if err := srv.saveUsers(users); err != nil {
 		t.Fatal(err)
 	}
-	user, err := srv.linkIdentity(oidcIdentity{
+	user, err := srv.linkIdentity(context.Background(), oidcIdentity{
 		Issuer: testIssuer, Subject: "s1", Email: "old@facile.studio", EmailVerified: true, Locale: "de-AT",
 	})
 	if err != nil || !user.Admin || user.Subject != "s1" || user.Locale != "de" {
@@ -61,7 +61,7 @@ func TestLinkAdoptsAnAccountWithoutSubjectByVerifiedEmail(t *testing.T) {
 
 func mustLinkSubject(t *testing.T, srv *Server, subject string) User {
 	t.Helper()
-	user, err := srv.linkIdentity(oidcIdentity{Issuer: testIssuer, Subject: subject, Email: "other@x.test"})
+	user, err := srv.linkIdentity(context.Background(), oidcIdentity{Issuer: testIssuer, Subject: subject, Email: "other@x.test"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -127,7 +127,7 @@ func TestConcurrentLinksNeverCorruptTheUsersFile(t *testing.T) {
 		go func(i int) {
 			defer wg.Done()
 			email := fmt.Sprintf("u%d@example.com", i)
-			_, err := srv.linkIdentity(oidcIdentity{Issuer: "i", Subject: email, Email: email, EmailVerified: true})
+			_, err := srv.linkIdentity(context.Background(), oidcIdentity{Issuer: "i", Subject: email, Email: email, EmailVerified: true})
 			if err != nil {
 				t.Error(err)
 			}

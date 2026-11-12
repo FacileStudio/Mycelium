@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/FacileStudio/porte"
 	"github.com/FacileStudio/porte/directory"
 )
 
@@ -43,6 +44,7 @@ func (s *Server) deletions() *directory.Deletions {
 	s.erasure.once.Do(func() {
 		receiver := &directory.Deletions{
 			OnPersonDeleted: s.erasePerson,
+			Holds:           s.holdsIdentity,
 			State:           fileDeletionState{path: filepath.Join(s.DataDir, deletionStateFile)},
 			Logger:          s.Log,
 		}
@@ -61,6 +63,31 @@ func (s *Server) RunDeletions(ctx context.Context) {
 		return
 	}
 	s.deletions().Run(ctx)
+}
+
+// holdsIdentity reports whether an account in .users.json maps to the
+// subject again, found exactly as erasePerson finds it, so the receiver
+// erases an account re-created after its notice was handled.
+func (s *Server) holdsIdentity(_ context.Context, issuer, subject string) (bool, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	_, ok := findBySubject(s.loadUsers(), issuer, subject)
+	return ok, nil
+}
+
+// refuseErased fails with porte.ErrSubjectErased when Registre erased the
+// subject and this instance handled it. Every path that creates or links an
+// account asks it first, since none of them goes through porte/oidc. An
+// unreadable ledger is an error, so nothing is created on doubt.
+func (s *Server) refuseErased(ctx context.Context, issuer, subject string) error {
+	erased, err := s.deletions().Erased(ctx, issuer, subject)
+	if err != nil {
+		return err
+	}
+	if erased {
+		return porte.ErrSubjectErased
+	}
+	return nil
 }
 
 func (s *Server) deletionsHandler(w http.ResponseWriter, r *http.Request) {

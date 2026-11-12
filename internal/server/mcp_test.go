@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -107,7 +108,7 @@ func TestMCPAddFindingFilesOnAnExistingPage(t *testing.T) {
 func TestMCPLeavesAnEmptyInstanceToItsOwner(t *testing.T) {
 	srv := New(t.TempDir(), "")
 	ident := oidcIdentity{Issuer: "https://sso.example", Subject: "s", Email: "a@example.com", EmailVerified: true}
-	if err := srv.provisionIdentity(ident); err != errMCPNoOwner || len(srv.loadUsers()) != 0 {
+	if err := srv.provisionIdentity(context.Background(), ident); err != errMCPNoOwner || len(srv.loadUsers()) != 0 {
 		t.Fatalf("an empty instance must not get its first account from MCP: %v", err)
 	}
 }
