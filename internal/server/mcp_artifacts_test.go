@@ -95,3 +95,28 @@ func TestMCPArtifactToolsNameTheMachine(t *testing.T) {
 		t.Fatalf("the wire key is machine: %s", raw)
 	}
 }
+
+func TestMCPPublishRecordsTheActingClient(t *testing.T) {
+	f := newMCPFixture(t)
+	cases := []struct {
+		actor, want string
+	}{
+		{"bulle", "bulle"},
+		{"1IdqK3bA2LWI-zuWVLqFpnIlCTVu117F", "mcp"},
+		{"", "mcp"},
+	}
+	for _, c := range cases {
+		claims := map[string]any{"aud": []string{f.resource}, "sub": ownerSubject, "scope": "mycelium.read mycelium.write"}
+		if c.actor != "" {
+			claims["act"] = map[string]any{"sub": c.actor}
+		}
+		session := mcptest.Connect(t, f.resource, f.issuer.Mint(t, claims), mcptest.ClientOptions{})
+		var out mcpPublishOutput
+		mcptest.Decode(t, mcptest.Call(t, session, toolPublishArtifact, map[string]any{"title": "From " + c.actor, "content": "# Notes"}), &out)
+		var read mcpArtifactReadOutput
+		mcptest.Decode(t, mcptest.Call(t, session, toolReadArtifact, map[string]any{"id": out.ID}), &read)
+		if read.Machine != c.want {
+			t.Errorf("actor %q: want machine %q, got %q", c.actor, c.want, read.Machine)
+		}
+	}
+}

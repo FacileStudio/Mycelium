@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"regexp"
 	"strings"
 	"time"
 
@@ -14,8 +15,12 @@ import (
 )
 
 // mcpMachine is the machine an artifact published over MCP is recorded
-// from.
+// from when no named client acts for the person.
 const mcpMachine = "mcp"
+
+// clientName is a Registre client id that is already a short name, such as
+// bulle, rather than an opaque generated id.
+var clientName = regexp.MustCompile(`^[a-z][a-z0-9-]{0,31}$`)
 
 // errMCPTitle is the refusal for a publish without a title.
 var errMCPTitle = errors.New("title is empty: an artifact is named, and replaced, by its title")
@@ -31,10 +36,15 @@ func (t *mcpTools) publishArtifact(_ context.Context, req *sdk.CallToolRequest, 
 	if refused := validateArtifactWrite(write); refused != nil {
 		return nil, mcpPublishOutput{}, errors.New(refused.Message)
 	}
-	tree, err := t.s.mcpOneTree(req, in.SpaceID)
+	id, err := t.s.mcpCaller(req)
 	if err != nil {
 		return nil, mcpPublishOutput{}, err
 	}
+	tree, err := t.s.mcpTreeFor(id, in.SpaceID)
+	if err != nil {
+		return nil, mcpPublishOutput{}, err
+	}
+	write.Machine = machineOf(id.Actor)
 	art, replaced, err := publishInTree(tree, write, time.Now())
 	if err != nil {
 		return nil, mcpPublishOutput{}, t.s.publishFailure(err)
@@ -53,9 +63,19 @@ func publishInTree(tree mcpTree, write ArtifactWriteRequest, now time.Time) (art
 		}
 	}
 	art, err := artifacts.AddContent(tree.Root, []byte(write.Content), "mcp.md", artifacts.Request{
-		Title: write.Title, Machine: mcpMachine,
+		Title: write.Title, Machine: write.Machine,
 	}, now)
 	return art, false, err
+}
+
+// machineOf names the machine an artifact is recorded from: the client
+// acting for the person on a delegated token, by its Registre client id when
+// that id is a short name, and mcp otherwise.
+func machineOf(actor string) string {
+	if clientName.MatchString(actor) {
+		return actor
+	}
+	return mcpMachine
 }
 
 // publishFailure keeps the refusals a model can fix, encre's with its line
