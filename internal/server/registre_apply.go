@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"maps"
@@ -11,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/FacileStudio/porte"
 	"github.com/FacileStudio/porte/directory"
 )
 
@@ -26,6 +28,7 @@ type snapshotApply struct {
 	spacesDirty bool
 	usersDirty  bool
 	issuer      string
+	erased      map[string]bool
 	now         string
 }
 
@@ -37,8 +40,13 @@ type snapshotApply struct {
 // non-admin accounts so their first sign-in lands on them. A linked space
 // Registre no longer lists is logged and left alone, and personal spaces are
 // never touched. Holding the write lock for the whole pass makes it atomic to
-// every handler.
-func (s *Server) applySnapshot(_ context.Context, snapshot directory.Snapshot) error {
+// every handler. A member whose subject Registre erased is left out and gets
+// no account, since a snapshot fetched before the erasure may still list them.
+func (s *Server) applySnapshot(ctx context.Context, snapshot directory.Snapshot) error {
+	erased, err := s.erasedMembers(ctx, snapshot)
+	if err != nil {
+		return err
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	spaces, err := readStore[*Space](s.spacesPath())
@@ -50,6 +58,7 @@ func (s *Server) applySnapshot(_ context.Context, snapshot directory.Snapshot) e
 		return fmt.Errorf("registre: read users: %w", err)
 	}
 	pass := newSnapshotApply(spaces, users, s.issuer())
+	pass.erased = erased
 	for _, remote := range snapshot.Spaces {
 		pass.apply(remote)
 	}
@@ -60,6 +69,27 @@ func (s *Server) applySnapshot(_ context.Context, snapshot directory.Snapshot) e
 		}
 	}
 	return s.saveApplied(pass)
+}
+
+// erasedMembers lists the snapshot's member subjects Registre erased.
+func (s *Server) erasedMembers(ctx context.Context, snapshot directory.Snapshot) (map[string]bool, error) {
+	erased := map[string]bool{}
+	for _, remote := range snapshot.Spaces {
+		for _, member := range remote.Members {
+			if member.Subject == "" || erased[member.Subject] {
+				continue
+			}
+			err := s.refuseErased(ctx, s.issuer(), member.Subject)
+			if errors.Is(err, porte.ErrSubjectErased) {
+				erased[member.Subject] = true
+				continue
+			}
+			if err != nil {
+				return nil, fmt.Errorf("registre: read the deletion ledger: %w", err)
+			}
+		}
+	}
+	return erased, nil
 }
 
 // newSnapshotApply indexes the local spaces a snapshot can land on.
@@ -131,7 +161,7 @@ func (p *snapshotApply) local(remote directory.Space) *Space {
 // stored on an account that has none yet, so a deletion notice finds it.
 func (p *snapshotApply) resolve(member directory.Member) string {
 	email := strings.TrimSpace(member.Email)
-	if email == "" {
+	if email == "" || p.erased[member.Subject] {
 		return ""
 	}
 	key, ok := findByEmail(p.users, email)

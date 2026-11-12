@@ -144,7 +144,7 @@ func (s *Server) oidcIdentity(w http.ResponseWriter, r *http.Request, rt *oidcRu
 		s.oidcFailureRedirect(w, r)
 		return User{}, "", false
 	}
-	user, err := s.linkIdentity(ident)
+	user, err := s.linkIdentity(r.Context(), ident)
 	if err != nil {
 		s.Log.Warn("oidc: login refused", slog.Any("error", err))
 		s.oidcFailureRedirect(w, r)

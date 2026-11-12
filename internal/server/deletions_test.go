@@ -1,11 +1,13 @@
 package server
 
 import (
+	"context"
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -15,6 +17,7 @@ import (
 	"time"
 
 	"github.com/FacileStudio/Mycelium/internal/env"
+	"github.com/FacileStudio/porte"
 	"github.com/FacileStudio/porte/directory"
 )
 
@@ -120,5 +123,55 @@ func assertErased(t *testing.T, srv *Server, email string) {
 	}
 	if _, err := os.Stat(filepath.Join(srv.DataDir, deletionStateFile)); err != nil {
 		t.Errorf("the handled subject was not recorded: %v", err)
+	}
+}
+
+func TestAnErasedSubjectIsRefusedAndARecreatedAccountIsErasedAgain(t *testing.T) {
+	issuer := newSuiteIssuer(t)
+	srv := New(t.TempDir(), "")
+	srv.OIDC = &env.OIDC{Issuer: issuer.url, ClientID: "mycelium", ClientSecret: "secret", RedirectURL: "https://x/cb"}
+	email := seedErasedPerson(t, srv, issuer.url)
+	h := srv.Handler()
+	if rec := postNotice(h, signNotice(t, issuer.key, issuer.url, "mycelium", erasedSubject)); rec.Code != http.StatusAccepted {
+		t.Fatalf("the notice answered %d: %s", rec.Code, rec.Body.String())
+	}
+	assertErased(t, srv, email)
+
+	ctx := context.Background()
+	ident := oidcIdentity{Issuer: issuer.url, Subject: erasedSubject, Email: email, EmailVerified: true}
+	if _, err := srv.linkIdentity(ctx, ident); !errors.Is(err, porte.ErrSubjectErased) {
+		t.Errorf("sign-in of an erased subject: %v", err)
+	}
+	if err := srv.provisionIdentity(ctx, ident); !errors.Is(err, porte.ErrSubjectErased) {
+		t.Errorf("MCP provisioning of an erased subject: %v", err)
+	}
+	if err := srv.ensureDelegatedUser(ctx, email, "", issuer.url, erasedSubject); !errors.Is(err, porte.ErrSubjectErased) {
+		t.Errorf("a delegated call of an erased subject: %v", err)
+	}
+	snapshot := directory.Snapshot{Version: 1, Spaces: []directory.Space{{ID: "r1", Name: "Team", Members: []directory.Member{
+		{Subject: "keep", Email: "keep@facile.studio", Role: directory.RoleOwner},
+		{Subject: erasedSubject, Email: email, Role: directory.RoleAdmin},
+	}}}}
+	if err := srv.applySnapshot(ctx, snapshot); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := srv.loadUsers()[email]; ok {
+		t.Error("a stale snapshot gave the erased subject an account")
+	}
+	if members := srv.loadSpaces()["shared"].Members; len(members) != 1 {
+		t.Errorf("a stale snapshot kept the erased subject a member: %v", members)
+	}
+
+	users := srv.loadUsers()
+	users[email] = User{Email: email, Issuer: issuer.url, Subject: erasedSubject}
+	if err := srv.saveUsers(users); err != nil {
+		t.Fatal(err)
+	}
+	if rec := postNotice(h, signNotice(t, issuer.key, issuer.url, "mycelium", erasedSubject)); rec.Code != http.StatusAccepted {
+		t.Fatalf("the repeated notice answered %d: %s", rec.Code, rec.Body.String())
+	}
+	users = srv.loadUsers()
+	if _, ok := users[email]; ok || len(users) != 1 || !users["keep@facile.studio"].Admin {
+		t.Fatalf("users after the repeated notice: %v", users)
 	}
 }

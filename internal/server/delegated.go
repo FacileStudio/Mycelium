@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"net/http"
 	"slices"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/FacileStudio/porte"
 	jwtpkg "github.com/FacileStudio/porte/oidc/jwt"
 	apierrors "github.com/FacileStudio/tronc/errors"
 	"github.com/FacileStudio/tronc/httpjson"
@@ -94,8 +96,23 @@ func (s *Server) authDelegated(w http.ResponseWriter, r *http.Request, raw strin
 		return Identity{}, false
 	}
 	email := strings.TrimSpace(claims.Email)
-	s.ensureDelegatedUser(email, claims.Name, s.OIDC.Issuer, claims.Subject)
+	if err := s.ensureDelegatedUser(r.Context(), email, claims.Name, s.OIDC.Issuer, claims.Subject); err != nil {
+		s.refuseDelegated(w, err)
+		return Identity{}, false
+	}
 	return Identity{Email: email, Scope: scopeDelegated, Delegated: true, Actor: claims.Actor}, true
+}
+
+// refuseDelegated answers a delegated call whose account could not be
+// ensured: unauthorized for an erased subject, internal when the deletion
+// ledger could not be read.
+func (s *Server) refuseDelegated(w http.ResponseWriter, err error) {
+	if errors.Is(err, porte.ErrSubjectErased) {
+		httpjson.WriteError(w, apierrors.Unauthorized("unauthorized"))
+		return
+	}
+	s.Log.Error("delegated auth: account check failed", slog.Any("error", err))
+	httpjson.WriteError(w, apierrors.Internal("internal error", err))
 }
 
 func delegatedRouteAllowed(r *http.Request) bool {
@@ -119,14 +136,17 @@ func delegatedScopeAllows(method string, scopes []string) bool {
 // service acting for one. The token's subject is stored with the account, so
 // Registre's deletion notice for that subject finds it, and an account with
 // no picture yet is backfilled with the subject's picture URL instead of
-// waiting for a browser sign-in.
-func (s *Server) ensureDelegatedUser(email, name, issuer, subject string) {
+// waiting for a browser sign-in. A subject Registre erased gets no account.
+func (s *Server) ensureDelegatedUser(ctx context.Context, email, name, issuer, subject string) error {
+	if err := s.refuseErased(ctx, issuer, subject); err != nil {
+		return err
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	users := s.loadUsers()
 	user, ok := users[email]
 	if ok && user.Subject != "" && user.AvatarURL != "" {
-		return
+		return nil
 	}
 	if !ok {
 		user = User{Email: email, Name: name, CreatedAt: time.Now().UTC().Format(time.RFC3339)}
@@ -141,4 +161,5 @@ func (s *Server) ensureDelegatedUser(email, name, issuer, subject string) {
 	if err := s.saveUsers(users); err != nil {
 		s.Log.Error("users: save failed", slog.Any("error", err))
 	}
+	return nil
 }

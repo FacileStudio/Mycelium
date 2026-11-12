@@ -72,7 +72,7 @@ type mcpAccounts struct{ s *Server }
 func (m mcpAccounts) Config() porte.Config { return porte.Config{Issuer: m.s.OIDC.Issuer} }
 
 // ProvisionBearer links the token's verified identity to an account.
-func (m mcpAccounts) ProvisionBearer(_ context.Context, claims jwtpkg.Claims) (porte.Identity, error) {
+func (m mcpAccounts) ProvisionBearer(ctx context.Context, claims jwtpkg.Claims) (porte.Identity, error) {
 	verified := claims.Profile.EmailVerified != nil && *claims.Profile.EmailVerified
 	if claims.Subject == "" || strings.TrimSpace(claims.Email) == "" || !verified {
 		return porte.Identity{}, fmt.Errorf("%w: the token carries no verified email", oidc.ErrProvisionRefused)
@@ -81,7 +81,7 @@ func (m mcpAccounts) ProvisionBearer(_ context.Context, claims jwtpkg.Claims) (p
 		Issuer: m.s.OIDC.Issuer, Subject: claims.Subject, Email: claims.Email, EmailVerified: true,
 		Name: claims.Name, Picture: claims.Profile.Picture, Locale: claims.Profile.Locale,
 	}
-	if err := m.s.provisionIdentity(ident); err != nil {
+	if err := m.s.provisionIdentity(ctx, ident); err != nil {
 		return porte.Identity{}, fmt.Errorf("%w: %w", oidc.ErrProvisionRefused, err)
 	}
 	return porte.Identity{UserID: subjectNumber(ident.Issuer, ident.Subject), Subject: claims.Subject}, nil
@@ -89,8 +89,13 @@ func (m mcpAccounts) ProvisionBearer(_ context.Context, claims jwtpkg.Claims) (p
 
 // provisionIdentity stores the account an MCP token resolves to, as
 // linkIdentity does for a sign-in, except that a new account is never admin
-// and an instance without accounts is left to its owner's first sign-in.
-func (s *Server) provisionIdentity(ident oidcIdentity) error {
+// and an instance without accounts is left to its owner's first sign-in. A
+// subject Registre erased is refused, so a token minted before the erasure
+// cannot bring the account back.
+func (s *Server) provisionIdentity(ctx context.Context, ident oidcIdentity) error {
+	if err := s.refuseErased(ctx, ident.Issuer, ident.Subject); err != nil {
+		return err
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	users := s.loadUsers()

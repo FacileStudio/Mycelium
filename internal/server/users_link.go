@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"strings"
@@ -102,8 +103,12 @@ func resolveIdentity(users map[string]User, ident oidcIdentity, now time.Time) (
 }
 
 // linkIdentity stores the account an OIDC login resolves to. The first user
-// ever seen becomes admin, mirroring the Nuage bootstrap convention.
-func (s *Server) linkIdentity(ident oidcIdentity) (User, error) {
+// ever seen becomes admin, mirroring the Nuage bootstrap convention. A subject
+// Registre erased is refused before anything is written.
+func (s *Server) linkIdentity(ctx context.Context, ident oidcIdentity) (User, error) {
+	if err := s.refuseErased(ctx, ident.Issuer, ident.Subject); err != nil {
+		return User{}, err
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	users := s.loadUsers()
