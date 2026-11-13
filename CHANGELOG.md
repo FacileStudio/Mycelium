@@ -8,6 +8,12 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [0.49.1] - 2026-11-13
+
+### Changed
+
+- Deploy: healthchecks run every 30 s with a 1 s start interval, so a deploy cuts over in a few seconds.
+
 ## [0.49.0] - 2026-11-13
 
 ### Added
