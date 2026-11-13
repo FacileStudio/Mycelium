@@ -8,6 +8,12 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [Unreleased]
+
+### Added
+
+- `scripts/erasure-check.sh` also counts what Vision, Plume, Echo, Sonde, Capsule, Casier, Journal, Antenne, Place and Toile still hold for an erased person. Each database opens read-only through its container's own `POSTGRES_USER`, as the others do, and Echo's is the `compose-*-postgres-1` container that holds the `echo` database.
+
 ## [0.47.5] - 2026-11-13
 
 ### Changed

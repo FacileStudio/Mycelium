@@ -39,6 +39,16 @@ glouton glouton-postgres glouton
 ardoise facile-charles-*-ardoise-postgres-1 ardoise
 prisme facile-prisme-*-db-1 prisme
 synapse facile-prisme-*-db-1 synapse
+vision facile-vision-*-vision-db-1 vision
+plume facile-plume-*-plume-db-1 plume
+echo compose-*-postgres-1:echo echo
+sonde sonde-*-db-1 sonde
+capsule capsule-db capsule
+casier casier-db casier
+journal journal-db journal
+antenne facile-antenne-*-postgres-1 antenne
+place facile-place-*-db-1 place
+toile toile-db toile
 '
 
 # The container whose name matches the pattern. A pattern with ":<db>" picks
