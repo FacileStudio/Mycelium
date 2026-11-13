@@ -8,6 +8,13 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [0.49.0] - 2026-11-13
+
+### Added
+
+- `scripts/erasure-check.sh` searches every json and jsonb column for the subject, the email and the Matrix id as a JSON string value, which covers Antenne's `pool_events.payload` and `events.envelope` and Journal's `log_entries.meta`. A text or json value that only contains the email is counted apart as a mention.
+- Each column is its own statement under `ERASURE_COLUMN_TIMEOUT` (default `60s`). A column that runs out prints `timeout` and the app's total says how many columns were not scanned, so Journal's 6.9 GB `log_entries` cannot stall the run.
+
 ## [0.48.0] - 2026-11-13
 
 ### Added
