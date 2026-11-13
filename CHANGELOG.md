@@ -8,6 +8,17 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [0.50.0] - 2026-11-14
+
+### Added
+
+- `POST /api/auth/backchannel-logout` receives Registre's OIDC back-channel logout through porte's kit. A valid logout token revokes the person's browser sessions (`session:<email>` tokens). CLI logins, machine sync tokens and named API tokens are kept on purpose so a web sign-out does not stop the sync daemon.
+- The web client follows the Registre session: a 401 sends the browser once through `/api/auth/oidc` and back to the same page, with a one-shot guard (one try per 5 minutes) before falling back to `/login`.
+
+### Fixed
+
+- `docker-compose.yml` drops the swarm-only `deploy.restart_policy` and `deploy.update_config`; the service keeps `restart: unless-stopped`.
+
 ## [0.49.2] - 2026-11-13
 
 ### Changed
