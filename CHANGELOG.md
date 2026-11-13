@@ -8,6 +8,12 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [Unreleased]
+
+### Changed
+
+- encre v0.10.0 on all three pins (`@facile/encre` `#v0.10.0`, `ENCRE_VERSION=0.10.0`, `github.com/FacileStudio/encre/go` v0.10.0). No public API change: typst 0.15.1, the wasm recovers after a trap, reactive Editor props, and control characters are stripped from titles.
+
 ## [0.47.4] - 2026-11-12
 
 ### Fixed
