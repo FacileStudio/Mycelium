@@ -56,12 +56,6 @@ services:
       retries: 3
       start_period: 60s
       start_interval: 1s
-    deploy:
-      update_config:
-        order: start-first
-        parallelism: 1
-      restart_policy:
-        condition: any
 volumes:
   mycelium-data: null
 networks:
