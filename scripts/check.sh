@@ -89,6 +89,7 @@ if [ "$mode" = "all" ]; then
     # failures are the more specific: a canonicaliser that has stopped agreeing
     # with the server's alphabet says so in one line.
     bun src/lib/deviceCode.check.ts
+    bun src/lib/followRegistre.check.ts
     bun run check
   ) || status=1
 fi

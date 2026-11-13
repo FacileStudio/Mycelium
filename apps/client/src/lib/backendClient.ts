@@ -1,9 +1,17 @@
 import { getActiveSpaceId } from './space.svelte';
 import { t } from './i18n/index.svelte';
+import { followRegistreSession } from './followRegistre';
 
 const BASE = '/api';
 
 export const TOKEN_KEY = 'mycelium.token';
+
+/**
+ * A 401 on any other call means the session is gone, for example revoked by
+ * Registre's back-channel logout, so the browser follows Registre's session.
+ * Signing out must not: a dead token would sign the person straight back in.
+ */
+const SIGN_OUT_PATH = '/auth/logout';
 
 export function spaceQuery(sep: '?' | '&' = '?'): string {
 	const id = getActiveSpaceId();
@@ -65,6 +73,7 @@ export async function request<T>(method: string, path: string, body?: unknown): 
 		const text = await res.text();
 		if (res.status === 401 && typeof window !== 'undefined') {
 			localStorage.removeItem(TOKEN_KEY);
+			if (token && path !== SIGN_OUT_PATH) followRegistreSession(location.pathname + location.search);
 		}
 		throw new ApiError(errorMessage(text.trim(), res.status), res.status);
 	}

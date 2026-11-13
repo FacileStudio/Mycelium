@@ -17,6 +17,7 @@
 	import { setContext } from 'svelte';
 	import { rememberLocale, setSessionLocale, t } from '$lib/i18n/index.svelte';
 	import { setTheme, theme } from '$lib/theme.svelte';
+	import { clearSsoAttempt, followRegistreSession } from '$lib/followRegistre';
 
 	let { children } = $props();
 	let status: MyceliumStatus | null = $state(null);
@@ -50,21 +51,28 @@
 	$effect(() => {
 		const token = localStorage.getItem(TOKEN_KEY);
 		if (!token) {
-			goto('/login?redirect=' + encodeURIComponent(page.url.pathname + page.url.search));
+			signIn();
 			return;
 		}
 
 		initSession();
 	});
 
+	function signIn() {
+		const here = page.url.pathname + page.url.search;
+		if (followRegistreSession(here)) return;
+		goto('/login?redirect=' + encodeURIComponent(here));
+	}
+
 	async function initSession() {
 		try {
 			me = await backend.authMe();
 			setSessionLocale(me.locale ?? null);
 		} catch {
-			goto('/login?redirect=' + encodeURIComponent(page.url.pathname + page.url.search));
+			signIn();
 			return;
 		}
+		clearSsoAttempt();
 
 		const spaces = await loadSpaces();
 		setSpaces(spaces);
