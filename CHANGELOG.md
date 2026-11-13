@@ -8,6 +8,12 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [0.49.2] - 2026-11-13
+
+### Changed
+
+- Dashboard: `@facile/muse` moves from v0.16.1 to v0.21.0. Icon-only controls inside muse components (sidebar, user menu, modals, landing header and footer) show their label in a muse tooltip on hover and keyboard focus.
+
 ## [0.49.1] - 2026-11-13
 
 ### Changed
