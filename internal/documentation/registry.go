@@ -39,6 +39,7 @@ var Registry = Response{Modules: []Module{
 			{Method: "POST", Path: "/auth/oidc/exchange", Summary: "Exchange a CLI login code for a token", Description: "The code is single-use and valid for sixty seconds.", RequestBody: ExchangeRequest{}, ResponseBody: AuthResponse{}, Errors: []Error{badRequest, unauthenticated, internalError}},
 			{Method: "GET", Path: "/auth/me", Summary: "Return the caller's identity", Auth: "bearer", ResponseBody: MeResponse{}, Errors: anyToken},
 			{Method: "POST", Path: "/auth/logout", Summary: "Revoke the caller's session", Auth: "bearer", Status: http.StatusNoContent, Errors: anyToken},
+			{Method: "POST", Path: "/auth/backchannel-logout", Summary: "Receive Registre's back-channel logout", Description: "OpenID Connect Back-Channel Logout 1.0, served by porte's OIDC kit. Unauthenticated by session: the form-encoded field logout_token is a JWT that porte verifies against the issuer's keys (aud = OIDC_CLIENT_ID, the logout event, no nonce). It revokes every browser session (session:<email>) of the subject's account; CLI logins, machine and API tokens stay. An unknown subject answers 200 too. 404 when SSO is off, 503 while the issuer is unreachable.", RequestBody: BackchannelLogoutRequest{}, ResponseBody: LogoutResponse{}, Errors: []Error{badRequest, unauthenticated, {Status: 503, Code: "unavailable", Description: "The identity provider could not be reached for its keys."}, internalError}},
 		},
 	},
 	{

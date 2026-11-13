@@ -44,6 +44,17 @@ type AuthResponse struct {
 	Token string `json:"token"`
 }
 
+// BackchannelLogoutRequest is the application/x-www-form-urlencoded body an
+// identity provider posts: one field holding the signed logout token.
+type BackchannelLogoutRequest struct {
+	LogoutToken string `json:"logout_token"`
+}
+
+// LogoutResponse is porte's answer to a back-channel logout.
+type LogoutResponse struct {
+	LoggedOut bool `json:"logged_out"`
+}
+
 type ExchangeRequest struct {
 	Code string `json:"code"`
 }
