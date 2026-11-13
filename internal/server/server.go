@@ -13,6 +13,7 @@ import (
 
 	docs "github.com/FacileStudio/Mycelium/internal/documentation"
 	"github.com/FacileStudio/Mycelium/internal/env"
+	"github.com/FacileStudio/porte"
 	apierrors "github.com/FacileStudio/tronc/errors"
 
 	"github.com/FacileStudio/tronc/apiref"
@@ -53,6 +54,7 @@ type Server struct {
 	delegated          delegatedVerifier
 	registre           registreRuntime
 	erasure            deletionRuntime
+	backchannel        backchannelRuntime
 	mcp                *mcpRuntime
 
 	// Semantic is the vector half of memory search. Nil leaves it dormant:
@@ -134,6 +136,7 @@ func (s *Server) mountAuthRoutes(r chi.Router) {
 	r.Post("/auth/oidc/exchange", s.oidcExchange)
 	r.Get("/auth/me", s.auth(false, s.authMe))
 	r.Post("/auth/logout", s.auth(false, s.logout))
+	r.Post(porte.RouteBackchannelLogout, s.backchannelLogout)
 
 	r.Post("/auth/device/start", s.deviceStart)
 	r.Post("/auth/device/poll", s.devicePoll)

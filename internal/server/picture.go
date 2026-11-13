@@ -25,3 +25,25 @@ func subjectPictureURL(issuer, subject string) string {
 	}
 	return strings.TrimRight(issuer, "/") + "/avatars/" + url.PathEscape(subject)
 }
+
+// storedSubject is the issuer's subject a .users.json record belongs to, read
+// the two ways findBySubject matches it: a stored subject, else the picture
+// URL Registre publishes for that subject. It answers "" for neither.
+func storedSubject(issuer string, user User) string {
+	if user.Subject != "" {
+		if user.Issuer != issuer {
+			return ""
+		}
+		return user.Subject
+	}
+	prefix := subjectPictureURL(issuer, "x")
+	escaped, ok := strings.CutPrefix(user.AvatarURL, strings.TrimSuffix(prefix, "x"))
+	if !ok || escaped == "" {
+		return ""
+	}
+	subject, err := url.PathUnescape(escaped)
+	if err != nil || subjectPictureURL(issuer, subject) != user.AvatarURL {
+		return ""
+	}
+	return subject
+}
