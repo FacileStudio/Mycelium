@@ -70,7 +70,7 @@ func match(art Artifact, tree Tree, words []string) (Hit, bool) {
 	if err != nil {
 		return Hit{}, false
 	}
-	body := []rune(strings.Join(strings.Fields(stripFrontmatter(string(raw))), " "))
+	body := []rune(strings.Join(strings.Fields(plainText(stripFrontmatter(string(raw)))), " "))
 	lowerBody := lowerRunes(body)
 	title := strings.ToLower(art.Title)
 	hit := Hit{Artifact: art, SpaceID: tree.SpaceID, SpaceName: tree.SpaceName, Match: MatchTitle}
