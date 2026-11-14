@@ -327,6 +327,26 @@ type ArtifactSummary struct {
 	Updated string `json:"updated"`
 }
 
+// ArtifactSearchHit is one artifact a search found.
+type ArtifactSearchHit struct {
+	ID        string `json:"id"`
+	Title     string `json:"title"`
+	Machine   string `json:"machine"`
+	Created   string `json:"created"`
+	Updated   string `json:"updated"`
+	SpaceID   string `json:"space_id,omitempty"`
+	SpaceName string `json:"space_name,omitempty"`
+	Match     string `json:"match"`
+	Snippet   string `json:"snippet"`
+}
+
+// ArtifactSearchResponse is one page of artifact search hits.
+type ArtifactSearchResponse struct {
+	Results    []ArtifactSearchHit `json:"results"`
+	Total      int                 `json:"total"`
+	NextCursor string              `json:"next_cursor,omitempty"`
+}
+
 // ArtifactDetail is one artifact with its file content, frontmatter included.
 type ArtifactDetail struct {
 	ID      string `json:"id"`

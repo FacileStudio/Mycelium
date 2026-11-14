@@ -116,7 +116,7 @@ email.
 | Method | Path | Auth | Query | Returns |
 |---|---|---|---|---|
 | GET | `/api/status` | any | `space_id` | `{machine, rules, skills}` |
-| GET | `/api/memory/search` | any | `q`, `space_id` | `[{path, line, content}]` |
+| POST | `/api/memory/search` | any | body `{query, space_id, limit}` | `{results: [{path, heading, line, score, excerpt, date}]}`, BM25 over the markdown files |
 | GET | `/api/memory/index` | any | `space_id` | `index.md` as `text/plain` |
 
 An empty `q` returns an empty array rather than every line in the tree.
@@ -221,6 +221,7 @@ permanent: nothing deletes one except `DELETE`. `{id}` is a bare name with no sl
 | Method | Path | Auth | Query | Body | Returns |
 |---|---|---|---|---|---|
 | GET | `/api/artifacts` | any | `space_id` or `all=true` | — | `[ArtifactSummary]`, newest first |
+| GET | `/api/artifacts/search` | any | `q`, `space_id` or `all=true`, `cursor`, `limit` | — | `{results: [ArtifactSummary + match, snippet], total, next_cursor}` |
 | POST | `/api/artifacts` | any | `space_id` | `{title, content, machine?}` | 201 `ArtifactDetail` |
 | GET | `/api/artifacts/{id}` | any | `space_id` | — | `ArtifactDetail` |
 | PUT | `/api/artifacts/{id}` | any | `space_id` | `{title?, content}` | 200 `ArtifactDetail` |
@@ -246,6 +247,15 @@ body, renames when a title is given, and sets `updated`. It needs the exact id. 
 the caller may use it, then every space they are a member of. Each summary there also carries
 `space_id` and `space_name`; an absent `space_id` is the common tree.
 
+`GET /api/artifacts/search?q=` finds artifacts whose title or body (frontmatter excluded) holds
+every word of `q`, case-insensitive, 1 to 200 characters. It searches the tree `space_id` names,
+every readable tree with `all=true` (the same trees as the listing), or the caller's default
+tree. Artifacts whose title holds every word come first (`match: "title"`), then the rest
+(`match: "content"`), each newest `updated` first. `snippet` is about 160 characters of the body
+around the first word found. `limit` is 1 to 50, default 20; pass `next_cursor` back as `cursor`.
+An empty or oversize `q` and a bad cursor answer `400`, a foreign `space_id` `403`. Delegated
+tokens do not reach this route: Bulle searches through `mycelium_search_artifacts`.
+
 A delegated suite token (Bulle acting for a user) reaches the common tree on the artifact
 routes only, and only when its user is an admin: for an admin the common tree is their
 personal tree. `common_artifacts` on `GET /api/spaces` says whether the caller may. Rules,
@@ -270,9 +280,10 @@ else reaches only their spaces. Delegated restrictions do not apply: the identit
 | Tool | Scope | Does |
 |---|---|---|
 | `mycelium_read_memory_index` | read | Lists the trees (`space_id`, name, role) and reads one tree's `index.md` |
-| `mycelium_search_memory` | read | Hybrid search, as `POST /api/memory/search`, over one tree or all of them |
+| `mycelium_search_memory` | read | BM25 search, as `POST /api/memory/search`, over one tree or all of them |
 | `mycelium_read_memory_page` | read | One wiki page, in windows of about 60 kB (`from_line`, `next_line`) |
 | `mycelium_list_artifacts` | read | Artifacts, newest first, 50 a page, filtered by title words |
+| `mycelium_search_artifacts` | read | As `GET /api/artifacts/search`: title and content, 20 a page, with `match` and `snippet` |
 | `mycelium_read_artifact` | read | One artifact's stored markdown, in windows |
 | `mycelium_add_finding` | write | `mycelium memory add` on an existing page: finding, `updated:`, index pointer, log line |
 | `mycelium_publish_artifact` | write | Records an artifact, or replaces the tree's artifact of the same title |
