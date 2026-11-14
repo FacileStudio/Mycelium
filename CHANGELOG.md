@@ -10,6 +10,13 @@ records what shipped rather than what was written down at the time.
 
 ## [Unreleased]
 
+## [0.54.1] - 2026-11-14
+
+### Fixed
+
+- Artifact search snippets read as plain text: heading, quote and list markers, task boxes, table pipes and separator rows, code fences and inline emphasis, code and highlight marks are dropped before matching and excerpting, so a card shows `Notes The word …`, not `# Notes The word …`.
+- `scripts/check.sh` runs the client's `bun run test` (message catalogue, encre and artifact search checks), so the gate and the pre-push hook cover them.
+
 ## [0.54.0] - 2026-11-14
 
 ### Added

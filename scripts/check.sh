@@ -90,6 +90,7 @@ if [ "$mode" = "all" ]; then
     # with the server's alphabet says so in one line.
     bun src/lib/deviceCode.check.ts
     bun src/lib/followRegistre.check.ts
+    bun run test
     bun run check
   ) || status=1
 fi

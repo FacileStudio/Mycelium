@@ -83,3 +83,15 @@ func TestSearchEmptyQueryFindsNothing(t *testing.T) {
 		t.Fatalf("hits = %+v", hits)
 	}
 }
+
+func TestSearchSnippetHidesMarkdownSyntax(t *testing.T) {
+	dir := t.TempDir()
+	addFixture(t, dir, "# Notes\n\n> **Wasm** builds `fast`\n\n| a | b |\n|---|---|\n| wasm | ==ok== |\n\n- [ ] ship wasm\n1. wasm again\n", time.Now())
+	hits, err := Search([]Tree{{Root: dir}}, "wasm")
+	if err != nil || len(hits) != 1 {
+		t.Fatalf("hits %v err %v", hits, err)
+	}
+	if got, want := hits[0].Snippet, "Notes Wasm builds fast a b wasm ok ship wasm wasm again"; got != want {
+		t.Fatalf("snippet %q, want %q", got, want)
+	}
+}
