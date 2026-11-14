@@ -85,8 +85,14 @@ func TestSystemdContent(t *testing.T) {
 	if !strings.Contains(ServiceContent("/x/mycelium"), "ExecStart=/x/mycelium daemon run") {
 		t.Error("service missing ExecStart")
 	}
-	if !strings.Contains(TimerContent(), fmt.Sprintf("OnUnitActiveSec=%dsec", IntervalSeconds)) {
-		t.Error("timer missing interval")
+	timer := TimerContent()
+	for _, want := range []string{"OnBootSec=1min", "OnActiveSec=10sec", fmt.Sprintf("OnUnitInactiveSec=%dsec", IntervalSeconds), "Persistent=true"} {
+		if !strings.Contains(timer, want) {
+			t.Errorf("timer missing %s", want)
+		}
+	}
+	if strings.Contains(timer, "OnUnitActiveSec") {
+		t.Error("OnUnitActiveSec stops re-arming after a failed run")
 	}
 }
 
@@ -169,5 +175,26 @@ func TestAppendDaemonLogTimestampsAndAppends(t *testing.T) {
 	lines := strings.Split(strings.TrimSpace(string(data)), "\n")
 	if len(lines) != 2 || !strings.HasPrefix(lines[0], "2026-08-26T12:00:00Z tick 7") {
 		t.Fatalf("unexpected log lines: %q", lines)
+	}
+}
+
+func TestTimerHealth(t *testing.T) {
+	now := time.Date(2026, 11, 14, 12, 13, 7, 0, time.Local)
+	recent := now.Add(-18 * time.Second).Format(systemdTimeForm)
+	old := now.Add(-time.Hour).Format(systemdTimeForm)
+	cases := []struct {
+		name string
+		show string
+		ok   bool
+	}{
+		{"monotonic next, recent run", "NextElapseUSecRealtime=\nNextElapseUSecMonotonic=6month 3w\nLastTriggerUSec=" + recent, true},
+		{"no next run", "NextElapseUSecRealtime=\nNextElapseUSecMonotonic=0\nLastTriggerUSec=" + recent, false},
+		{"stale last run", "NextElapseUSecRealtime=" + recent + "\nNextElapseUSecMonotonic=\nLastTriggerUSec=" + old, false},
+		{"never ran yet", "NextElapseUSecMonotonic=10s\nLastTriggerUSec=n/a", true},
+	}
+	for _, tc := range cases {
+		if msg, ok := timerHealth(tc.show, now); ok != tc.ok {
+			t.Errorf("%s: ok = %v (%s), want %v", tc.name, ok, msg, tc.ok)
+		}
 	}
 }

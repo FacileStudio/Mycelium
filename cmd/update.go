@@ -3,6 +3,10 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"os"
+	"os/exec"
+
+	"github.com/FacileStudio/Mycelium/internal/daemon"
 
 	"github.com/FacileStudio/Mycelium/internal/selfupdate"
 	"github.com/fatih/color"
@@ -48,7 +52,7 @@ var updateCmd = &cobra.Command{
 			return err
 		}
 		color.Green("Updated mycelium %s -> %s", version, newVersion)
-		return nil
+		return refreshDaemon()
 	},
 }
 
@@ -56,4 +60,23 @@ func init() {
 	var updateCheckOnly bool
 	updateCmd.Flags().BoolVar(&updateCheckOnly, "check", false, "Report whether an update is available without installing")
 	rootCmd.AddCommand(updateCmd)
+}
+
+// refreshDaemon rewrites the background service units with the new binary,
+// so a fix to the units reaches every machine that updates. The running
+// process is the old version, hence the new binary does the rewrite.
+func refreshDaemon() error {
+	if !daemon.Installed() {
+		return nil
+	}
+	self, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	out, err := exec.Command(self, "daemon", "install").CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("updated, but reinstalling the background sync failed: %v: %s", err, out)
+	}
+	fmt.Println("Background sync units refreshed.")
+	return nil
 }

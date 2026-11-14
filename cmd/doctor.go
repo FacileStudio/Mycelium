@@ -170,10 +170,7 @@ var doctorCmd = &cobra.Command{
 		})
 
 		check("daemon", func() (string, bool) {
-			if daemon.Installed() {
-				return "installed", true
-			}
-			return "not installed — run 'mycelium daemon install'", false
+			return daemon.Health(time.Now())
 		})
 
 		check("conflicts", func() (string, bool) {
