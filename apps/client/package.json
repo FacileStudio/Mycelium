@@ -23,7 +23,7 @@
 		"vite": "^7.3.8"
 	},
 	"dependencies": {
-		"@facile/encre": "github:FacileStudio/encre#v0.10.0",
+		"@facile/encre": "github:FacileStudio/encre#v0.12.1",
 		"@facile/journal": "github:FacileStudio/Journal#ts",
 		"@facile/muse": "github:FacileStudio/muse#v0.23.0",
 		"@facile/mise-en-scene": "github:FacileStudio/mise-en-scene#v0.2.1",
