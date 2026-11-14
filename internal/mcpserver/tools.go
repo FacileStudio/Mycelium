@@ -95,7 +95,7 @@ func publishArtifactTool() *mcp.Tool {
 			"so recording the same title replaces it rather than piling up copies.",
 		Annotations: &mcp.ToolAnnotations{
 			ReadOnlyHint:    false,
-			DestructiveHint: hint(false),
+			DestructiveHint: hint(true),
 			IdempotentHint:  true,
 			OpenWorldHint:   hint(false),
 		},
@@ -103,13 +103,13 @@ func publishArtifactTool() *mcp.Tool {
 }
 
 // flowToTool converts a recorded flow into an MCP tool that runs it. The
-// wrapper is thin: the name is "run_flow_<name>" (snake_case), the description
-// comes from the flow file, and the annotations match the generic run_flow
-// tool because a flow's steps are arbitrary shell commands.
+// wrapper is thin: the name is "run_flow_<name>" (snake_case) and the
+// annotations match the generic run_flow tool because a flow's steps are
+// arbitrary shell commands. New only calls it for a flow a human pinned, so
+// the name and description it copies are text that human approved.
 func flowToTool(f *flow.Flow) *mcp.Tool {
-	name := "run_flow_" + strings.ReplaceAll(f.Name, "-", "_")
 	return &mcp.Tool{
-		Name:        name,
+		Name:        "run_flow_" + strings.ReplaceAll(f.Name, "-", "_"),
 		Title:       "Run flow: " + f.Name,
 		Description: f.Description,
 		Annotations: runFlowTool().Annotations,

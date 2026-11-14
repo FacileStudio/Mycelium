@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"crypto/sha256"
 	"encoding/json"
 	"path/filepath"
 	"strconv"
@@ -37,13 +36,6 @@ type pageTarget struct {
 	SpaceID string `json:"space_id"`
 	Path    string `json:"path"`
 	Log     string `json:"log"`
-}
-
-// mcpStateKey derives the confirmation key from the OIDC client secret,
-// namespaced so it collides with no other use of the secret.
-func mcpStateKey(secret string) []byte {
-	sum := sha256.Sum256([]byte("mycelium-mcp-state:" + secret))
-	return sum[:]
 }
 
 // mcpKinds are the sensitive actions. The digest is the page's bytes, so an

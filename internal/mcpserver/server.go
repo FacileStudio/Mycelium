@@ -28,7 +28,11 @@ import (
 const serverName = "mycelium"
 
 // New builds the server with its four tools bound to in-process calls into
-// internal/memory and internal/flow.
+// internal/memory and internal/flow, plus one run_flow_<name> tool per flow a
+// human pinned on this machine. An unpinned flow gets no tool of its own: its
+// file name and description are someone else's text, and a tool name, title
+// or description is read as instructions. list_flows and run_flow still reach
+// it, and run_flow refuses it.
 //
 // In process rather than shelling out to the mycelium binary: a subprocess puts
 // exit codes, coloured output and a second config load between the model and
@@ -43,7 +47,9 @@ func New(version string) *mcp.Server {
 
 	flows, _ := flow.List()
 	for _, f := range flows {
-		mcp.AddTool(s, flowToTool(f), runFlowByName(f.Name))
+		if trusted, err := flow.IsTrusted(f); err == nil && trusted {
+			mcp.AddTool(s, flowToTool(f), runFlowByName(f.Name))
+		}
 	}
 	return s
 }

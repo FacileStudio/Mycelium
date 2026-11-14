@@ -37,6 +37,10 @@ func (s *Server) deviceStart(w http.ResponseWriter, r *http.Request) {
 	if machine == "" {
 		machine = "device"
 	}
+	if reservedTokenName(machine) {
+		httpjson.WriteError(w, apierrors.Invalid(errReservedName))
+		return
+	}
 
 	dr, err := s.devices.create(machine, clientIP(r), time.Now().UTC())
 	if err != nil {

@@ -68,7 +68,7 @@ func resultText(res *mcp.CallToolResult) string {
 	return b.String()
 }
 
-// Five built-in tools plus one tool per recorded flow. The spec asks for
+// The built-in tools plus one tool per pinned flow. The spec asks for
 // stable ordering so a client can cache the list, and a new built-in tool
 // appearing here should be a decision somebody made rather than a surprise.
 func TestToolsListReportsAllBuiltInAndFlowTools(t *testing.T) {
@@ -101,7 +101,7 @@ func TestEveryToolSetsAllFourAnnotationsExplicitly(t *testing.T) {
 		"search_memory":    {ReadOnlyHint: true, DestructiveHint: hint(false), IdempotentHint: true, OpenWorldHint: hint(false)},
 		"list_flows":       {ReadOnlyHint: true, DestructiveHint: hint(false), IdempotentHint: true, OpenWorldHint: hint(false)},
 		"run_flow":         {ReadOnlyHint: false, DestructiveHint: hint(true), IdempotentHint: false, OpenWorldHint: hint(true)},
-		"publish_artifact": {ReadOnlyHint: false, DestructiveHint: hint(false), IdempotentHint: true, OpenWorldHint: hint(false)},
+		"publish_artifact": {ReadOnlyHint: false, DestructiveHint: hint(true), IdempotentHint: true, OpenWorldHint: hint(false)},
 	}
 	flowAnnotations := &mcp.ToolAnnotations{ReadOnlyHint: false, DestructiveHint: hint(true), IdempotentHint: false, OpenWorldHint: hint(true)}
 	for _, tool := range listTools(t) {

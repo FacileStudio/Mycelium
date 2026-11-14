@@ -8,6 +8,21 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [Unreleased]
+
+### Security
+
+- Only the person's own browser session can confirm or dismiss an MCP action: a `session:<email>` token that also carries an expiry. API and machine tokens never expire, so one named `session:...` no longer passes.
+- `POST /api/tokens`, a password login's `machine` and a device authorization's `machine` refuse names a login owns (`session`, `session:...`, `cli:...`) with 400.
+- The local MCP server registers a `run_flow_<name>` tool only for a flow pinned with `mycelium flow trust`. An unpinned or changed flow gets no tool of its own, and `list_flows` shows `not pinned` instead of its description; `run_flow` still finds it and refuses it.
+- `publish_artifact` (local stdio) and `mycelium_publish_artifact` (remote MCP) are marked destructive: they replace the artifact with the same title.
+
+### Changed
+
+- The confirm page API (`/api/mcp/pending`) is tronc's `PendingPage.Mount` behind Mycelium's auth; the hand-built list, confirm and dismiss handlers are gone. A confirm still answers `deleted`, and the API docs list the `truncated` field.
+- The MCP state key comes from tronc `mcp.StateKey("mycelium", secret)`, byte for byte the old key, so pending questions still verify.
+- tronc v0.22.1 to v0.23.0, porte v0.19.0 to v0.20.0, porte/mcpauth v0.2.1 to v0.3.0, porte/forfait v0.1.1 to v0.1.3. CI, filet and release workflows pin Go 1.26.11 like go.mod, mise and the Dockerfile.
+
 ## [0.50.0] - 2026-11-14
 
 ### Added

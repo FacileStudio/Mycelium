@@ -195,7 +195,7 @@ func (s *Server) oidcExchange(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := s.mintNamedSession("cli:"+code.Email, code.Email, code.Scope)
+	token, err := s.mintNamedSession(cliSessionPrefix+code.Email, code.Email, code.Scope)
 	if err != nil {
 		s.Log.Error("oidc: session mint failed", slog.Any("error", err))
 		httpjson.WriteError(w, apierrors.Internal("internal error", err))
@@ -207,7 +207,7 @@ func (s *Server) oidcExchange(w http.ResponseWriter, r *http.Request) {
 // mintSessionToken issues an expiring browser session bound to a user; the
 // token name is keyed by email so re-login rotates instead of accumulating.
 func (s *Server) mintSessionToken(email, scope string) (string, error) {
-	return s.mintNamedSession("session:"+email, email, scope)
+	return s.mintNamedSession(browserSessionPrefix+email, email, scope)
 }
 
 func (s *Server) mintNamedSession(name, email, scope string) (string, error) {
