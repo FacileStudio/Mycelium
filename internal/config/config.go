@@ -26,8 +26,7 @@ type MyceliumConfig struct {
 // stage. Enabled is a pointer so an absent key keeps the default (on) while an
 // explicit false turns the stage off.
 type ConsolidateConfig struct {
-	JudgeModel string `yaml:"judge_model,omitempty"`
-	Enabled    *bool  `yaml:"enabled,omitempty"`
+	Enabled *bool `yaml:"enabled,omitempty"`
 }
 
 // The environment overrides for the server session. Precedence is flag, then
@@ -56,12 +55,6 @@ func (c *MyceliumConfig) SpaceID() string {
 		return ""
 	}
 	return c.Space
-}
-
-// JudgeModel returns the local Ollama model used by the consolidation judge;
-// empty means fallback mode, where every heuristic candidate is accepted.
-func (c *MyceliumConfig) JudgeModel() string {
-	return strings.TrimSpace(c.Consolidate.JudgeModel)
 }
 
 // ConsolidateEnabled reports whether the daemon should run the consolidation

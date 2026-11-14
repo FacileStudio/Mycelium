@@ -109,8 +109,8 @@ func refreshUsage(self string) {
 }
 
 // runConsolidation executes the episodic-to-semantic stage once per tick and
-// records what happened in the daemon log. It never fails the tick: a broken
-// Ollama or a rejected candidate is an observation, not a sync outage, so its
+// records what happened in the daemon log. It never fails the tick: a
+// rejected candidate is an observation, not a sync outage, so its
 // outcome lives in daemon.log (and in doctor's consolidate line) rather than
 // in Run's error.
 func runConsolidation(now time.Time) {
@@ -132,8 +132,7 @@ func runConsolidation(now time.Time) {
 		appendDaemonLog(now, "consolidate skipped: %s", res.Skipped)
 		return
 	}
-	appendDaemonLog(now, "consolidate created=%d superseded=%d noop=%d dropped=%d",
-		res.Created, res.Superseded, res.Noop, res.Dropped)
+	appendDaemonLog(now, "consolidate created=%d noop=%d dropped=%d", res.Created, res.Noop, res.Dropped)
 	for _, reason := range res.Reasons {
 		appendDaemonLog(now, "consolidate dropped: %s", reason)
 	}

@@ -1,7 +1,6 @@
 package consolidate
 
 import (
-	"context"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,10 +9,8 @@ import (
 	"github.com/FacileStudio/Mycelium/internal/memory"
 )
 
-// Similarity thresholds for the NOOP/CREATE/SUPERSEDE decision. Word overlap
-// cannot separate "related" from "same claim", so SUPERSEDE uses the
-// near-duplicate bar and leans entirely on the judge plus the date check for
-// safety.
+// Similarity thresholds for the NOOP/CREATE decision: a near-duplicate is
+// already written down, anything below it is new.
 const (
 	LexicalNearDuplicate = 0.60
 	weakMatchSimilarity  = 0.20
@@ -25,15 +22,12 @@ type Outcome int
 const (
 	OutcomeNoop Outcome = iota
 	OutcomeCreate
-	OutcomeSupersede
 )
 
 func (o Outcome) String() string {
 	switch o {
 	case OutcomeCreate:
 		return "create"
-	case OutcomeSupersede:
-		return "supersede"
 	default:
 		return "noop"
 	}
@@ -52,7 +46,7 @@ type Match struct {
 }
 
 // Decision is the consolidation outcome for one candidate. Match is nil below
-// weakMatchSimilarity and always set for NOOP and SUPERSEDE.
+// weakMatchSimilarity and always set for NOOP.
 type Decision struct {
 	Outcome    Outcome
 	Similarity float64
@@ -63,10 +57,11 @@ type Decision struct {
 // overlap.
 type Deduper struct {
 	MemoryPath string
-	Judge      *Judge
 }
 
-func (d *Deduper) Decide(ctx context.Context, c Candidate) (Decision, error) {
+// Decide compares a candidate with every wiki block: a near-duplicate is a
+// NOOP, anything else is created. Nothing is ever struck automatically.
+func (d *Deduper) Decide(c Candidate) (Decision, error) {
 	chunks, err := d.chunks()
 	if err != nil {
 		return Decision{}, err
@@ -88,18 +83,6 @@ func (d *Deduper) Decide(ctx context.Context, c Candidate) (Decision, error) {
 
 	dec.Match = matchOf(chunks[best], sims[best])
 	dec.Outcome = OutcomeNoop
-	if d.Judge == nil {
-		return dec, nil
-	}
-	judged := d.Judge.Compare(ctx, chunks[best].Text(), c.Text)
-	if judged.Verdict != VerdictAccept {
-		return dec, nil
-	}
-	episodeTime, ok := earliestTimestamp(c)
-	if !ok || !chunks[best].Date().Before(episodeTime) {
-		return dec, nil
-	}
-	dec.Outcome = OutcomeSupersede
 	return dec, nil
 }
 
@@ -177,30 +160,6 @@ func argmax(sims []float64) int {
 		}
 	}
 	return best
-}
-
-// earliestTimestamp reads the oldest episode timestamp out of a candidate's
-// refs, which heuristic.go writes as "<agent>@<RFC3339>". A candidate whose
-// refs carry no parsable timestamp reports false, and the caller must treat
-// SUPERSEDE as unavailable: striking a claim needs proof the correction is
-// newer, not hope.
-func earliestTimestamp(c Candidate) (time.Time, bool) {
-	var best time.Time
-	found := false
-	for _, ref := range c.EpisodeRefs {
-		at := strings.LastIndex(ref, "@")
-		if at < 0 {
-			continue
-		}
-		ts, err := time.Parse(time.RFC3339Nano, ref[at+1:])
-		if err != nil {
-			continue
-		}
-		if !found || ts.Before(best) {
-			best, found = ts, true
-		}
-	}
-	return best, found
 }
 
 // lexicalSimilarity is an overlap coefficient of the two texts' lowercase word
