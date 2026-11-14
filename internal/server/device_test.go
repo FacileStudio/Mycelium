@@ -156,3 +156,34 @@ func TestDeviceDeny(t *testing.T) {
 		t.Fatalf("denied poll should be 403, got %d", code)
 	}
 }
+
+// TestReservedMachineNamesAreRefused checks that neither an unauthenticated
+// device start nor a password login can name its token like a login session,
+// whatever the case or surrounding space, and that a pending request stored
+// under such a name before the check existed is refused at approval.
+func TestReservedMachineNamesAreRefused(t *testing.T) {
+	srv := New(t.TempDir(), "secret")
+	ts := httptest.NewServer(srv.Handler())
+	t.Cleanup(ts.Close)
+	_, login := doJSON(t, ts, jsonCall{Method: "POST", Path: "/api/auth/login", Payload: map[string]string{"password": "secret"}})
+	for _, name := range []string{"session", "session:owner@facile.studio", "cli:owner@facile.studio", "Session:x", " CLI:x ", "SESSION"} {
+		if status, _ := doJSON(t, ts, jsonCall{Method: "POST", Path: "/api/auth/device/start", Payload: map[string]string{"machine": name}}); status != http.StatusBadRequest {
+			t.Fatalf("device start named %q: %d, want 400", name, status)
+		}
+		if status, _ := doJSON(t, ts, jsonCall{Method: "POST", Path: "/api/auth/login", Payload: map[string]string{"password": "secret", "machine": name}}); status != http.StatusBadRequest {
+			t.Fatalf("password login named %q: %d, want 400", name, status)
+		}
+	}
+	stale, err := srv.devices.create("session:owner@facile.studio", "127.0.0.1", time.Now().UTC())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if status, _ := doJSON(t, ts, jsonCall{Method: "POST", Path: "/api/auth/device/approve", Token: login["token"], Payload: map[string]string{"user_code": stale.UserCode}}); status != http.StatusBadRequest {
+		t.Fatalf("approving a stored reserved name: %d, want 400", status)
+	}
+	for _, info := range srv.tokens {
+		if info.Name == "session:owner@facile.studio" {
+			t.Fatal("no token may be minted under a reserved name")
+		}
+	}
+}

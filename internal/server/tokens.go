@@ -138,8 +138,10 @@ const errReservedName = "name is reserved for login sessions"
 // reservedTokenName reports whether name is one only a login mints: the
 // password session, session:<email> or cli:<email>. An API or machine token
 // under such a name would be mistaken for a login, so every caller-chosen name
-// is checked against it before a token is stored.
+// is checked against it before a token is stored. The match ignores case and
+// surrounding space, so "Session:x" or " CLI:x " is refused too.
 func reservedTokenName(name string) bool {
+	name = strings.ToLower(strings.TrimSpace(name))
 	return name == passwordSessionName || strings.HasPrefix(name, browserSessionPrefix) || strings.HasPrefix(name, cliSessionPrefix)
 }
 
