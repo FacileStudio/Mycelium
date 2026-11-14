@@ -8,6 +8,16 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While on
 Every entry below was reconstructed from git history on 2026-08-24, so it
 records what shipped rather than what was written down at the time.
 
+## [Unreleased]
+
+### Changed
+
+- The confirm page API (`/api/mcp/pending`) is tronc's `PendingPage.Mount` behind Mycelium's auth; the hand-built list, confirm and dismiss handlers are gone. Only the person's own browser session (`session:<email>` token) can confirm or dismiss, as before; a confirm still answers `deleted`.
+- `publish_artifact` (local stdio) and `mycelium_publish_artifact` (remote MCP) are marked destructive: they replace the artifact with the same title.
+- A local `run_flow_<name>` tool shows the flow file's description only once the flow is pinned with `mycelium flow trust`; an unpinned or changed flow gets a fixed neutral description.
+- The MCP state key comes from tronc `mcp.StateKey("mycelium", secret)`, byte for byte the old key, so pending questions still verify.
+- tronc v0.22.1 to v0.23.0, porte v0.19.0 to v0.20.0, porte/mcpauth v0.2.1 to v0.3.0, porte/forfait v0.1.1 to v0.1.3. CI, filet and release workflows pin Go 1.26.11 like go.mod, mise and the Dockerfile.
+
 ## [0.50.0] - 2026-11-14
 
 ### Added
