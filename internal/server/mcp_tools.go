@@ -147,8 +147,8 @@ func (t *mcpTools) artifactReads() []mcpkit.Tool {
 	}
 }
 
-// writes are the two write tools. Neither deletes: publishing replaces an
-// artifact of the same title, which is what recording it again means.
+// writes are the two write tools. Publishing replaces the tree's artifact
+// of the same title, so it is destructive.
 func (t *mcpTools) writes() []mcpkit.Tool {
 	return []mcpkit.Tool{
 		mcpkit.NewTool(mcpkit.ToolSpec{
@@ -165,7 +165,7 @@ func (t *mcpTools) writes() []mcpkit.Tool {
 				"title. Facile Markdown only (CommonMark with GFM tables plus callout, stat, chart and columns " +
 				"fences, mermaid diagrams, badges), at most 1 MiB; HTML is refused, and an invalid document is " +
 				"refused with the line and column of the problem. Use it for structural answers, after answering.",
-			Annotations: &mcpkit.Annotations{Idempotent: true},
+			Annotations: &mcpkit.Annotations{Destructive: true, Idempotent: true},
 		}, t.publishArtifact),
 	}
 }

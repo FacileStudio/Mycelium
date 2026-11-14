@@ -101,7 +101,7 @@ func TestEveryToolSetsAllFourAnnotationsExplicitly(t *testing.T) {
 		"search_memory":    {ReadOnlyHint: true, DestructiveHint: hint(false), IdempotentHint: true, OpenWorldHint: hint(false)},
 		"list_flows":       {ReadOnlyHint: true, DestructiveHint: hint(false), IdempotentHint: true, OpenWorldHint: hint(false)},
 		"run_flow":         {ReadOnlyHint: false, DestructiveHint: hint(true), IdempotentHint: false, OpenWorldHint: hint(true)},
-		"publish_artifact": {ReadOnlyHint: false, DestructiveHint: hint(false), IdempotentHint: true, OpenWorldHint: hint(false)},
+		"publish_artifact": {ReadOnlyHint: false, DestructiveHint: hint(true), IdempotentHint: true, OpenWorldHint: hint(false)},
 	}
 	flowAnnotations := &mcp.ToolAnnotations{ReadOnlyHint: false, DestructiveHint: hint(true), IdempotentHint: false, OpenWorldHint: hint(true)}
 	for _, tool := range listTools(t) {

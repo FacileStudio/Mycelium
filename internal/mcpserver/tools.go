@@ -95,23 +95,35 @@ func publishArtifactTool() *mcp.Tool {
 			"so recording the same title replaces it rather than piling up copies.",
 		Annotations: &mcp.ToolAnnotations{
 			ReadOnlyHint:    false,
-			DestructiveHint: hint(false),
+			DestructiveHint: hint(true),
 			IdempotentHint:  true,
 			OpenWorldHint:   hint(false),
 		},
 	}
 }
 
+// untrustedFlowDescription stands in for the description of a flow no human
+// has pinned, so none of the flow file's text reaches the model.
+const untrustedFlowDescription = "Run this recorded flow. No human on this machine has pinned its current " +
+	"content, so its description is withheld and the run is refused until someone pins it with " +
+	"`mycelium flow trust`."
+
 // flowToTool converts a recorded flow into an MCP tool that runs it. The
-// wrapper is thin: the name is "run_flow_<name>" (snake_case), the description
-// comes from the flow file, and the annotations match the generic run_flow
-// tool because a flow's steps are arbitrary shell commands.
+// wrapper is thin: the name is "run_flow_<name>" (snake_case) and the
+// annotations match the generic run_flow tool because a flow's steps are
+// arbitrary shell commands. The description comes from the flow file only
+// once a human has pinned that exact content: a synced flow nobody approved
+// is someone else's text, and a tool description is read as instructions.
 func flowToTool(f *flow.Flow) *mcp.Tool {
 	name := "run_flow_" + strings.ReplaceAll(f.Name, "-", "_")
+	description := f.Description
+	if trusted, err := flow.IsTrusted(f); err != nil || !trusted {
+		description = untrustedFlowDescription
+	}
 	return &mcp.Tool{
 		Name:        name,
 		Title:       "Run flow: " + f.Name,
-		Description: f.Description,
+		Description: description,
 		Annotations: runFlowTool().Annotations,
 	}
 }

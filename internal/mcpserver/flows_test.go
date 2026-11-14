@@ -207,3 +207,37 @@ func TestListFlowsCallsNothingRunnableWhenThePinStoreCannotBeRead(t *testing.T) 
 		}
 	}
 }
+
+// A flow file arrives by sync from any machine of the tree. Its description
+// becomes a tool description, which a model reads as instructions, so only a
+// flow a human pinned here may speak through it.
+func TestOnlyAPinnedFlowLendsItsDescriptionToItsTool(t *testing.T) {
+	isolate(t)
+	if err := os.MkdirAll(config.FlowsDir(), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"pinned", "unpinned"} {
+		body := "name: " + name + "\ndescription: text of " + name + "\nsteps:\n  - name: one\n    run: \"true\"\n"
+		if err := os.WriteFile(filepath.Join(config.FlowsDir(), name+flow.Extension), []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	f, err := flow.Load("pinned")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := flow.Trust(f); err != nil {
+		t.Fatal(err)
+	}
+
+	got := map[string]string{}
+	for _, tool := range listTools(t) {
+		got[tool.Name] = tool.Description
+	}
+	if got["run_flow_pinned"] != "text of pinned" {
+		t.Errorf("pinned description = %q, want the flow's own", got["run_flow_pinned"])
+	}
+	if got["run_flow_unpinned"] != untrustedFlowDescription {
+		t.Errorf("unpinned description = %q, want the neutral one", got["run_flow_unpinned"])
+	}
+}
