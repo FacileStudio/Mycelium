@@ -10,6 +10,24 @@ records what shipped rather than what was written down at the time.
 
 ## [Unreleased]
 
+## [0.53.0] - 2026-11-14
+
+### Added
+
+- Artifact search over titles and content: `GET /api/artifacts/search?q=` (one tree with `space_id`, every readable tree with `all=true`, paginated with `cursor` and `limit`) and the MCP tool `mycelium_search_artifacts`. Every word must occur in the title or the body, frontmatter excluded; title matches come first, then content matches, newest first; each hit carries `match` and a snippet of about 160 characters.
+
+### Fixed
+
+- Background sync on Linux stopped for good once a run had failed and the boot trigger had passed: the systemd timer used `OnUnitActiveSec` alone and kept no next run, and even a timer restart did not re-arm it (ruche, 2026-10-27). The timer now uses `OnActiveSec=10sec` plus `OnUnitInactiveSec=60sec` (keeping `OnBootSec` and `Persistent`), `mycelium daemon install` restarts the timer so a rewritten unit takes effect, and `mycelium update` re-runs `daemon install` with the new binary so existing machines get the fix.
+- `mycelium doctor` no longer says the daemon is fine just because a unit file exists. On Linux it reads the timer's next run and last trigger and fails when there is no next run or the last run is older than ten intervals; on macOS it fails when the launchd job is not loaded.
+
+### Removed
+
+- **BREAKING:** vector search. Memory search is BM25 over the markdown files only, on the CLI, the local MCP server, `POST /api/memory/search` and `mycelium_search_memory`. Gone with it: the ollama client, the flat and qdrant vector stores, the embedding queue and worker, reciprocal rank fusion, `GET /api/memory/index/status`, the dashboard's index progress card, and the embedding similarity in consolidation dedupe (word overlap remains).
+- **BREAKING:** Ollama is gone from Mycelium. The consolidation durability judge and automatic SUPERSEDE are removed: consolidation keeps the heuristic proposer, the storage gate and word-overlap dedupe, so a near-duplicate is a NOOP and nothing is struck automatically. The config key `consolidate.judge_model` is ignored, and the daemon log and doctor no longer count `superseded`.
+- **BREAKING:** neither the server nor the CLI reads `OLLAMA_URL`, `EMBED_MODEL`, `VECTOR_STORE` or `QDRANT_URL`, and `docker-compose.yml` no longer joins the external `facile-ai` network. `scripts/ai-sidecars.sh` is gone.
+- **BREAKING:** search answers lose `degraded`; the local MCP `search_memory` answer loses `source`. `mycelium memory search` loses `--local` and `--verbose` and never calls the server. The client config key `vector_search` and `MYCELIUM_VECTOR_SEARCH` are ignored.
+
 ## [0.52.1] - 2026-11-14
 
 ### Security
