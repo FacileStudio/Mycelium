@@ -10,6 +10,8 @@ records what shipped rather than what was written down at the time.
 
 ## [Unreleased]
 
+## [0.52.0] - 2026-11-14
+
 ### Added
 
 - Public `/downloads` page with every install option for the CLI (install script, `facile install`, Homebrew cask) and a link to the GitHub releases. No sign-in needed.
