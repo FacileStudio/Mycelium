@@ -20,6 +20,7 @@
 		meta,
 		mono = true,
 		trailing,
+		children,
 		footer
 	}: {
 		href: string;
@@ -28,6 +29,7 @@
 		meta?: string;
 		mono?: boolean;
 		trailing?: Snippet;
+		children?: Snippet;
 		footer?: Snippet;
 	} = $props();
 </script>
@@ -56,6 +58,9 @@
 			<p class="truncate text-fc-xs text-fc-fg-muted {mono ? 'font-fc-mono' : ''}">{meta}</p>
 		{/if}
 	</div>
+	{#if children}
+		{@render children()}
+	{/if}
 	{#if footer}
 		<div
 			class="flex min-w-0 items-center justify-between gap-3 pt-3 text-fc-xs text-fc-fg-muted"

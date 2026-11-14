@@ -1,5 +1,5 @@
 import { getActiveSpaceId } from './space.svelte';
-import { request, spaceQuery } from './backendClient';
+import { request, spaceQuery, treeQuery } from './backendClient';
 import type {
 	AntenneSettings,
 	AuthConfig,
@@ -14,6 +14,7 @@ import type {
 	ModelInfo,
 	PendingAction,
 	ArtifactDetail,
+	ArtifactSearchPage,
 	ArtifactSummary,
 	ReportDetail,
 	ReportSummary,
@@ -29,6 +30,7 @@ import type {
 	UsageSnapshot,
 	UserInfo
 } from './backendTypes';
+import { artifactSearchPath } from './artifactSearch';
 
 export * from './backendTypes';
 export { ApiError, TOKEN_KEY } from './backendClient';
@@ -66,8 +68,11 @@ export const backend = {
 	modelGet: (path: string) => request<string>('GET', `/models/${path}${spaceQuery()}`),
 
 	artifactsList: () => request<ArtifactSummary[]>('GET', `/artifacts${spaceQuery()}`),
-	artifactGet: (id: string) => request<ArtifactDetail>('GET', `/artifacts/${id}${spaceQuery()}`),
-	artifactDelete: (id: string) => request<void>('DELETE', `/artifacts/${id}${spaceQuery()}`),
+	artifactsAll: () => request<ArtifactSummary[]>('GET', '/artifacts?all=true'),
+	artifactsSearch: (q: string, cursor = '') =>
+		request<ArtifactSearchPage>('GET', artifactSearchPath(q, cursor)),
+	artifactGet: (id: string, space?: string) => request<ArtifactDetail>('GET', `/artifacts/${id}${treeQuery(space)}`),
+	artifactDelete: (id: string, space?: string) => request<void>('DELETE', `/artifacts/${id}${treeQuery(space)}`),
 
 	reportsList: () => request<ArtifactSummary[]>('GET', `/artifacts${spaceQuery()}`),
 	reportGet: (id: string) => request<ArtifactDetail>('GET', `/artifacts/${id}${spaceQuery()}`),

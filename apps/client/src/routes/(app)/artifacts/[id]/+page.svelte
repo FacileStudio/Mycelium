@@ -10,6 +10,7 @@
 	import { t } from '$lib/i18n/index.svelte';
 
 	const id = $derived(page.params.id ?? '');
+	const space = $derived(page.url.searchParams.get('space') ?? undefined);
 	let detail: ArtifactDetail | null = $state(null);
 	let loading = $state(true);
 	let error = $state('');
@@ -22,7 +23,7 @@
 		if (!artId) return;
 		loading = true;
 		backend
-			.artifactGet(artId)
+			.artifactGet(artId, space)
 			.then((d) => (detail = d))
 			.catch((e) => (error = e instanceof Error ? e.message : t('artifacts.loadOne')))
 			.finally(() => (loading = false));
@@ -46,7 +47,7 @@
 		if (!detail) return;
 		deleting = true;
 		try {
-			await backend.artifactDelete(detail.id);
+			await backend.artifactDelete(detail.id, space);
 			toast.success(t('artifacts.deleted', { title: detail.title }));
 			goto('/artifacts');
 		} catch (e) {
