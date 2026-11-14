@@ -10,6 +10,17 @@ records what shipped rather than what was written down at the time.
 
 ## [Unreleased]
 
+## [0.54.0] - 2026-11-14
+
+### Added
+
+- The artifacts page searches titles and content through `GET /api/artifacts/search`: a debounced search bar mirrored in `?q=`, `/` to focus it, Escape to clear, a highlighted match snippet on each result card, a result count, and "Load more" by `next_cursor`.
+
+### Changed
+
+- The artifacts page lists every tree you can read in a card grid that fills the width (one column on a phone). Each card shows the icon, the title, the space and the date, and opens the artifact in its own space.
+- `@facile/encre` v0.12.1: a table in an artifact keeps its cells on one line and scrolls sideways instead of wrapping.
+
 ## [0.53.0] - 2026-11-14
 
 ### Added
