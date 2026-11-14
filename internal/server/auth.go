@@ -219,7 +219,12 @@ func (s *Server) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := s.mintLogin(strings.TrimSpace(req.Machine))
+	machine := strings.TrimSpace(req.Machine)
+	if reservedTokenName(machine) {
+		httpjson.WriteError(w, apierrors.Invalid(errReservedName))
+		return
+	}
+	token, err := s.mintLogin(machine)
 	if err != nil {
 		s.Log.Error("login: token generation failed", slog.Any("error", err))
 		httpjson.WriteError(w, apierrors.Internal("internal error", err))

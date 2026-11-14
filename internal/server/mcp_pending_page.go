@@ -10,7 +10,8 @@ import (
 )
 
 // pendingUser is the MCP user id of a confirm page request. Only a browser
-// session of an account linked to Registre passes.
+// session of an account linked to Registre passes: a session:<email> entry
+// that carries an expiry, since no API or machine token is minted with one.
 func (s *Server) pendingUser(r *http.Request) (string, error) {
 	id := identityFrom(r)
 	if id.Delegated || id.Actor != "" {
@@ -21,7 +22,7 @@ func (s *Server) pendingUser(r *http.Request) (string, error) {
 	user, known := s.loadUsers()[id.Email]
 	s.mu.RUnlock()
 	switch {
-	case !ok || !strings.HasPrefix(token.Name, "session:") || id.Email == "":
+	case !ok || !strings.HasPrefix(token.Name, browserSessionPrefix) || !isLoginSession(token) || id.Email == "":
 		return "", errBrowserOnly
 	case !known || user.Subject == "":
 		return "", errNoSubject

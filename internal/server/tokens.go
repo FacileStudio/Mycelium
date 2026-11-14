@@ -128,6 +128,21 @@ const passwordSessionName = "session"
 // this predicate could stay one field wide.
 func isLoginSession(t TokenInfo) bool { return t.ExpiresAt != "" }
 
+// cliSessionPrefix names the token a CLI login mints.
+const cliSessionPrefix = "cli:"
+
+// errReservedName is the 400 message for a token or machine name that a
+// login session owns.
+const errReservedName = "name is reserved for login sessions"
+
+// reservedTokenName reports whether name is one only a login mints: the
+// password session, session:<email> or cli:<email>. An API or machine token
+// under such a name would be mistaken for a login, so every caller-chosen name
+// is checked against it before a token is stored.
+func reservedTokenName(name string) bool {
+	return name == passwordSessionName || strings.HasPrefix(name, browserSessionPrefix) || strings.HasPrefix(name, cliSessionPrefix)
+}
+
 func (s *Server) tokensList(w http.ResponseWriter, r *http.Request) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -154,6 +169,10 @@ func (s *Server) tokensCreate(w http.ResponseWriter, r *http.Request) {
 	name := strings.TrimSpace(req.Name)
 	if name == "" {
 		httpjson.WriteError(w, apierrors.Invalid("name required"))
+		return
+	}
+	if reservedTokenName(name) {
+		httpjson.WriteError(w, apierrors.Invalid(errReservedName))
 		return
 	}
 	email := strings.TrimSpace(req.UserEmail)

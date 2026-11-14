@@ -191,6 +191,32 @@ func TestMCPDeleteWaitsForTheBrowserSession(t *testing.T) {
 	}
 }
 
+func TestMCPConfirmRefusesTokensNamedLikeSessions(t *testing.T) {
+	f := newMCPFixture(t)
+	key := freshPage(t, f.srv.DataDir)
+	var out mcpDeletePageOutput
+	mcptest.Decode(t, mcptest.Call(t, f.session(t, ownerSubject), toolDeleteMemoryPage, map[string]any{"path": key, "log": "people: obsolete"}), &out)
+	link, _ := url.Parse(out.ConfirmURL)
+	id := link.Query().Get("action")
+	cli, _ := f.srv.mintNamedSession("cli:owner@facile.studio", "owner@facile.studio", scopeAdmin)
+	for _, name := range []string{"session:agent", "cli:agent", "session"} {
+		req, _ := http.NewRequest(http.MethodPost, f.http.URL+"/api/tokens", strings.NewReader(`{"name":"`+name+`"}`))
+		req.Header.Set("Authorization", "Bearer "+cli)
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = resp.Body.Close()
+		if resp.StatusCode != http.StatusBadRequest {
+			t.Fatalf("minting %q must be refused: %d", name, resp.StatusCode)
+		}
+	}
+	legacy, _ := f.srv.mintToken("session:owner@facile.studio", scopeAdmin, "owner@facile.studio")
+	if status, _ := pendingCall(t, f, http.MethodPost, "/"+id+"/confirm", legacy); status != http.StatusForbidden || gone(f.srv.DataDir, key) {
+		t.Fatalf("a session-named token without expiry must not confirm: %d", status)
+	}
+}
+
 func TestMCPErasureDropsPendingActions(t *testing.T) {
 	f := newMCPFixture(t)
 	key := freshPage(t, f.srv.spaceDir(sharedSpace))
