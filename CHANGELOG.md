@@ -10,6 +10,8 @@ records what shipped rather than what was written down at the time.
 
 ## [Unreleased]
 
+## [0.51.0] - 2026-11-14
+
 ### Security
 
 - Only the person's own browser session can confirm or dismiss an MCP action: a `session:<email>` token that also carries an expiry. API and machine tokens never expire, so one named `session:...` no longer passes.
