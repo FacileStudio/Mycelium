@@ -10,6 +10,14 @@ records what shipped rather than what was written down at the time.
 
 ## [Unreleased]
 
+## [0.52.1] - 2026-11-14
+
+### Security
+
+- Browser session mark fix: porte v0.20.1 marks browser session tokens with `b~` instead of `b-`, so a plain token can no longer pass as a browser session by chance (1 in 4096 started with `b-`). Mycelium's own confirm page does not use porte browser sessions; this keeps it on the same porte as the suite. porte v0.20.1, porte/mcpauth v0.3.1, tronc v0.23.1.
+- Reserved token names (`session`, `session:<email>`, `cli:<email>`) are matched ignoring case and surrounding space, so `Session:x` or ` CLI:x ` is refused on `POST /api/tokens`, password login and device start.
+- Approving a device re-checks its stored machine name, so a request stored under a reserved name before v0.51.0 is refused and mints no token.
+
 ## [0.52.0] - 2026-11-14
 
 ### Added
