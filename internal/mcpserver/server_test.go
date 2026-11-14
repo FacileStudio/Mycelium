@@ -68,7 +68,7 @@ func resultText(res *mcp.CallToolResult) string {
 	return b.String()
 }
 
-// Five built-in tools plus one tool per recorded flow. The spec asks for
+// The built-in tools plus one tool per pinned flow. The spec asks for
 // stable ordering so a client can cache the list, and a new built-in tool
 // appearing here should be a decision somebody made rather than a surprise.
 func TestToolsListReportsAllBuiltInAndFlowTools(t *testing.T) {

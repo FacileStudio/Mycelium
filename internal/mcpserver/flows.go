@@ -61,7 +61,12 @@ type runFlowOutput struct {
 	Steps      []stepOutcome `json:"steps"`
 }
 
-// listFlows reports every flow with its trust state.
+// unpinnedFlowDescription stands in for the description of a flow no human
+// has pinned, so none of that file's prose reaches the model.
+const unpinnedFlowDescription = "not pinned"
+
+// listFlows reports every flow with its trust state. Only a pinned flow's
+// description is returned; any other carries unpinnedFlowDescription.
 //
 // A flow file that fails to parse is named in Unreadable rather than failing
 // the call, which is how flow.List already behaves and for the same reason: a
@@ -71,8 +76,12 @@ func listFlows(_ context.Context, _ *mcp.CallToolRequest, _ listFlowsInput) (*mc
 	out := listFlowsOutput{Flows: make([]flowSummary, 0, len(flows))}
 	for _, f := range flows {
 		state := flow.TrustState(f)
+		description := unpinnedFlowDescription
+		if state == flow.TrustTrusted {
+			description = f.Description
+		}
 		out.Flows = append(out.Flows, flowSummary{
-			Name: f.Name, Description: f.Description, Steps: len(f.Steps),
+			Name: f.Name, Description: description, Steps: len(f.Steps),
 			Trust: state, Runnable: state == flow.TrustTrusted,
 		})
 	}

@@ -119,7 +119,7 @@ func TestListFlowsReportsTrustAsAFieldRatherThanAColumnOfText(t *testing.T) {
 
 	want := map[string]flowSummary{
 		"pinned":   {Name: "pinned", Steps: 1, Trust: flow.TrustTrusted, Runnable: true},
-		"unpinned": {Name: "unpinned", Steps: 1, Trust: flow.TrustNotPinned, Runnable: false},
+		"unpinned": {Name: "unpinned", Description: unpinnedFlowDescription, Steps: 1, Trust: flow.TrustNotPinned, Runnable: false},
 	}
 	if len(out.Flows) != len(want) {
 		t.Fatalf("list_flows returned %d flows, want %d", len(out.Flows), len(want))
@@ -208,10 +208,11 @@ func TestListFlowsCallsNothingRunnableWhenThePinStoreCannotBeRead(t *testing.T) 
 	}
 }
 
-// A flow file arrives by sync from any machine of the tree. Its description
-// becomes a tool description, which a model reads as instructions, so only a
-// flow a human pinned here may speak through it.
-func TestOnlyAPinnedFlowLendsItsDescriptionToItsTool(t *testing.T) {
+// A flow file arrives by sync from any machine of the tree. Its name and
+// description become a tool name, title and description, which a model reads
+// as instructions, so only a flow a human pinned here gets a tool, and
+// list_flows withholds every other flow's description.
+func TestOnlyAPinnedFlowGetsAToolAndADescription(t *testing.T) {
 	isolate(t)
 	if err := os.MkdirAll(config.FlowsDir(), 0o700); err != nil {
 		t.Fatal(err)
@@ -237,7 +238,21 @@ func TestOnlyAPinnedFlowLendsItsDescriptionToItsTool(t *testing.T) {
 	if got["run_flow_pinned"] != "text of pinned" {
 		t.Errorf("pinned description = %q, want the flow's own", got["run_flow_pinned"])
 	}
-	if got["run_flow_unpinned"] != untrustedFlowDescription {
-		t.Errorf("unpinned description = %q, want the neutral one", got["run_flow_unpinned"])
+	if _, ok := got["run_flow_unpinned"]; ok {
+		t.Error("an unpinned flow was registered as its own tool")
+	}
+
+	res, err := connect(t).CallTool(context.Background(), &mcp.CallToolParams{Name: "list_flows"})
+	if err != nil {
+		t.Fatalf("list_flows: %v", err)
+	}
+	var out listFlowsOutput
+	decode(t, res, &out)
+	listed := map[string]string{}
+	for _, s := range out.Flows {
+		listed[s.Name] = s.Description
+	}
+	if listed["pinned"] != "text of pinned" || listed["unpinned"] != unpinnedFlowDescription {
+		t.Errorf("list_flows descriptions = %v, want the pinned text and the neutral marker", listed)
 	}
 }
