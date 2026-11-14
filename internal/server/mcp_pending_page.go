@@ -2,13 +2,10 @@ package server
 
 import (
 	"context"
-	"errors"
 	"net/http"
 	"strconv"
 	"strings"
 
-	apierrors "github.com/FacileStudio/tronc/errors"
-	"github.com/FacileStudio/tronc/httpjson"
 	mcpkit "github.com/FacileStudio/tronc/mcp"
 )
 
@@ -60,70 +57,22 @@ func (s *Server) describe(_ context.Context, item mcpkit.PendingItem, a mcpkit.A
 	return out
 }
 
-// pendingPage is the confirm page of the running MCP server.
-func (s *Server) pendingPage() (*mcpkit.PendingPage[mcpPendingItem], error) {
+// pendingPage is the confirm page of the running MCP server, nil when MCP
+// is off. Both confirmed kinds are deletes, so a confirmed run answers
+// "deleted".
+func (s *Server) pendingPage() *mcpkit.PendingPage[mcpPendingItem] {
 	if s.mcp == nil || s.mcp.confirm == nil {
-		return nil, apierrors.NotFound("MCP is off on this server")
+		return nil
 	}
 	return &mcpkit.PendingPage[mcpPendingItem]{
 		Confirmations: s.mcp.confirm, Actor: webActor, User: s.pendingUser, Describe: s.describe,
-	}, nil
+		Done: func(context.Context, mcpkit.Outcome) mcpkit.PendingResult {
+			return mcpkit.PendingResult{Status: "deleted"}
+		},
+	}
 }
 
-// pendingList answers the signed-in person's waiting actions.
-func (s *Server) pendingList(w http.ResponseWriter, r *http.Request) {
-	page, err := s.pendingPage()
-	if err != nil {
-		httpjson.WriteError(w, err)
-		return
-	}
-	userID, err := s.pendingUser(r)
-	if err != nil {
-		httpjson.WriteError(w, err)
-		return
-	}
-	list, err := page.List(r.Context(), userID)
-	if err != nil {
-		httpjson.WriteError(w, err)
-		return
-	}
-	httpjson.WriteJSON(w, http.StatusOK, list)
-}
-
-// pendingConfirm runs one waiting action once.
-func (s *Server) pendingConfirm(w http.ResponseWriter, r *http.Request) {
-	s.pendingResolve(w, r, func(c *mcpkit.Confirmations, who mcpkit.Caller, id string) (string, error) {
-		_, err := c.Confirm(r.Context(), who, id)
-		return "deleted", err
-	})
-}
-
-// pendingDismiss closes one waiting action without running it.
-func (s *Server) pendingDismiss(w http.ResponseWriter, r *http.Request) {
-	s.pendingResolve(w, r, func(c *mcpkit.Confirmations, who mcpkit.Caller, id string) (string, error) {
-		return mcpkit.OutcomeDismissed, c.Dismiss(r.Context(), who, id)
-	})
-}
-
-// pendingResolve checks the person and hands the action id to resolve.
-func (s *Server) pendingResolve(w http.ResponseWriter, r *http.Request, resolve func(*mcpkit.Confirmations, mcpkit.Caller, string) (string, error)) {
-	if _, err := s.pendingPage(); err != nil {
-		httpjson.WriteError(w, err)
-		return
-	}
-	userID, err := s.pendingUser(r)
-	if err != nil {
-		httpjson.WriteError(w, err)
-		return
-	}
-	status, err := resolve(s.mcp.confirm, mcpkit.Caller{UserID: userID, Actor: webActor}, pathParam(r, "id"))
-	var known *apierrors.Error
-	if err != nil && !errors.As(err, &known) {
-		err = apierrors.Internal("internal error", err)
-	}
-	if err != nil {
-		httpjson.WriteError(w, err)
-		return
-	}
-	httpjson.WriteJSON(w, http.StatusOK, mcpkit.PendingResult{Status: status})
+// authed is auth as chi middleware, for routers mounted by a kit.
+func (s *Server) authed(next http.Handler) http.Handler {
+	return s.auth(false, next.ServeHTTP)
 }

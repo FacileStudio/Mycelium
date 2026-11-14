@@ -74,7 +74,7 @@ func (s *Server) EnableMCP() error {
 	app, err := mcpkit.NewApp(mcpkit.AppConfig{
 		Resource: s.OIDC.MCPResource, Issuer: s.OIDC.Issuer, Version: s.Version,
 		Origins: s.CORSAllowedOrigins, Verifier: rt.verifier.verify, Logger: s.Log,
-		StateKey: mcpStateKey(s.OIDC.ClientSecret), Pending: rt.pending,
+		StateKey: mcpkit.StateKey(mcpScopePrefix, s.OIDC.ClientSecret), Pending: rt.pending,
 	}, mcpkit.AppSpec{
 		Name: mcpScopePrefix, Title: "Mycelium", Instructions: mcpInstructions, Tools: tools.list(), Kinds: tools.kinds(),
 	})
