@@ -462,9 +462,11 @@ type PendingAction struct {
 	Log       string `json:"log"`
 }
 
-// PendingList is the person's waiting actions, newest first.
+// PendingList is the person's waiting actions, newest first. Truncated is
+// true when more actions wait than the page lists.
 type PendingList struct {
-	Actions []PendingAction `json:"actions"`
+	Actions   []PendingAction `json:"actions"`
+	Truncated bool            `json:"truncated,omitempty"`
 }
 
 // EmptyRequest documents a route that takes no body.
