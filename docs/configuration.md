@@ -49,10 +49,6 @@ deliberate — a half-configured server is worse than one that refuses to boot.
 | `MCP_RESOURCE` | no | — | Canonical URI of the remote MCP endpoint, `https://mycelium.facile.studio/mcp` in production. Setting it serves `POST /mcp` and its RFC 9728 metadata for Registre access tokens bound to that URI (see [API](api.md#remote-mcp)). Unset, `/mcp` is off. Requires `OIDC_ISSUER` |
 | `JOURNAL_URL` | no | — | Journal ingest URL. Log shipping needs both this and the token |
 | `JOURNAL_TOKEN` | no | — | Per-app Journal key |
-| `OLLAMA_URL` | no | — | Ollama base URL. Setting it turns semantic search on and makes the three below readable |
-| `EMBED_MODEL` | no | `bge-m3` | Embedding model. Only read when `OLLAMA_URL` is set |
-| `VECTOR_STORE` | no | `flat` | `flat` (a file under `DATA_DIR/.embeddings`) or `qdrant` |
-| `QDRANT_URL` | conditional | — | Required once `VECTOR_STORE=qdrant` |
 
 `APP_ENV`, `PORT`, `LOG_LEVEL`, `CORS_ALLOWED_ORIGINS`, `JOURNAL_URL` and `JOURNAL_TOKEN`
 are `troncenv.Core` fields, so they carry the same names here as in every other Facile API.
@@ -73,29 +69,16 @@ suite spellings — `ALLOWED_ORIGINS`, `DOMAINS`, `DOMAIN`, `CORS_ORIGINS`,
 - `MCP_RESOURCE` is not an absolute URI.
 - `APP_ENV=production` with neither `PASSWORD` nor `OIDC_ISSUER` — otherwise every request
   is served as admin.
-- `EMBED_MODEL`, `VECTOR_STORE` or `QDRANT_URL` is set without `OLLAMA_URL` — they would do
-  nothing, and a silent no-op is worse than a refusal.
-- `VECTOR_STORE` is neither `flat` nor `qdrant`, or is `qdrant` with no `QDRANT_URL`.
 
 Outside production, running with neither `PASSWORD` nor `OIDC_ISSUER` is allowed and every
 request is served as admin. The server logs a warning at startup saying exactly that.
 
-### Semantic search is dormant until `OLLAMA_URL` is set
+### Search needs nothing outside the binary
 
-`OLLAMA_URL` is the switch, exactly as `OIDC_ISSUER` is for SSO. Unset, `internal/env`
-returns a nil `*Embedding`, no embedding worker starts, and memory search answers with BM25
-lexical results only — a complete, supported mode, not a degraded one.
-
-The compose file passes all four through as empty strings, and `troncenv.String` reads an
-empty value as unset — so the shipped defaults leave the feature dormant rather than tripping
-the refusals above.
-
-Once it is on, an unreachable model is not a refusal. Embedding failures are logged and the
-work is requeued, and search falls back to lexical results for as long as the model is away.
-
-`flat` scans every vector on every query, which a wiki-sized corpus can afford, and stores
-the index inside `DATA_DIR` — so it lives in the same volume as the tree it indexes and
-survives a redeploy. `qdrant` is for a corpus a full scan no longer suits.
+Memory search is BM25 over the markdown files in `DATA_DIR`, ranked per `### finding` block.
+There is no index to build and no model to run. Since v0.53.0 neither the server nor the
+CLI reads `OLLAMA_URL`, `EMBED_MODEL`, `VECTOR_STORE` or `QDRANT_URL`; a stale value in the
+deploy panel is harmless and can be removed.
 
 ### Flags that override the environment
 
@@ -150,22 +133,19 @@ offsets, lives in `~/.local/state/mycelium/`.
 ### Consolidation
 
 The daemon's consolidation stage reads recent episodes from `~/.local/share/mycelium/events/`, proposes
-candidate findings heuristically, judges their durability against a local Ollama model, and
-writes the ones that pass into `memory/`. Two keys tune it:
+candidate findings heuristically, runs them through the storage gate, and writes the ones that pass
+and are not near-duplicates into `memory/`. No model is involved. One key tunes it:
 
 ```yaml
 consolidate:
-  judge_model: llama3.2:3b
   enabled: true
 ```
 
 | Key | What it does |
 |---|---|
-| `judge_model` | Ollama model asked the durability question for each heuristic hit. Empty means fallback mode: every candidate is accepted without a model call and only the storage gate stands between it and `memory/` |
 | `enabled` | Turns the stage on. Defaults to `true`; an absent key keeps the default, an explicit `false` turns the stage off |
 
-An unreachable Ollama is not an error either way: the judge fails open to the same
-heuristic-fallback verdict and the run continues offline.
+A `judge_model` key left in an old config file is ignored.
 
 ### The server session
 
