@@ -1,5 +1,7 @@
 # Plan — SPEC step 12: episodic-to-semantic consolidation
 
+> Superseded in part by v0.53.0 (2026-11-14): vector search, embeddings, `hybrid.go` and every Ollama call (including the consolidation judge and automatic SUPERSEDE) are gone; memory search is BM25 over the markdown files only. See `docs/plan-markdown-folder.md`.
+
 Status: proposed 2026-08-24. Implements ROADMAP B6 / SPEC step 12 with two
 design additions ratified in planning conversation: hybrid heuristic+local-LLM
 extraction, and supersede-candidates as a first-class output.

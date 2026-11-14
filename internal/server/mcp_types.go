@@ -16,13 +16,12 @@ type mcpHit struct {
 	Line      int     `json:"line" jsonschema:"line the matching section starts on"`
 	Date      string  `json:"date,omitempty" jsonschema:"the finding's date when it has one"`
 	Excerpt   string  `json:"excerpt"`
-	Score     float64 `json:"score" jsonschema:"fused rank score, comparable only within this answer"`
+	Score     float64 `json:"score" jsonschema:"BM25 score, comparable only within this answer"`
 }
 
 // mcpSearchOutput is what mycelium_search_memory answers.
 type mcpSearchOutput struct {
-	Results  []mcpHit `json:"results"`
-	Degraded bool     `json:"degraded" jsonschema:"true when the ranking is lexical only because vector search is off"`
+	Results []mcpHit `json:"results"`
 }
 
 // mcpPageInput is what mycelium_read_memory_page takes.
@@ -105,6 +104,27 @@ type mcpArtifactListOutput struct {
 	Artifacts  []mcpArtifact `json:"artifacts" jsonschema:"newest first"`
 	Total      int           `json:"total"`
 	NextCursor string        `json:"next_cursor,omitempty"`
+}
+
+// mcpArtifactSearchInput is what mycelium_search_artifacts takes.
+type mcpArtifactSearchInput struct {
+	Query   string `json:"query" jsonschema:"the words to look for in artifact titles and bodies, 1 to 200 characters"`
+	SpaceID string `json:"space_id,omitempty" jsonschema:"one tree to search; empty searches every tree you can use"`
+	Cursor  string `json:"cursor,omitempty" jsonschema:"next_cursor of the previous page, with the same query"`
+}
+
+// mcpArtifactHit is one artifact a search found.
+type mcpArtifactHit struct {
+	mcpArtifact
+	Match   string `json:"match" jsonschema:"title when the title holds every word, else content"`
+	Snippet string `json:"snippet" jsonschema:"about 160 characters of the body around the first word found"`
+}
+
+// mcpArtifactSearchOutput is one page of search hits.
+type mcpArtifactSearchOutput struct {
+	Results    []mcpArtifactHit `json:"results" jsonschema:"title matches first, then content matches, newest first"`
+	Total      int              `json:"total"`
+	NextCursor string           `json:"next_cursor,omitempty"`
 }
 
 // mcpArtifactReadInput is what mycelium_read_artifact takes.

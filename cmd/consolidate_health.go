@@ -34,8 +34,7 @@ func consolidateHealth(cfg *config.MyceliumConfig, dataDir string, now time.Time
 	if res == nil {
 		return fmt.Sprintf("last run %s ago, no counts recorded", ago), true
 	}
-	msg := fmt.Sprintf("last run %s ago: %d created, %d superseded, %d noop, %d dropped",
-		ago, res.Created, res.Superseded, res.Noop, res.Dropped)
+	msg := fmt.Sprintf("last run %s ago: %d created, %d noop, %d dropped", ago, res.Created, res.Noop, res.Dropped)
 	if state.Error != "" {
 		return msg + " — last run failed: " + state.Error, false
 	}

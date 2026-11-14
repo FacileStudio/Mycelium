@@ -1,7 +1,6 @@
 package consolidate
 
 import (
-	"context"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,21 +9,11 @@ import (
 	"github.com/FacileStudio/Mycelium/internal/memory"
 )
 
-// Similarity thresholds for the NOOP/CREATE/SUPERSEDE decision. Cosine over
-// embeddings separates "related" from "same claim" well enough to earn two
-// thresholds; the lexical fallback cannot, so offline SUPERSEDE uses the same
-// bar as near-duplicate and leans entirely on the judge plus the date check
-// for safety.
+// Similarity thresholds for the NOOP/CREATE decision: a near-duplicate is
+// already written down, anything below it is new.
 const (
-	EmbedNearDuplicate   = 0.90
-	EmbedSupersede       = 0.94
 	LexicalNearDuplicate = 0.60
 	weakMatchSimilarity  = 0.20
-)
-
-const (
-	metricEmbeddings = "embeddings"
-	metricLexical    = "lexical"
 )
 
 // Outcome is what consolidation decided to do with a candidate.
@@ -33,15 +22,12 @@ type Outcome int
 const (
 	OutcomeNoop Outcome = iota
 	OutcomeCreate
-	OutcomeSupersede
 )
 
 func (o Outcome) String() string {
 	switch o {
 	case OutcomeCreate:
 		return "create"
-	case OutcomeSupersede:
-		return "supersede"
 	default:
 		return "noop"
 	}
@@ -60,24 +46,22 @@ type Match struct {
 }
 
 // Decision is the consolidation outcome for one candidate. Match is nil below
-// weakMatchSimilarity and always set for NOOP and SUPERSEDE.
+// weakMatchSimilarity and always set for NOOP.
 type Decision struct {
 	Outcome    Outcome
 	Similarity float64
-	Metric     string
 	Match      *Match
 }
 
-// Deduper consolidates candidates against the wiki under MemoryPath. Backend
-// may be nil or fail at call time; both degrade to lexical similarity so an
-// offline machine still consolidates, just blunter.
+// Deduper consolidates candidates against the wiki under MemoryPath by word
+// overlap.
 type Deduper struct {
 	MemoryPath string
-	Backend    memory.Backend
-	Judge      *Judge
 }
 
-func (d *Deduper) Decide(ctx context.Context, c Candidate) (Decision, error) {
+// Decide compares a candidate with every wiki block: a near-duplicate is a
+// NOOP, anything else is created. Nothing is ever struck automatically.
+func (d *Deduper) Decide(c Candidate) (Decision, error) {
 	chunks, err := d.chunks()
 	if err != nil {
 		return Decision{}, err
@@ -85,12 +69,11 @@ func (d *Deduper) Decide(ctx context.Context, c Candidate) (Decision, error) {
 	if len(chunks) == 0 {
 		return Decision{Outcome: OutcomeCreate}, nil
 	}
-	sims, metric := d.similarities(ctx, c.Text, chunks)
+	sims := similarities(c.Text, chunks)
 	best := argmax(sims)
-	nearDup, supersede := thresholds(metric)
 
-	dec := Decision{Similarity: sims[best], Metric: metric}
-	if sims[best] < nearDup {
+	dec := Decision{Similarity: sims[best]}
+	if sims[best] < LexicalNearDuplicate {
 		dec.Outcome = OutcomeCreate
 		if sims[best] >= weakMatchSimilarity {
 			dec.Match = matchOf(chunks[best], sims[best])
@@ -100,18 +83,6 @@ func (d *Deduper) Decide(ctx context.Context, c Candidate) (Decision, error) {
 
 	dec.Match = matchOf(chunks[best], sims[best])
 	dec.Outcome = OutcomeNoop
-	if d.Judge == nil {
-		return dec, nil
-	}
-	judged := d.Judge.Compare(ctx, chunks[best].Text(), c.Text)
-	if judged.Verdict != VerdictAccept || sims[best] < supersede {
-		return dec, nil
-	}
-	episodeTime, ok := earliestTimestamp(c)
-	if !ok || !chunks[best].Date().Before(episodeTime) {
-		return dec, nil
-	}
-	dec.Outcome = OutcomeSupersede
 	return dec, nil
 }
 
@@ -162,33 +133,12 @@ func (d *Deduper) pageRel(path string) (string, bool, error) {
 	return rel, true, nil
 }
 
-func (d *Deduper) similarities(ctx context.Context, query string, chunks []memory.Chunk) ([]float64, string) {
-	texts := make([]string, 0, len(chunks)+1)
-	texts = append(texts, query)
-	for _, c := range chunks {
-		texts = append(texts, c.Text())
-	}
+func similarities(query string, chunks []memory.Chunk) []float64 {
 	sims := make([]float64, len(chunks))
-	if d.Backend != nil {
-		vectors, err := d.Backend.Embed(ctx, texts)
-		if err == nil && len(vectors) == len(texts) {
-			for i := range chunks {
-				sims[i] = memory.Cosine(vectors[0], vectors[i+1])
-			}
-			return sims, metricEmbeddings
-		}
-	}
 	for i := range chunks {
 		sims[i] = lexicalSimilarity(query, chunks[i].Text())
 	}
-	return sims, metricLexical
-}
-
-func thresholds(metric string) (nearDup, supersede float64) {
-	if metric == metricEmbeddings {
-		return EmbedNearDuplicate, EmbedSupersede
-	}
-	return LexicalNearDuplicate, LexicalNearDuplicate
+	return sims
 }
 
 func matchOf(c memory.Chunk, sim float64) *Match {
@@ -212,34 +162,9 @@ func argmax(sims []float64) int {
 	return best
 }
 
-// earliestTimestamp reads the oldest episode timestamp out of a candidate's
-// refs, which heuristic.go writes as "<agent>@<RFC3339>". A candidate whose
-// refs carry no parsable timestamp reports false, and the caller must treat
-// SUPERSEDE as unavailable: striking a claim needs proof the correction is
-// newer, not hope.
-func earliestTimestamp(c Candidate) (time.Time, bool) {
-	var best time.Time
-	found := false
-	for _, ref := range c.EpisodeRefs {
-		at := strings.LastIndex(ref, "@")
-		if at < 0 {
-			continue
-		}
-		ts, err := time.Parse(time.RFC3339Nano, ref[at+1:])
-		if err != nil {
-			continue
-		}
-		if !found || ts.Before(best) {
-			best, found = ts, true
-		}
-	}
-	return best, found
-}
-
-// lexicalSimilarity is the offline stand-in for embeddings: an overlap
-// coefficient of the two texts' lowercase word tokens, intersection over the
-// smaller token set. Blunt by design — it knows words, not meaning — which is
-// exactly why its thresholds sit apart from the embedding ones.
+// lexicalSimilarity is an overlap coefficient of the two texts' lowercase word
+// tokens, intersection over the smaller token set. Blunt by design: it knows
+// words, not meaning.
 func lexicalSimilarity(a, b string) float64 {
 	at := tokenize(a)
 	bt := tokenize(b)

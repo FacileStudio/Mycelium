@@ -131,27 +131,11 @@ type MemoryHit struct {
 }
 
 type MemorySearchResponse struct {
-	Results  []MemoryHit `json:"results"`
-	Degraded bool        `json:"degraded"`
+	Results []MemoryHit `json:"results"`
 }
 
 type IndexResponse struct {
 	Content string `json:"content"`
-}
-
-type MemoryIndexStatusResponse struct {
-	Enabled         bool    `json:"enabled"`
-	Model           string  `json:"model,omitempty"`
-	Store           string  `json:"store"`
-	TotalChunks     int     `json:"total_chunks"`
-	IndexedChunks   int     `json:"indexed_chunks"`
-	PendingPaths    int     `json:"pending_paths"`
-	Indexing        bool    `json:"indexing"`
-	StartedAt       string  `json:"started_at"`
-	UpdatedAt       string  `json:"updated_at"`
-	ChunksPerSecond float64 `json:"chunks_per_second"`
-	ETASeconds      int     `json:"eta_seconds"`
-	LastError       string  `json:"last_error,omitempty"`
 }
 
 type StatRow struct {
@@ -341,6 +325,26 @@ type ArtifactSummary struct {
 	Machine string `json:"machine"`
 	Created string `json:"created"`
 	Updated string `json:"updated"`
+}
+
+// ArtifactSearchHit is one artifact a search found.
+type ArtifactSearchHit struct {
+	ID        string `json:"id"`
+	Title     string `json:"title"`
+	Machine   string `json:"machine"`
+	Created   string `json:"created"`
+	Updated   string `json:"updated"`
+	SpaceID   string `json:"space_id,omitempty"`
+	SpaceName string `json:"space_name,omitempty"`
+	Match     string `json:"match"`
+	Snippet   string `json:"snippet"`
+}
+
+// ArtifactSearchResponse is one page of artifact search hits.
+type ArtifactSearchResponse struct {
+	Results    []ArtifactSearchHit `json:"results"`
+	Total      int                 `json:"total"`
+	NextCursor string              `json:"next_cursor,omitempty"`
 }
 
 // ArtifactDetail is one artifact with its file content, frontmatter included.

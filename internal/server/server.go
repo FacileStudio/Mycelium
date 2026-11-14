@@ -56,10 +56,6 @@ type Server struct {
 	erasure            deletionRuntime
 	backchannel        backchannelRuntime
 	mcp                *mcpRuntime
-
-	// Semantic is the vector half of memory search. Nil leaves it dormant:
-	// the server starts, search answers lexically, and nothing enqueues.
-	Semantic *Semantic
 }
 
 // New builds a Server over a data directory with the given bootstrap
@@ -151,7 +147,6 @@ func (s *Server) mountInsightRoutes(r chi.Router) {
 	r.Get("/memory/search", s.auth(false, s.memorySearch))
 	r.Post("/memory/search", s.auth(false, s.memorySearchPost))
 	r.Get("/memory/index", s.auth(false, s.memoryIndex))
-	r.Get("/memory/index/status", s.auth(false, s.memoryIndexStatus))
 
 	r.Get("/sessions/stats", s.auth(false, s.sessionsStats))
 	r.Get("/sessions/recent", s.auth(false, s.sessionsRecent))
@@ -186,6 +181,7 @@ func (s *Server) mountContentRoutes(r chi.Router) {
 	r.Get("/models/*", s.auth(false, s.modelGet))
 
 	r.Get("/artifacts", s.auth(false, s.artifactsList))
+	r.Get("/artifacts/search", s.auth(false, s.artifactsSearch))
 	r.Post("/artifacts", s.auth(false, s.artifactCreate))
 	r.Get("/artifacts/{id}", s.auth(false, s.artifactGet))
 	r.Put("/artifacts/{id}", s.auth(false, s.artifactUpdate))

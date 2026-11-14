@@ -73,49 +73,6 @@ updated: %s
 	return pagePath, writeFileAtomic(pagePath, []byte(content))
 }
 
-// Supersede strikes the matched finding in place and writes the correction
-// beneath it. The old claim survives as strikethrough with a supersession
-// marker; only its truth changes, never its presence.
-func (w *Writer) Supersede(dec Decision, c Candidate, now time.Time) error {
-	if dec.Match == nil {
-		return fmt.Errorf("supersede without a matched finding")
-	}
-	path := filepath.Join(w.MemoryPath, filepath.FromSlash(dec.Match.Path))
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return err
-	}
-	lines := strings.Split(string(data), "\n")
-	start, end, ok := findBlock(lines, dec.Match.Line)
-	if !ok {
-		return fmt.Errorf("no finding heading near line %d in %s", dec.Match.Line, dec.Match.Path)
-	}
-	struck := strikeParagraphs(strings.Join(lines[start+1:end], "\n")) + " " +
-		fmt.Sprintf("[SUPERSEDED by: consolidation, %s]", now.Format(dayLayout))
-	correction := c.Text + "\n" + provenanceLines(sourceLine(c), now)
-
-	var updated []string
-	updated = append(updated, lines[:start+1]...)
-	updated = append(updated, struck, "", correction, "")
-	updated = append(updated, lines[end:]...)
-	return writeFileAtomic(path, []byte(strings.TrimRight(strings.Join(updated, "\n"), "\n")+"\n"))
-}
-
-// strikeParagraphs wraps each paragraph of a finding body in its own ~~ pair.
-// One pair around the whole body renders as strikethrough only up to the first
-// blank line, because the span ends at the paragraph break — so a two-paragraph
-// claim would read as half retracted and half still standing. The indexer's
-// dropStruck scans bytes rather than paragraphs and accepts either shape.
-func strikeParagraphs(body string) string {
-	var struck []string
-	for _, para := range strings.Split(body, "\n\n") {
-		if trimmed := strings.Trim(para, "\n \t"); trimmed != "" {
-			struck = append(struck, "~~"+trimmed+"~~")
-		}
-	}
-	return strings.Join(struck, "\n\n")
-}
-
 func findingBlock(title, text, source string, now time.Time) string {
 	return fmt.Sprintf("### %s\n%s\n%s\n", title, provenanceLines(source, now), text)
 }
@@ -126,33 +83,6 @@ func provenanceLines(source string, now time.Time) string {
 
 func sourceLine(c Candidate) string {
 	return "consolidation, " + strings.Join(c.EpisodeRefs, "; ")
-}
-
-// findBlock locates the `### ` heading at or after line (1-based, as chunks
-// report it) and returns [start, end) covering the heading and its body, end
-// being the next heading or EOF.
-func findBlock(lines []string, line int) (int, int, bool) {
-	start := -1
-	for i := line - 1; i < len(lines); i++ {
-		if strings.HasPrefix(lines[i], "### ") {
-			start = i
-			break
-		}
-	}
-	if start < 0 {
-		return 0, 0, false
-	}
-	for end := start + 1; end < len(lines); end++ {
-		if strings.HasPrefix(lines[end], "### ") {
-			return start, end, true
-		}
-	}
-	for end := len(lines); end > start; end-- {
-		if strings.TrimSpace(lines[end-1]) != "" {
-			return start, end, true
-		}
-	}
-	return start, start, false
 }
 
 // classifyDir picks the top-level wiki dir for a new page from the text's own

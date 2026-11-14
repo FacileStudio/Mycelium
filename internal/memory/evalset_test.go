@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -64,8 +65,8 @@ func TestInspectEvalSetTracksTheCorpus(t *testing.T) {
 	cases := make([]EvalCase, 0, total)
 	names := make([]string, 0, total)
 	for i := range total {
-		name := "bugs/p" + itoa(i) + ".md"
-		cases = append(cases, EvalCase{Query: "q" + itoa(i), Expect: []string{name}})
+		name := "bugs/p" + strconv.Itoa(i) + ".md"
+		cases = append(cases, EvalCase{Query: "q" + strconv.Itoa(i), Expect: []string{name}})
 		names = append(names, name)
 	}
 
@@ -117,7 +118,7 @@ func TestInspectEvalSetCatchesATooSmallSet(t *testing.T) {
 	cases := make([]EvalCase, 0, EvalMinCases-1)
 	names := make([]string, 0, EvalMinCases-1)
 	for i := range EvalMinCases - 1 {
-		name := "bugs/p" + itoa(i) + ".md"
+		name := "bugs/p" + strconv.Itoa(i) + ".md"
 		cases = append(cases, EvalCase{Query: "q", Expect: []string{name}})
 		names = append(names, name)
 	}

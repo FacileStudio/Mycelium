@@ -51,34 +51,36 @@ func (s *Server) memberSpaces(id Identity) []*Space {
 	return out
 }
 
-// artifactsListAll lists every artifact the caller can read, newest first:
-// the common tree when artifactCommonAllowed lets them, then each space they
-// are a member of. Each summary carries the space it lives in.
-func (s *Server) artifactsListAll(w http.ResponseWriter, r *http.Request) {
-	id := identityFrom(r)
-	out := []ArtifactSummary{}
-	add := func(root, spaceID, spaceName string) error {
-		all, err := artifacts.List(root)
-		for _, art := range all {
-			summary := summaryOf(art)
-			summary.SpaceID, summary.SpaceName = spaceID, spaceName
-			out = append(out, summary)
-		}
-		return err
-	}
-	var err error
+// readableArtifactTrees is every artifact tree the caller can read: the
+// common tree when artifactCommonAllowed lets them, then each space they are a
+// member of, by name.
+func (s *Server) readableArtifactTrees(id Identity) []artifacts.Tree {
+	trees := []artifacts.Tree{}
 	if s.artifactCommonAllowed(id) {
-		err = add(s.DataDir, "", "")
+		trees = append(trees, artifacts.Tree{Root: s.DataDir})
 	}
 	for _, space := range s.memberSpaces(id) {
-		if err == nil {
-			err = add(s.spaceDir(space.ID), space.ID, space.Name)
-		}
+		trees = append(trees, artifacts.Tree{Root: s.spaceDir(space.ID), SpaceID: space.ID, SpaceName: space.Name})
 	}
-	if err != nil {
-		s.Log.Error("artifacts list failed", slog.Any("error", err))
-		httpjson.WriteError(w, apierrors.Internal("internal error", err))
-		return
+	return trees
+}
+
+// artifactsListAll lists every artifact the caller can read, newest first.
+// Each summary carries the space it lives in.
+func (s *Server) artifactsListAll(w http.ResponseWriter, r *http.Request) {
+	out := []ArtifactSummary{}
+	for _, tree := range s.readableArtifactTrees(identityFrom(r)) {
+		all, err := artifacts.List(tree.Root)
+		if err != nil {
+			s.Log.Error("artifacts list failed", slog.Any("error", err))
+			httpjson.WriteError(w, apierrors.Internal("internal error", err))
+			return
+		}
+		for _, art := range all {
+			summary := summaryOf(art)
+			summary.SpaceID, summary.SpaceName = tree.SpaceID, tree.SpaceName
+			out = append(out, summary)
+		}
 	}
 	sort.SliceStable(out, func(i, j int) bool { return out[i].Created.After(out[j].Created) })
 	httpjson.WriteJSON(w, http.StatusOK, out)

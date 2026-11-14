@@ -50,13 +50,19 @@ ExecStart=/bin/sh -c 'echo "$$(date -Is) sync run failed, see: journalctl --user
 }
 
 // TimerContent returns the systemd timer that schedules the sync service.
+//
+// OnUnitInactiveSec counts from the end of the last run, and OnActiveSec fires
+// once whenever the timer starts. OnUnitActiveSec alone stopped re-arming on
+// 2026-10-27 after the service had failed and the boot trigger had passed:
+// the timer stayed active with no next elapse, and a restart did not help.
 func TimerContent() string {
 	return fmt.Sprintf(`[Unit]
 Description=Mycelium background sync timer
 
 [Timer]
 OnBootSec=1min
-OnUnitActiveSec=%dsec
+OnActiveSec=10sec
+OnUnitInactiveSec=%dsec
 Persistent=true
 
 [Install]
@@ -79,8 +85,11 @@ func installSystemd(self string) error {
 		return err
 	}
 	exec.Command("systemctl", "--user", "daemon-reload").Run()
-	if out, err := exec.Command("systemctl", "--user", "enable", "--now", "mycelium-sync.timer").CombinedOutput(); err != nil {
+	if out, err := exec.Command("systemctl", "--user", "enable", "mycelium-sync.timer").CombinedOutput(); err != nil {
 		return fmt.Errorf("systemctl enable: %v: %s", err, out)
+	}
+	if out, err := exec.Command("systemctl", "--user", "restart", "mycelium-sync.timer").CombinedOutput(); err != nil {
+		return fmt.Errorf("systemctl restart: %v: %s", err, out)
 	}
 	return nil
 }

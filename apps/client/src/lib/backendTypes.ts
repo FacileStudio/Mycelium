@@ -35,11 +35,6 @@ export interface ArtifactDetail extends ArtifactSummary {
 
 export type ReportDetail = ArtifactDetail;
 
-/*
- * `chunks_per_second` and `eta_seconds` are the server's own measurement of the run, never
- * timed by the client from two samples. `enabled: false` is the normal state of a wiki with
- * no embedding model configured, and zeroes the rest of the payload rather than omitting it.
- */
 export interface MemorySearchHit {
 	path: string;
 	heading: string;
@@ -50,28 +45,6 @@ export interface MemorySearchHit {
 
 export interface MemorySearchResponse {
 	results: MemorySearchHit[];
-	degraded: boolean;
-}
-
-export interface MemoryIndexModel {
-	name: string;
-	digest: string;
-	dims: number;
-}
-
-export interface MemoryIndexState {
-	enabled: boolean;
-	model?: MemoryIndexModel;
-	store: string;
-	total_chunks: number;
-	indexed_chunks: number;
-	pending_paths: number;
-	indexing: boolean;
-	started_at?: string;
-	updated_at?: string;
-	chunks_per_second: number;
-	eta_seconds: number;
-	last_error: string;
 }
 
 export interface SessionStatRow {

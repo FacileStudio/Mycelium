@@ -100,47 +100,6 @@ The fix was to pass --strip-trailing-cr to the CLI diff command or every line sh
 	}
 }
 
-func TestSupersedeGolden(t *testing.T) {
-	before, want := golden(t, "supersede")
-	dir := tempPage(t, "bugs/porte.md", before)
-	w := &Writer{MemoryPath: dir}
-	c := Candidate{
-		Text:        "Register refuses the password when the address already belongs to a passwordless account, so SSO-only accounts can no longer be claimed by registering their address.",
-		EpisodeRefs: []string{"pi@2026-08-24T10:00:00Z"},
-	}
-	dec := Decision{
-		Outcome: OutcomeSupersede,
-		Match:   &Match{Path: "bugs/porte.md", Line: 11, Heading: "Register attaches the password to any existing address"},
-	}
-	if err := w.Supersede(dec, c, writeNow); err != nil {
-		t.Fatal(err)
-	}
-	data, err := os.ReadFile(filepath.Join(dir, "bugs", "porte.md"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if string(data) != want {
-		t.Fatalf("supersede mismatch\n--- got ---\n%s\n--- want ---\n%s", data, want)
-	}
-}
-
-func TestSupersedeWithoutMatchFails(t *testing.T) {
-	w := &Writer{MemoryPath: t.TempDir()}
-	err := w.Supersede(Decision{Outcome: OutcomeSupersede}, Candidate{}, writeNow)
-	if err == nil {
-		t.Fatal("expected error for supersede without a match")
-	}
-}
-
-func TestSupersedeMissingHeadingFails(t *testing.T) {
-	dir := tempPage(t, "bugs/x.md", "# no findings here\n")
-	w := &Writer{MemoryPath: dir}
-	dec := Decision{Match: &Match{Path: "bugs/x.md", Line: 1}}
-	if err := w.Supersede(dec, Candidate{}, writeNow); err == nil {
-		t.Fatal("expected error when no heading exists at or after the matched line")
-	}
-}
-
 func TestWriteAtomicNoTempLeftover(t *testing.T) {
 	dir := tempPage(t, "bugs/x.md", "### one\nbody\n")
 	w := &Writer{MemoryPath: dir}
@@ -202,17 +161,5 @@ func TestSlug(t *testing.T) {
 				t.Fatalf("slug = %q, want %q", got, tt.want)
 			}
 		})
-	}
-}
-
-func TestFindBlockEndsAtNextHeading(t *testing.T) {
-	lines := strings.Split("### one\nbody\n### two\nmore\n", "\n")
-	start, end, ok := findBlock(lines, 1)
-	if !ok || start != 0 || end != 2 {
-		t.Fatalf("start,end = %d,%d ok=%v, want 0,2 true", start, end, ok)
-	}
-	start, end, ok = findBlock(lines, 3)
-	if !ok || start != 2 || end != 4 {
-		t.Fatalf("trailing block: start,end = %d,%d ok=%v, want 2,4 true", start, end, ok)
 	}
 }

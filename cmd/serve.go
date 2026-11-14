@@ -1,66 +1,21 @@
 package cmd
 
 import (
-	"context"
 	"log/slog"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
-	"time"
 
 	"github.com/FacileStudio/Journal/sdk/journal"
 	"github.com/FacileStudio/Mycelium/internal/encre"
 	"github.com/FacileStudio/Mycelium/internal/env"
-	"github.com/FacileStudio/Mycelium/internal/memory"
 	"github.com/FacileStudio/Mycelium/internal/server"
 	"github.com/FacileStudio/tronc/logger"
 	"github.com/FacileStudio/tronc/spa"
 	"github.com/spf13/cobra"
 )
 
-const (
-	// semanticProbeTimeout is deliberately short. The probe runs before the
-	// listener starts, so it is the one place an optional backend can hold the
-	// whole server down: a sidecar that resolves but hangs would otherwise eat
-	// most of the healthcheck's start window and invite a restart loop. A
-	// sidecar on the same host answers in well under this.
-	semanticProbeTimeout = 3 * time.Second
-	vectorIndexDir       = ".embeddings"
-	qdrantCollection     = "mycelium_memory"
-)
-
 var servePort int
-
-// attachSemantic wires the vector half of memory search onto the server. A
-// failure here is logged and swallowed: search must fall back to lexical rather
-// than keep the server from starting, which is the same bargain every caller of
-// the search endpoint makes.
-func attachSemantic(srv *server.Server, cfg env.Config) error {
-	if cfg.Embedding == nil {
-		return nil
-	}
-	backend := memory.NewOllama(cfg.Embedding.OllamaURL, cfg.Embedding.Model)
-	ctx, cancel := context.WithTimeout(context.Background(), semanticProbeTimeout)
-	defer cancel()
-	model, err := backend.Model(ctx)
-	if err != nil {
-		return err
-	}
-	store, err := openVectorStore(cfg, model)
-	if err != nil {
-		return err
-	}
-	srv.Semantic = &server.Semantic{Backend: backend, Store: store}
-	return nil
-}
-
-func openVectorStore(cfg env.Config, model memory.ModelID) (memory.Store, error) {
-	if cfg.Embedding.VectorStore == env.VectorStoreQdrant {
-		return memory.OpenQdrantStore(cfg.Embedding.QdrantURL, qdrantCollection, model)
-	}
-	return memory.OpenFlatStore(filepath.Join(cfg.DataDir, vectorIndexDir), model)
-}
 
 var serveCmd = &cobra.Command{
 	Use:          "serve",
@@ -110,12 +65,6 @@ var serveCmd = &cobra.Command{
 		if err := srv.EnableMCP(); err != nil {
 			appLogger.Error("invalid MCP configuration", slog.Any("error", err))
 			os.Exit(1)
-		}
-		if err := attachSemantic(srv, cfg); err != nil {
-			appLogger.Error("semantic search unavailable, memory search stays lexical", slog.Any("error", err))
-		}
-		if worker := server.NewEmbedWorker(srv); worker != nil {
-			go worker.Run(cmd.Context())
 		}
 
 		emitter := server.NewEmitter(srv)

@@ -105,9 +105,8 @@ Ranked search over `### finding` blocks under `memory/`, not whole pages and not
 Results print as `path:line`, then the date the claim carries, then the block's heading and
 first line. A block with no date prints none.
 
-The server's hybrid search answers when it can and the local index answers otherwise, so a
-search always returns something. `--verbose` says which half answered, `--local` skips the
-server, `--limit` caps the list.
+It reads the synced markdown folder on this machine with BM25 (prefix match, accents folded),
+so it works offline and needs no server. `--limit` caps the list.
 
 A `~~struck-through~~` claim is not indexed. The page keeps every word, but a sentence the page
 goes on to retract will not answer a query. Ranking also decays with age, weakly: it breaks ties

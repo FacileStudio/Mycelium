@@ -12,26 +12,21 @@ import (
 // MyceliumConfig is the persisted client configuration: which server and space
 // to sync, the credential, and the order rules are read in.
 type MyceliumConfig struct {
-	Machine    string `yaml:"machine,omitempty"`
-	URL        string `yaml:"url,omitempty"`
-	Token      string `yaml:"token,omitempty"`
-	Space      string `yaml:"space,omitempty"`
-	UsageToken string `yaml:"usage_token,omitempty"`
-	// VectorSearch opts this machine into semantic memory search. It is off by
-	// default: the server half needs an embedding model, and a machine whose
-	// server has none should not pay a round trip to be told so on every query.
-	VectorSearch bool              `yaml:"vector_search,omitempty"`
-	RuleOrder    []string          `yaml:"rule_order,omitempty"`
-	Agents       []string          `yaml:"agents,omitempty"`
-	Consolidate  ConsolidateConfig `yaml:"consolidate,omitempty"`
+	Machine     string            `yaml:"machine,omitempty"`
+	URL         string            `yaml:"url,omitempty"`
+	Token       string            `yaml:"token,omitempty"`
+	Space       string            `yaml:"space,omitempty"`
+	UsageToken  string            `yaml:"usage_token,omitempty"`
+	RuleOrder   []string          `yaml:"rule_order,omitempty"`
+	Agents      []string          `yaml:"agents,omitempty"`
+	Consolidate ConsolidateConfig `yaml:"consolidate,omitempty"`
 }
 
 // ConsolidateConfig tunes the daemon's episodic-to-semantic consolidation
 // stage. Enabled is a pointer so an absent key keeps the default (on) while an
 // explicit false turns the stage off.
 type ConsolidateConfig struct {
-	JudgeModel string `yaml:"judge_model,omitempty"`
-	Enabled    *bool  `yaml:"enabled,omitempty"`
+	Enabled *bool `yaml:"enabled,omitempty"`
 }
 
 // The environment overrides for the server session. Precedence is flag, then
@@ -42,11 +37,10 @@ type ConsolidateConfig struct {
 // URLEnvAlt is the spelling CLI-STANDARD §6.3 gives the whole suite; MYCELIUM_URL
 // is the short form documented for Mycelium. Both are read, MYCELIUM_URL wins.
 const (
-	TokenEnv        = "MYCELIUM_TOKEN"
-	SpaceEnv        = "MYCELIUM_SPACE"
-	VectorSearchEnv = "MYCELIUM_VECTOR_SEARCH"
-	URLEnv          = "MYCELIUM_URL"
-	URLEnvAlt       = "MYCELIUM_SERVER_URL"
+	TokenEnv  = "MYCELIUM_TOKEN"
+	SpaceEnv  = "MYCELIUM_SPACE"
+	URLEnv    = "MYCELIUM_URL"
+	URLEnvAlt = "MYCELIUM_SERVER_URL"
 )
 
 // SpaceID resolves the active space ID, environment first.
@@ -63,24 +57,6 @@ func (c *MyceliumConfig) SpaceID() string {
 	return c.Space
 }
 
-// ServerURL resolves the instance to talk to, environment first.
-// SemanticEnabled reports whether this machine should ask the server for
-// semantic results. It is off unless asked for: the server half needs an
-// embedding model, and a machine whose server has none should not pay a round
-// trip to be told so on every query.
-func (c *MyceliumConfig) SemanticEnabled() bool {
-	if value := strings.TrimSpace(os.Getenv(VectorSearchEnv)); value != "" {
-		return value == "1" || strings.EqualFold(value, "true")
-	}
-	return c.VectorSearch
-}
-
-// JudgeModel returns the local Ollama model used by the consolidation judge;
-// empty means fallback mode, where every heuristic candidate is accepted.
-func (c *MyceliumConfig) JudgeModel() string {
-	return strings.TrimSpace(c.Consolidate.JudgeModel)
-}
-
 // ConsolidateEnabled reports whether the daemon should run the consolidation
 // stage. Absent from the config file means on.
 func (c *MyceliumConfig) ConsolidateEnabled() bool {
@@ -90,6 +66,7 @@ func (c *MyceliumConfig) ConsolidateEnabled() bool {
 	return true
 }
 
+// ServerURL resolves the instance to talk to, environment first.
 func (c *MyceliumConfig) ServerURL() string {
 	for _, key := range []string{URLEnv, URLEnvAlt} {
 		if value := strings.TrimSpace(os.Getenv(key)); value != "" {

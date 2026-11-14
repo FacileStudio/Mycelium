@@ -1,5 +1,7 @@
 # Spec — memory versioning and memory quality
 
+> Superseded in part by v0.53.0 (2026-11-14): vector search, embeddings, `hybrid.go` and every Ollama call (including the consolidation judge and automatic SUPERSEDE) are gone; memory search is BM25 over the markdown files only. See `docs/plan-markdown-folder.md`.
+
 A cold-start handoff. Everything needed to execute with no prior conversation. The reasoning
 behind each decision lives in `ROADMAP.md`; this file is the order and the exact files.
 

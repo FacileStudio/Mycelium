@@ -1,5 +1,7 @@
 # Roadmap
 
+> Superseded in part by v0.53.0 (2026-11-14): vector search, embeddings, `hybrid.go` and every Ollama call (including the consolidation judge and automatic SUPERSEDE) are gone; memory search is BM25 over the markdown files only. See `docs/plan-markdown-folder.md`.
+
 Written 2026-08-22, current as of 2026-08-24 and v0.23.0. A cold-start handoff: enough to pick up a track with no prior
 conversation. **The executable form is `SPEC.md` — exact files, exact steps, exit criteria per
 step.** This file holds the why and the ordering; the reasoning behind each item lives in the commit that

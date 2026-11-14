@@ -31,7 +31,7 @@ tree under `~/.local/share/mycelium` and talks to the server over HTTP.
 | `internal/config` | `~/.config/mycelium/config.yml` and the `DATA_DIR` paths |
 | `internal/cell` | Scaffolds the local tree and reads rules, skills, and the machine block |
 | `internal/adapter` | One pure function per agent: `(rules + skills + machine) -> files` |
-| `internal/memory` | Substring search and `index.md` reads over the memory tree |
+| `internal/memory` | BM25 search over `### finding` blocks and `index.md` reads over the memory tree |
 | `internal/sync` | HTTP client, three-way reconcile against a local base manifest |
 | `internal/sessions` | Transcript scanning, sessionization, shards, stats, timelines, live presence |
 | `internal/usage` | Subscription-limit snapshots: status-line ingest, OAuth cross-check, history |
@@ -392,34 +392,23 @@ of tick frequency:
    three kinds: error→fix pairs (error followed within a few lines by resolution), explicit
    gotcha markers ("gotcha", "turns out", "the fix was", "note that"), and repeated failures
    across sessions (same error at two or more distinct timestamps).
-3. **Durability judge.** Each heuristic hit goes to a small local Ollama model
-   (`consolidate.judge_model`) with one yes/no question: will this be useful in 30 days?
-   The judge **fails open** — Ollama unreachable or unconfigured returns accept with a
-   `heuristic-fallback` verdict, so an offline machine keeps consolidating on heuristics
-   alone. The gate still applies downstream either way.
-4. **Storage gate.** The four rules from the storage-gate policy, executable: changes future
+3. **Storage gate.** The four rules from the storage-gate policy, executable: changes future
    behavior, non-obvious (concrete anchors like paths, dates, error strings), grounded
    (episode refs as provenance), and no secrets — name heuristics shared with `internal/`
    flow plus token-shape patterns. Rejections are typed with a rule name and reason, never
    just a bool, so the daemon log and doctor can say why something was dropped.
-5. **Dedupe.** Each surviving candidate is embedded and searched against the existing wiki
-   (lexical fallback when embeddings are off). Three outcomes: `NOOP`, `CREATE`, `SUPERSEDE`.
-   SUPERSEDE requires all three of high embedding similarity, judge agreement that the two
-   texts actually contradict, and the candidate's claim being dated newer than the struck
-   claim's `**Date**:` — and unlike the judge it **fails closed**: when any leg cannot be
-   verified, the answer is NOOP. Auto-striking a correct claim on weak evidence is the one
-   mistake this stage must not make silently.
-6. **Write.** CREATE appends a `### finding` block with `**Date**:`/`**Source**:` lines to
-   the matched page, or a new page under the matching top-level dir. SUPERSEDE strikes the
-   old claim in place — `~~struck~~ [SUPERSEDED by: ...]` — and writes the correction
-   beneath it. Nothing is ever deleted; supersede-in-place is the forgetting mechanism.
-7. **Cursor.** `.consolidate-cursor.json` records, per source, the last-processed timestamp
+4. **Dedupe.** Each surviving candidate is compared with every wiki block by word overlap.
+   Two outcomes: a near-duplicate is a `NOOP`, anything else is a `CREATE`. Nothing is ever
+   struck automatically: retracting a claim stays a human or agent edit.
+5. **Write.** CREATE appends a `### finding` block with `**Date**:`/`**Source**:` lines to
+   the matched page, or a new page under the matching top-level dir.
+6. **Cursor.** `.consolidate-cursor.json` records, per source, the last-processed timestamp
    plus the hash of that exact line, advanced only after the write phase succeeds. A crash
    mid-run reprocesses nothing on the next run; deleting the file is the documented escape
    hatch for a full replay.
 
-Every model call is localhost Ollama; there are zero network calls outside the machine, and
-heuristic-fallback mode works fully offline.
+No step calls a model or the network: consolidation is heuristics, the gate and word overlap,
+and works fully offline.
 
 ## Cross-app integration
 

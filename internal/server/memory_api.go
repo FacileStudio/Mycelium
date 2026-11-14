@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"encoding/json"
 	"log/slog"
 	"net/http"
@@ -9,7 +8,6 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/FacileStudio/Mycelium/internal/memory"
 	apierrors "github.com/FacileStudio/tronc/errors"
@@ -17,23 +15,10 @@ import (
 )
 
 const (
-	rrfK              = 60
-	defaultHitLimit   = 10
-	maxHitLimit       = 50
-	excerptLimit      = 240
-	embedQueryTimeout = 5 * time.Second
+	defaultHitLimit = 10
+	maxHitLimit     = 50
+	excerptLimit    = 240
 )
-
-// Semantic is the vector half of memory search: the embedding backend, the
-// index it fills, and the worker that keeps that index current. A nil
-// *Semantic is the dormant configuration, and every path through search treats
-// it as normal rather than as a failure.
-type Semantic struct {
-	Backend memory.Backend
-	Store   memory.Store
-	worker  *EmbedWorker
-	counts  chunkCounts
-}
 
 // MemorySearchRequest is the POST /api/memory/search body. An empty SpaceID
 // searches the common tree; anything else is checked against membership before
@@ -44,8 +29,8 @@ type MemorySearchRequest struct {
 	Limit   int    `json:"limit"`
 }
 
-// MemoryHit is one ranked chunk of the wiki. Score is the fused rank score and
-// is comparable only against the other hits of the same query.
+// MemoryHit is one ranked chunk of the wiki. Score is the BM25 score and is
+// comparable only against the other hits of the same query.
 type MemoryHit struct {
 	Path    string  `json:"path"`
 	Heading string  `json:"heading"`
@@ -55,18 +40,12 @@ type MemoryHit struct {
 	Date    string  `json:"date,omitempty"`
 }
 
-// MemorySearchResponse carries the ranked hits. Degraded reports that the
-// vector half did not contribute, so a caller knows the answer is lexical-only
-// rather than simply thin.
+// MemorySearchResponse carries the ranked hits.
 type MemorySearchResponse struct {
-	Results  []MemoryHit `json:"results"`
-	Degraded bool        `json:"degraded"`
+	Results []MemoryHit `json:"results"`
 }
 
-// memorySearchPost answers the hybrid search. The lexical half always runs; the
-// vector half is best-effort, so an absent, unreachable or broken model
-// degrades the answer instead of failing the request. Search never depends on a
-// model being up.
+// memorySearchPost ranks the wiki's findings by BM25 over the markdown tree.
 func (s *Server) memorySearchPost(w http.ResponseWriter, r *http.Request) {
 	var req MemorySearchRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -82,15 +61,8 @@ func (s *Server) memorySearchPost(w http.ResponseWriter, r *http.Request) {
 		httpjson.WriteJSON(w, http.StatusOK, MemorySearchResponse{Results: []MemoryHit{}})
 		return
 	}
-
-	dir := filepath.Join(root, "memory")
-	index := chunkIndexOf(dir)
-	lexical := s.lexicalRanking(dir, query, index)
-	vector, degraded := s.vectorRanking(r.Context(), query, s.treeScope(root), index)
-
 	httpjson.WriteJSON(w, http.StatusOK, MemorySearchResponse{
-		Results:  fuse(index, [][]string{lexical, vector}, hitLimit(req.Limit)),
-		Degraded: degraded,
+		Results: s.rankMemory(filepath.Join(root, "memory"), query, hitLimit(req.Limit)),
 	})
 }
 
@@ -108,9 +80,8 @@ func (s *Server) memoryScope(w http.ResponseWriter, r *http.Request, spaceID str
 	return s.scopeRoot(w, scoped)
 }
 
-// chunkIndex is the chunk table both halves rank over. The lexical half scores
-// lines, the vector half scores chunks, so lines are folded onto the chunk that
-// contains them before the two rankings can be fused at all.
+// chunkIndex is the chunk table a ranking is read back through: it gives each
+// hit its heading and excerpt.
 type chunkIndex struct {
 	byKey  map[string]memory.Chunk
 	byPath map[string][]memory.Chunk
@@ -155,88 +126,38 @@ func (idx chunkIndex) keyAt(path string, line int) (string, bool) {
 	return memory.ChunkKey(best), true
 }
 
-// lexicalRanking is the half that must always run. A failure here is logged and
-// yields an empty ranking rather than an error response, because a wiki that
-// cannot be walked is still not a reason to 500 a search.
-func (s *Server) lexicalRanking(dir, query string, idx chunkIndex) []string {
+// rankMemory is the search behind the API and the MCP tool. A wiki that cannot
+// be walked is logged and answers no hits rather than an error, because it is
+// still not a reason to 500 a search.
+func (s *Server) rankMemory(dir, query string, limit int) []MemoryHit {
 	results, err := memory.SearchChunks(dir, query)
 	if err != nil {
-		s.Log.Error("memory search: lexical half failed", slog.Any("error", err))
-		return nil
+		s.Log.Error("memory search failed", slog.Any("error", err))
+		return []MemoryHit{}
 	}
+	index := chunkIndexOf(dir)
 	seen := make(map[string]bool, len(results))
-	var ranked []string
+	hits := []MemoryHit{}
 	for _, res := range results {
-		key, ok := idx.keyAt(res.Path, res.Line)
+		key, ok := index.keyAt(res.Path, res.Line)
 		if !ok || seen[key] {
 			continue
 		}
 		seen[key] = true
-		ranked = append(ranked, key)
-	}
-	return ranked
-}
-
-// vectorRanking is the best-effort half. It reports degraded whenever it could
-// not contribute — no backend, no index, an unreachable model, an empty answer
-// — and hits are kept only when they belong to the tree being searched, so one
-// shared index can never leak a space's chunks into a common-tree search.
-func (s *Server) vectorRanking(ctx context.Context, query, scope string, idx chunkIndex) ([]string, bool) {
-	if s.Semantic == nil || s.Semantic.Backend == nil || s.Semantic.Store == nil {
-		return nil, true
-	}
-	embedCtx, cancel := context.WithTimeout(ctx, embedQueryTimeout)
-	defer cancel()
-	vectors, err := s.Semantic.Backend.Embed(embedCtx, []string{query})
-	if err != nil || len(vectors) == 0 {
-		s.Log.Warn("memory search: vector half degraded", slog.Any("error", err))
-		return nil, true
-	}
-	hits, err := s.Semantic.Store.Nearest(vectors[0], maxHitLimit)
-	if err != nil {
-		s.Log.Warn("memory search: vector store degraded", slog.Any("error", err))
-		return nil, true
-	}
-	var ranked []string
-	for _, hit := range hits {
-		key, ok := unscope(scope, hit.Key)
-		if !ok {
-			continue
-		}
-		if _, known := idx.byKey[key]; known {
-			ranked = append(ranked, key)
-		}
-	}
-	return ranked, false
-}
-
-// fuse combines rankings with Reciprocal Rank Fusion: every ranking contributes
-// 1/(k+rank) for each key it lists. Ranks, not raw scores — BM25 weight and
-// cosine similarity are not on comparable scales, so adding them would let one
-// half's units decide the order.
-func fuse(idx chunkIndex, rankings [][]string, limit int) []MemoryHit {
-	scores := map[string]float64{}
-	for _, ranking := range rankings {
-		for rank, key := range ranking {
-			scores[key] += 1 / float64(rrfK+rank+1)
-		}
-	}
-	hits := make([]MemoryHit, 0, len(scores))
-	for key, score := range scores {
-		c := idx.byKey[key]
+		c := index.byKey[key]
 		hits = append(hits, MemoryHit{
 			Path:    c.Path,
 			Heading: c.Heading,
 			Line:    c.Line,
-			Score:   score,
+			Score:   float64(res.Score) / 100,
 			Excerpt: excerptOf(memory.StripBlockMeta(c.Body)),
 			Date:    memory.DayString(c.Date()),
 		})
+		if len(hits) == limit {
+			break
+		}
 	}
-	sort.Slice(hits, func(i, j int) bool { return betterHit(hits[i], hits[j]) })
-	if len(hits) > limit {
-		hits = hits[:limit]
-	}
+	sort.SliceStable(hits, func(i, j int) bool { return betterHit(hits[i], hits[j]) })
 	return hits
 }
 

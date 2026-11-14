@@ -10,7 +10,6 @@ import type {
 	MyceliumSettings,
 	MyceliumStatus,
 	LiveSession,
-	MemoryIndexState,
 	MemorySearchResponse,
 	ModelInfo,
 	PendingAction,
@@ -44,7 +43,6 @@ export const backend = {
 			space_id: getActiveSpaceId() ?? ''
 		}),
 	memoryIndex: () => request<string>('GET', `/memory/index${spaceQuery()}`),
-	memoryIndexStatus: () => request<MemoryIndexState>('GET', `/memory/index/status${spaceQuery()}`),
 
 	syncTree: () => request<FileEntry[]>('GET', `/sync/tree${spaceQuery()}`),
 	syncFile: (path: string) => request<string>('GET', `/sync/files/${path}${spaceQuery()}`),

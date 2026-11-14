@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -37,9 +38,9 @@ type Meta struct {
 	Supersedes string `json:"supersedes,omitempty"`
 }
 
-// Text is what gets indexed and embedded: the header followed by the block,
-// so the vector carries the page's identity as well as the block's content,
-// with anything the author struck through removed.
+// Text is what gets indexed: the header followed by the block, so a match
+// carries the page's identity as well as the block's content, with anything
+// the author struck through removed.
 //
 // A ~~struck-through~~ span is the wiki's way of saying a claim turned out to
 // be wrong, and it is normally followed by "[SUPERSEDED by: ...]" and the
@@ -101,16 +102,14 @@ func dropStruck(body string) string {
 	return out.String()
 }
 
-// MaxChunkChars bounds what one chunk carries. Embedding models truncate
-// rather than fail: all-minilm keeps 512 tokens and drops the rest silently, so
-// a page with no headings — log.md is one chunk of 190k characters — would
-// index as its opening paragraph while reporting itself perfectly healthy.
-// Roughly four characters per token leaves room for the header on every part.
+// MaxChunkChars bounds what one chunk carries. A page with no headings —
+// log.md is one chunk of 190k characters — would otherwise rank as a single
+// block whose length normalisation buries every line in it, so it is split
+// into parts that each carry the header.
 const MaxChunkChars = 1600
 
 // Chunks splits a page into retrievable blocks. It is a pure function of the
-// page bytes: the same file always yields the same chunks, which is what lets
-// an index key on a content hash and skip re-embedding unchanged blocks.
+// page bytes: the same file always yields the same chunks.
 func Chunks(path, content string) []Chunk {
 	front, rest := frontmatter(content)
 	lines := strings.Split(rest.text, "\n")
@@ -153,8 +152,8 @@ func appendChunk(chunks []Chunk, c Chunk, body []string) []Chunk {
 // returns the body without it. The comment counts as metadata only when it
 // yields at least one recognised field, because `<!-- lang:fr -->` is a live
 // marker in this wiki and stripping it would delete the exemption it grants.
-// Stripping matters for the rest: Text() is what gets embedded, and `<!--`
-// noise in a vector or a BM25 index is paid for on every query.
+// Stripping matters for the rest: Text() is what gets indexed, and `<!--`
+// noise in a BM25 index is paid for on every query.
 func takeMeta(body []string) (Meta, []string) {
 	start := 0
 	for start < len(body) && strings.TrimSpace(body[start]) == "" {
@@ -255,4 +254,9 @@ func chunkHeader(path, title, kind string) string {
 		parts = append(parts, kind)
 	}
 	return strings.Join(parts, " / ")
+}
+
+// ChunkKey identifies a chunk stably across runs.
+func ChunkKey(c Chunk) string {
+	return fmt.Sprintf("%s#%d", c.Path, c.Line)
 }

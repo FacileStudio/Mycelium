@@ -154,8 +154,8 @@ func TestRunDropsSecretCandidatesWithReason(t *testing.T) {
 		t.Fatalf("expected a drop with reason, got %+v", res)
 	}
 	joined := strings.Join(res.Reasons, "\n")
-	if !strings.Contains(joined, RuleSecret) && !strings.Contains(joined, "judge refused") {
-		t.Fatalf("reasons lack rule name or judge verdict: %q", joined)
+	if !strings.Contains(joined, RuleSecret) {
+		t.Fatalf("reasons lack the rule name: %q", joined)
 	}
 	if findPage(t, dataDir) != "" {
 		t.Fatal("a dropped candidate must never reach memory/")
@@ -230,7 +230,7 @@ func TestRunSkipsUnreadableAgentButConsolidatesOthers(t *testing.T) {
 }
 
 func TestApplyCountsOneDropPerCandidateWithAllRejectionReasons(t *testing.T) {
-	p := newPipeline(t.TempDir(), "")
+	p := newPipeline(t.TempDir())
 	p.now = runTestNow
 	res := Result{}
 	p.apply(Candidate{Text: "just a note here", EpisodeRefs: []string{"pi/2026-08.jsonl:1"}}, &res)
@@ -241,9 +241,4 @@ func TestApplyCountsOneDropPerCandidateWithAllRejectionReasons(t *testing.T) {
 	if !strings.Contains(joined, RuleBehavior) || !strings.Contains(joined, RuleObvious) {
 		t.Fatalf("every rejection reason must survive aggregation: %q", joined)
 	}
-}
-
-func TestMain(m *testing.M) {
-	os.Setenv("OLLAMA_URL", "http://127.0.0.1:1")
-	os.Exit(m.Run())
 }
