@@ -121,6 +121,10 @@ func (s *Server) deviceApprove(w http.ResponseWriter, r *http.Request) {
 		httpjson.WriteError(w, apierrors.NotFound("not found"))
 		return
 	}
+	if reservedTokenName(req.Machine) {
+		httpjson.WriteError(w, apierrors.Invalid(errReservedName))
+		return
+	}
 	token, err := s.mintToken(req.Machine, scopeSync, identityFrom(r).Email)
 	if err != nil {
 		s.Log.Error("device: token mint failed", slog.Any("error", err))
