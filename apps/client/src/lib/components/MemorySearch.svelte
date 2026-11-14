@@ -1,13 +1,11 @@
 <script lang="ts">
 	import { Button, Card, Input, icons, toast } from '@facile/muse';
 	import { backend, type MemorySearchHit } from '$lib/backend';
-	import IndexStatus from '$lib/components/IndexStatus.svelte';
 	import { t } from '$lib/i18n/index.svelte';
 
 	let query = $state('');
 	let results: MemorySearchHit[] = $state([]);
 	let searched = $state(false);
-	let searchDegraded = $state(false);
 	let searching = $state(false);
 
 	async function search(event: Event) {
@@ -17,7 +15,6 @@
 		try {
 			const answer = await backend.memorySearch(query);
 			results = answer.results;
-			searchDegraded = answer.degraded;
 		} catch (e) {
 			results = [];
 			toast.danger(e instanceof Error ? e.message : t('search.failed'));
@@ -29,8 +26,6 @@
 </script>
 
 <section class="flex flex-col gap-4">
-	<IndexStatus />
-
 	<form class="flex flex-col gap-3 sm:flex-row" onsubmit={search}>
 		<div class="min-w-0 flex-1">
 			<Input bind:value={query} placeholder={t('search.placeholder')} aria-label={t('search.label')} />
@@ -44,12 +39,6 @@
 			{searching ? t('common.searching') : t('common.search')}
 		</Button>
 	</form>
-
-	{#if searchDegraded && searched}
-		<p class="text-fc-xs text-fc-fg-muted">
-			{t('search.degraded')}
-		</p>
-	{/if}
 
 	{#if results.length > 0}
 		<div class="flex flex-col gap-2">

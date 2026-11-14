@@ -107,7 +107,6 @@ func (s *Server) syncPutFile(w http.ResponseWriter, r *http.Request) {
 		httpjson.WriteError(w, apierrors.Internal("internal error", err))
 		return
 	}
-	s.enqueueEmbed(root, full)
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -126,7 +125,6 @@ func (s *Server) syncDeleteFile(w http.ResponseWriter, r *http.Request) {
 		httpjson.WriteError(w, apierrors.Internal("internal error", err))
 		return
 	}
-	s.enqueueEmbed(root, full)
 	w.WriteHeader(http.StatusNoContent)
 }
 

@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"encoding/json"
-	"path/filepath"
 	"strconv"
 	"time"
 
@@ -100,12 +99,9 @@ func (t *mcpTools) removePage(_ context.Context, a mcpkit.Action) error {
 	if err != nil {
 		return err
 	}
-	key, err := memory.DeletePage(tree.Root, target.Path, target.Log, tree.language(), time.Now())
+	_, err = memory.DeletePage(tree.Root, target.Path, target.Log, tree.language(), time.Now())
 	if err != nil {
 		return t.s.pageFailure(err, target.Path, tree)
-	}
-	for _, file := range []string{key, "index.md", "log.md"} {
-		t.s.enqueueEmbed(tree.Root, filepath.Join(tree.Root, "memory", filepath.FromSlash(file)))
 	}
 	return nil
 }

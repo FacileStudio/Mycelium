@@ -39,14 +39,14 @@ func TestChunkMetaPopulatesEveryField(t *testing.T) {
 	}
 }
 
-// TestChunkTextDropsTheMetadataBlock keeps the block out of what gets embedded.
-// Text() feeds both the vector and the BM25 index, so every `<!--` left in it
+// TestChunkTextDropsTheMetadataBlock keeps the block out of what gets indexed.
+// Text() feeds the BM25 index, so every `<!--` left in it
 // is paid for on every query, forever, in exchange for nothing.
 func TestChunkTextDropsTheMetadataBlock(t *testing.T) {
 	text := Chunks("conventions/agent-surface.md", metaPage)[0].Text()
 	for _, unwanted := range []string{"<!--", "-->", "agent-surface-domain-vs-storage", "decided with the user"} {
 		if strings.Contains(text, unwanted) {
-			t.Fatalf("embedded text still carries %q:\n%s", unwanted, text)
+			t.Fatalf("indexed text still carries %q:\n%s", unwanted, text)
 		}
 	}
 	if !strings.Contains(text, "The wiki is a domain, not a filesystem.") {
@@ -131,7 +131,7 @@ func TestSplitPartsInheritMeta(t *testing.T) {
 			t.Fatalf("part %d lost its metadata: %+v", i, c.Meta)
 		}
 		if strings.Contains(c.Text(), "<!--") {
-			t.Fatalf("part %d still embeds the comment:\n%s", i, c.Text())
+			t.Fatalf("part %d still indexes the comment:\n%s", i, c.Text())
 		}
 	}
 }

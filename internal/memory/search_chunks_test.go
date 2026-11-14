@@ -54,7 +54,7 @@ func measure(t *testing.T, dir string, cases []EvalCase, rank ranker) (float64, 
 }
 
 // TestChunkLevelBeatsPageLevel is the measurement that decides whether the
-// chunker earns its place before a single vector exists.
+// chunker earns its place over page-level search.
 func TestChunkLevelBeatsPageLevel(t *testing.T) {
 	dir, ok := wikiDir()
 	if !ok {
@@ -73,36 +73,3 @@ func TestChunkLevelBeatsPageLevel(t *testing.T) {
 // TestFuseRRFOrdersByRankNotScore proves fusion cannot be swayed by the scale
 // of either half: a chunk ranked first by both wins over one ranked first by
 // only one, whatever the raw numbers say.
-func TestFuseRRFOrdersByRankNotScore(t *testing.T) {
-	lexical := []SearchResult{
-		{Path: "a.md", Line: 1, Score: 999999},
-		{Path: "b.md", Line: 1, Score: 2},
-	}
-	dense := []SearchResult{
-		{Path: "b.md", Line: 1, Score: 1},
-		{Path: "c.md", Line: 1, Score: 1},
-	}
-	fused := FuseRRF([][]SearchResult{lexical, dense}, 10)
-	if len(fused) != 3 {
-		t.Fatalf("want three distinct hits, got %d", len(fused))
-	}
-	if fused[0].Path != "b.md" {
-		t.Fatalf("the hit ranked by both halves must win, got %q", fused[0].Path)
-	}
-}
-
-// TestFuseRRFIsDeterministic locks the property that map iteration cannot leak
-// into the fused order.
-func TestFuseRRFIsDeterministic(t *testing.T) {
-	a := []SearchResult{{Path: "a.md", Line: 1}, {Path: "b.md", Line: 2}, {Path: "c.md", Line: 3}}
-	b := []SearchResult{{Path: "c.md", Line: 3}, {Path: "a.md", Line: 1}, {Path: "d.md", Line: 4}}
-	first := FuseRRF([][]SearchResult{a, b}, 10)
-	for i := 0; i < 25; i++ {
-		again := FuseRRF([][]SearchResult{a, b}, 10)
-		for j := range first {
-			if first[j] != again[j] {
-				t.Fatalf("run %d differs at %d: %+v vs %+v", i, j, first[j], again[j])
-			}
-		}
-	}
-}

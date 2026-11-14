@@ -57,12 +57,6 @@ export const memory = {
 	'search.placeholder': ['Search memory…', 'Rechercher dans la mémoire…', 'Buscar en la memoria…', 'Im Gedächtnis suchen…'],
 	'search.label': ['Search memory', 'Rechercher dans la mémoire', 'Buscar en la memoria', 'Im Gedächtnis suchen'],
 	'search.failed': ['Search failed.', 'La recherche a échoué.', 'La búsqueda ha fallado.', 'Die Suche ist fehlgeschlagen.'],
-	'search.degraded': [
-		'Matched words only — the semantic half is unavailable.',
-		'Mots exacts uniquement : la partie sémantique est indisponible.',
-		'Solo coincidencia de palabras: la parte semántica no está disponible.',
-		'Nur Wortübereinstimmungen – die semantische Hälfte ist nicht verfügbar.'
-	],
 	'search.none': ['Nothing matched “{query}”.', 'Rien ne correspond à « {query} ».', 'Nada coincide con «{query}».', 'Nichts passt zu „{query}“.'],
 	'stats.pages': ['Pages', 'Pages', 'Páginas', 'Seiten'],
 	'stats.folders': ['Folders', 'Dossiers', 'Carpetas', 'Ordner'],
@@ -76,46 +70,6 @@ export const memory = {
 		'Geschriebene Seiten pro Tag · letzte {days} Tage'
 	],
 	'stats.perFolder': ['Pages per folder', 'Pages par dossier', 'Páginas por carpeta', 'Seiten pro Ordner'],
-	'index.title': ['Semantic index', 'Index sémantique', 'Índice semántico', 'Semantischer Index'],
-	'index.indexing': ['Indexing', 'Indexation', 'Indexando', 'Indizierung'],
-	'index.ready': ['Ready', 'Prêt', 'Listo', 'Bereit'],
-	'index.off': ['Off', 'Désactivé', 'Desactivado', 'Aus'],
-	'index.offText': [
-		'Semantic search is off. Search matches words literally until a model is configured.',
-		'La recherche sémantique est désactivée. La recherche compare les mots tels quels tant qu’aucun modèle n’est configuré.',
-		'La búsqueda semántica está desactivada. La búsqueda compara palabras literalmente hasta que se configure un modelo.',
-		'Die semantische Suche ist aus. Die Suche vergleicht Wörter wörtlich, bis ein Modell konfiguriert ist.'
-	],
-	'index.progress': ['{done} / {total} chunks', '{done} / {total} fragments', '{done} / {total} fragmentos', '{done} / {total} Abschnitte'],
-	'index.embedded': ['Chunks embedded', 'Fragments vectorisés', 'Fragmentos vectorizados', 'Abschnitte eingebettet'],
-	'index.rate': ['{rate} chunks/sec', '{rate} fragments/s', '{rate} fragmentos/s', '{rate} Abschnitte/s'],
-	'index.measuring': ['measuring rate…', 'mesure du débit…', 'midiendo la velocidad…', 'Rate wird gemessen…'],
-	'index.almostDone': ['almost done', 'presque terminé', 'casi terminado', 'fast fertig'],
-	'index.lessThanMinute': ['less than a minute left', 'moins d’une minute restante', 'queda menos de un minuto', 'weniger als eine Minute übrig'],
-	'index.minutesLeft': ['about {count} min left', 'environ {count} min restantes', 'quedan unos {count} min', 'noch etwa {count} Min.'],
-	'index.hoursLeft': ['about {hours} h left', 'environ {hours} h restantes', 'quedan unas {hours} h', 'noch etwa {hours} Std.'],
-	'index.hoursMinutesLeft': [
-		'about {hours} h {minutes} min left',
-		'environ {hours} h {minutes} min restantes',
-		'quedan unas {hours} h {minutes} min',
-		'noch etwa {hours} Std. {minutes} Min.'
-	],
-	'index.queued': ['{count} queued', '{count} en attente', '{count} en cola', '{count} in der Warteschlange'],
-	'index.doneText': ['{count} chunks embedded', '{count} fragments vectorisés', '{count} fragmentos vectorizados', '{count} Abschnitte eingebettet'],
-	'index.doneQueued': [
-		'{count} chunks embedded, {queued} queued',
-		'{count} fragments vectorisés, {queued} en attente',
-		'{count} fragmentos vectorizados, {queued} en cola',
-		'{count} Abschnitte eingebettet, {queued} in der Warteschlange'
-	],
-	'index.dims': ['{count} dims', '{count} dim.', '{count} dim.', '{count} Dim.'],
-	'index.store': ['{name} store', 'stockage {name}', 'almacén {name}', 'Speicher {name}'],
-	'index.readFailed': [
-		'Could not read the index state.',
-		'Impossible de lire l’état de l’index.',
-		'No se pudo leer el estado del índice.',
-		'Der Indexstatus konnte nicht gelesen werden.'
-	],
 	'rules.title': ['Rules', 'Règles', 'Reglas', 'Regeln'],
 	'rules.subtitle': [
 		'Modular instructions, concatenated into every agent config in filename order.',

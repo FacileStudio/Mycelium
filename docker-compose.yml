@@ -27,16 +27,11 @@ services:
       JOURNAL_TOKEN: ${JOURNAL_TOKEN:-}
       JOURNAL_BROWSER_URL: ${JOURNAL_BROWSER_URL:-}
       JOURNAL_BROWSER_KEY: ${JOURNAL_BROWSER_KEY:-}
-      OLLAMA_URL: ${OLLAMA_URL-http://ollama:11434}
-      EMBED_MODEL: ${EMBED_MODEL-all-minilm}
-      VECTOR_STORE: ${VECTOR_STORE-flat}
-      QDRANT_URL: ${QDRANT_URL-http://qdrant:6333}
     volumes:
     - mycelium-data:/data
     networks:
     - default
     - dokploy-network
-    - facile-ai
     labels:
       traefik.enable: 'true'
       traefik.docker.network: dokploy-network
@@ -60,6 +55,4 @@ volumes:
   mycelium-data: null
 networks:
   dokploy-network:
-    external: true
-  facile-ai:
     external: true

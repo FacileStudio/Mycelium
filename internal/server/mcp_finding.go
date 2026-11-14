@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/fs"
 	"log/slog"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -16,7 +15,7 @@ import (
 )
 
 // addFinding is mycelium_add_finding: memory.Add, the CLI's own filing, on
-// the tree named, followed by the embedding the sync route would queue.
+// the tree named.
 func (t *mcpTools) addFinding(_ context.Context, req *sdk.CallToolRequest, in mcpFindingInput) (*sdk.CallToolResult, mcpFindingOutput, error) {
 	if err := in.validate(); err != nil {
 		return nil, mcpFindingOutput{}, err
@@ -35,9 +34,6 @@ func (t *mcpTools) addFinding(_ context.Context, req *sdk.CallToolRequest, in mc
 	res, err := memory.Add(tree.Root, finding, time.Now(), nil)
 	if err != nil {
 		return nil, mcpFindingOutput{}, t.s.findingFailure(err, key, tree)
-	}
-	for _, file := range []string{res.Page, "index.md", "log.md"} {
-		t.s.enqueueEmbed(tree.Root, filepath.Join(tree.Root, "memory", filepath.FromSlash(file)))
 	}
 	return nil, mcpFindingOutput{SpaceID: tree.SpaceID, Page: res.Page, Indexed: res.Indexed}, nil
 }

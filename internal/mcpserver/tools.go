@@ -10,17 +10,15 @@ import (
 // searchMemoryTool declares the wiki search.
 //
 // ReadOnlyHint puts it in the client's read-only group, which a user approves
-// once in bulk instead of confirming on every call. OpenWorldHint is false even
-// though the search may reach the Mycelium server: the world it reaches is one
-// configured host holding this user's own wiki, not the open internet.
+// once in bulk instead of confirming on every call. OpenWorldHint is false: it
+// reads this machine's own wiki and nothing else.
 func searchMemoryTool() *mcp.Tool {
 	return &mcp.Tool{
 		Name:  "search_memory",
 		Title: "Search memory",
-		Description: "Search the shared agent wiki, best match first. The Mycelium server's hybrid " +
-			"search answers when it can and the local index answers when it cannot, and the result " +
-			"says which one did, so a fallback is never silent. Read this before non-trivial work " +
-			"rather than rediscovering what is already written down.",
+		Description: "Search the shared agent wiki, best match first. It ranks the findings of this " +
+			"machine's synced markdown folder by keyword (BM25, prefix match, accents folded). Read this " +
+			"before non-trivial work rather than rediscovering what is already written down.",
 		Annotations: &mcp.ToolAnnotations{
 			ReadOnlyHint:    true,
 			DestructiveHint: hint(false),

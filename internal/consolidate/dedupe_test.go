@@ -2,8 +2,6 @@ package consolidate
 
 import (
 	"context"
-	"errors"
-	"math"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -11,8 +9,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/FacileStudio/Mycelium/internal/memory"
 )
 
 const dedupeFixturePage = `---
@@ -81,16 +77,13 @@ func decideCaseWiki(t *testing.T, emptyWiki, newerClaim bool) string {
 func checkDecision(t *testing.T, got Decision, tt decideCase) {
 	t.Helper()
 	if got.Outcome != tt.want {
-		t.Fatalf("outcome = %v, want %v (similarity %.2f metric %s)", got.Outcome, tt.want, got.Similarity, got.Metric)
+		t.Fatalf("outcome = %v, want %v (similarity %.2f)", got.Outcome, tt.want, got.Similarity)
 	}
 	if (got.Match != nil) != tt.wantMatch {
 		t.Fatalf("match present = %v, want %v", got.Match != nil, tt.wantMatch)
 	}
 	if tt.wantMatch && got.Match.Path != "projects/mycelium.md" {
 		t.Fatalf("match path = %q", got.Match.Path)
-	}
-	if !tt.emptyWiki && got.Metric != metricLexical {
-		t.Fatalf("metric = %q, want lexical", got.Metric)
 	}
 }
 
@@ -170,81 +163,6 @@ func TestDecideOutcomes(t *testing.T) {
 		})
 	}
 }
-
-type stubBackend struct {
-	vectors []memory.Vector
-	err     error
-}
-
-func (s stubBackend) Embed(ctx context.Context, texts []string) ([]memory.Vector, error) {
-	if s.err != nil {
-		return nil, s.err
-	}
-	return s.vectors, nil
-}
-
-func (stubBackend) Model(ctx context.Context) (memory.ModelID, error) { return memory.ModelID{}, nil }
-
-func embeddingDeduper(t *testing.T, cos float64, judgeReply string) *Deduper {
-	t.Helper()
-	sin := sqrt1Minus(cos * cos)
-	return &Deduper{
-		MemoryPath: dedupeWiki(t),
-		Backend:    stubBackend{vectors: []memory.Vector{{1, 0}, {1, float32(sin)}}},
-		Judge:      ollamaServer(t, judgeReply),
-	}
-}
-
-func TestDecideEmbeddingThresholds(t *testing.T) {
-	tests := []struct {
-		name       string
-		candidate  float64
-		judgeReply string
-		want       Outcome
-	}{
-		{name: "below near-duplicate threshold creates", candidate: 0.80, want: OutcomeCreate},
-		{name: "between thresholds noops despite contradiction", candidate: 0.91, judgeReply: "YES", want: OutcomeNoop},
-		{name: "at supersede threshold supersedes", candidate: 0.95, judgeReply: "YES", want: OutcomeSupersede},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			d := embeddingDeduper(t, tt.candidate, tt.judgeReply)
-			got, err := d.Decide(context.Background(), Candidate{
-				Text:        "anything",
-				EpisodeRefs: []string{"pi@2026-08-24T10:00:00Z"},
-			})
-			if err != nil {
-				t.Fatal(err)
-			}
-			if got.Outcome != tt.want || got.Metric != metricEmbeddings {
-				t.Fatalf("outcome = %v metric = %s, want %v embeddings", got.Outcome, got.Metric, tt.want)
-			}
-		})
-	}
-}
-
-func TestDecideEmbedFailureFallsBackToLexical(t *testing.T) {
-	d := &Deduper{
-		MemoryPath: dedupeWiki(t),
-		Backend:    stubBackend{err: errors.New("ollama down")},
-		Judge:      ollamaServer(t, "NO"),
-	}
-	got, err := d.Decide(context.Background(), Candidate{
-		Text:        "The daemon ticks every minute and regenerating agent configs is write-heavy, so the install step is gated by a stamp file checked every five minutes.",
-		EpisodeRefs: []string{"pi@2026-08-24T10:00:00Z"},
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got.Metric != metricLexical {
-		t.Fatalf("metric = %q, want %q", got.Metric, metricLexical)
-	}
-	if got.Outcome != OutcomeNoop {
-		t.Fatalf("outcome = %v, want noop", got.Outcome)
-	}
-}
-
-func sqrt1Minus(x float64) float64 { return math.Sqrt(1 - x) }
 
 func TestEarliestTimestamp(t *testing.T) {
 	tests := []struct {

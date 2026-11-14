@@ -14,27 +14,6 @@ import (
 // DefaultPort is the port `mycelium serve` binds when PORT is unset.
 const DefaultPort = 8420
 
-const (
-	// EmbedDefaultModel is the embedding model used when EMBED_MODEL is unset.
-	EmbedDefaultModel = "all-minilm"
-	// VectorStoreFlat is the exact, dependency-free index: every vector is
-	// scanned on every query, which a wiki-sized corpus can afford.
-	VectorStoreFlat = "flat"
-	// VectorStoreQdrant is the external index, for a corpus a full scan no
-	// longer suits. It needs QDRANT_URL.
-	VectorStoreQdrant = "qdrant"
-)
-
-// Embedding is the semantic-search configuration. A nil *Embedding means the
-// feature is dormant: the server starts fine and memory search answers with
-// lexical results only.
-type Embedding struct {
-	OllamaURL   string
-	Model       string
-	VectorStore string
-	QdrantURL   string
-}
-
 // OIDC is the identity provider client configuration. A nil *OIDC means SSO
 // is dormant.
 type OIDC struct {
@@ -66,7 +45,6 @@ type Config struct {
 	DataDir           string
 	Password          string
 	OIDC              *OIDC
-	Embedding         *Embedding
 	JournalBrowserURL string
 	JournalBrowserKey string
 }
@@ -113,10 +91,6 @@ func Load() (Config, error) {
 		return Config{}, err
 	}
 
-	if cfg.Embedding, err = loadEmbedding(); err != nil {
-		return Config{}, err
-	}
-
 	return cfg, cfg.validate()
 }
 
@@ -154,36 +128,6 @@ func loadOIDC() (*OIDC, error) {
 		*required.field = value
 	}
 	return &oidc, nil
-}
-
-// loadEmbedding reads the semantic-search configuration. An empty OLLAMA_URL
-// leaves the feature dormant and every other embedding variable is ignored
-// rather than refused: docker-compose.yml supplies a model, a store and a
-// Qdrant URL by default, so refusing them alongside an empty OLLAMA_URL would
-// make "set OLLAMA_URL to empty to turn it off" fail to boot.
-//
-// loadEmbedding reads the semantic-search configuration. OLLAMA_URL is the
-// switch, exactly as OIDC_ISSUER is for SSO: unset leaves the feature dormant,
-// and setting any of the other three without it is a misconfiguration rather
-// than a silent no-op, so the server refuses to start on it.
-func loadEmbedding() (*Embedding, error) {
-	embedding := Embedding{
-		OllamaURL:   troncenv.String("OLLAMA_URL", ""),
-		Model:       troncenv.String("EMBED_MODEL", EmbedDefaultModel),
-		VectorStore: troncenv.String("VECTOR_STORE", VectorStoreFlat),
-		QdrantURL:   troncenv.String("QDRANT_URL", ""),
-	}
-	if embedding.OllamaURL == "" {
-		return nil, nil
-	}
-	if embedding.VectorStore != VectorStoreFlat && embedding.VectorStore != VectorStoreQdrant {
-		return nil, fmt.Errorf("env: VECTOR_STORE must be %q or %q, got %q",
-			VectorStoreFlat, VectorStoreQdrant, embedding.VectorStore)
-	}
-	if embedding.VectorStore == VectorStoreQdrant && embedding.QdrantURL == "" {
-		return nil, fmt.Errorf("env: VECTOR_STORE=%s requires QDRANT_URL", VectorStoreQdrant)
-	}
-	return &embedding, nil
 }
 
 // validate rejects the combinations that leave the server with no working way

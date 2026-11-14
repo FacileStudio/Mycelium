@@ -16,13 +16,12 @@ type mcpHit struct {
 	Line      int     `json:"line" jsonschema:"line the matching section starts on"`
 	Date      string  `json:"date,omitempty" jsonschema:"the finding's date when it has one"`
 	Excerpt   string  `json:"excerpt"`
-	Score     float64 `json:"score" jsonschema:"fused rank score, comparable only within this answer"`
+	Score     float64 `json:"score" jsonschema:"BM25 score, comparable only within this answer"`
 }
 
 // mcpSearchOutput is what mycelium_search_memory answers.
 type mcpSearchOutput struct {
-	Results  []mcpHit `json:"results"`
-	Degraded bool     `json:"degraded" jsonschema:"true when the ranking is lexical only because vector search is off"`
+	Results []mcpHit `json:"results"`
 }
 
 // mcpPageInput is what mycelium_read_memory_page takes.

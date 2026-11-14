@@ -40,7 +40,7 @@ func TestChunksSplitOnFindingBlocks(t *testing.T) {
 
 // TestChunkTextCarriesThePageIdentity is the enrichment that matters: a block
 // saying "a pin lands only on the first trust" is meaningless on its own, and
-// embeds as noise unless it says which page it came from.
+// matches as noise unless it says which page it came from.
 func TestChunkTextCarriesThePageIdentity(t *testing.T) {
 	chunks := Chunks("tools/mycelium-flow.md", samplePage)
 	text := chunks[1].Text()
@@ -51,9 +51,8 @@ func TestChunkTextCarriesThePageIdentity(t *testing.T) {
 	}
 }
 
-// TestChunksArePureOfContent locks the property an incremental index depends
-// on: same bytes in, same chunks out, so a content hash can decide what needs
-// re-embedding.
+// TestChunksArePureOfContent locks determinism: same bytes in, same chunks
+// out, so the same query ranks the same way on every run.
 func TestChunksArePureOfContent(t *testing.T) {
 	first := Chunks("a.md", samplePage)
 	for i := 0; i < 10; i++ {
@@ -107,14 +106,12 @@ func TestChunksOverTheRealWiki(t *testing.T) {
 		t.Fatalf("every page must yield at least one chunk: %d pages, %d chunks", len(docs), total)
 	}
 	if empty > 0 {
-		t.Fatalf("%d chunks would embed as empty text", empty)
+		t.Fatalf("%d chunks would index as empty text", empty)
 	}
 }
 
-// TestChunksSplitOversizedBlocks covers the silent failure this bounds:
-// embedding models truncate rather than error, so log.md — one 190k-character
-// block with no headings — indexed as its opening paragraph while every status
-// reported it healthy.
+// TestChunksSplitOversizedBlocks covers log.md: one 190k-character block with
+// no headings must split into parts that each carry the page header.
 func TestChunksSplitOversizedBlocks(t *testing.T) {
 	var body strings.Builder
 	body.WriteString("# Log\n")

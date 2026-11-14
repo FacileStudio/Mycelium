@@ -131,27 +131,11 @@ type MemoryHit struct {
 }
 
 type MemorySearchResponse struct {
-	Results  []MemoryHit `json:"results"`
-	Degraded bool        `json:"degraded"`
+	Results []MemoryHit `json:"results"`
 }
 
 type IndexResponse struct {
 	Content string `json:"content"`
-}
-
-type MemoryIndexStatusResponse struct {
-	Enabled         bool    `json:"enabled"`
-	Model           string  `json:"model,omitempty"`
-	Store           string  `json:"store"`
-	TotalChunks     int     `json:"total_chunks"`
-	IndexedChunks   int     `json:"indexed_chunks"`
-	PendingPaths    int     `json:"pending_paths"`
-	Indexing        bool    `json:"indexing"`
-	StartedAt       string  `json:"started_at"`
-	UpdatedAt       string  `json:"updated_at"`
-	ChunksPerSecond float64 `json:"chunks_per_second"`
-	ETASeconds      int     `json:"eta_seconds"`
-	LastError       string  `json:"last_error,omitempty"`
 }
 
 type StatRow struct {

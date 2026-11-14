@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/fs"
 	"log/slog"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -20,7 +19,7 @@ const waitingDelete = "Nothing was deleted: your client cannot ask the user to c
 	"ask them to confirm there. Do not call this tool again for the same page; the request stays open for 7 days."
 
 // writeMemoryPage is mycelium_write_memory_page: memory.WritePage on the
-// tree named, then the embedding the sync route would queue.
+// tree named.
 func (t *mcpTools) writeMemoryPage(_ context.Context, req *sdk.CallToolRequest, in mcpWritePageInput) (*sdk.CallToolResult, mcpWritePageOutput, error) {
 	tree, err := t.s.mcpOneTree(req, in.SpaceID)
 	if err != nil {
@@ -34,9 +33,6 @@ func (t *mcpTools) writeMemoryPage(_ context.Context, req *sdk.CallToolRequest, 
 	res, err := memory.WritePage(tree.Root, page, time.Now())
 	if err != nil {
 		return nil, mcpWritePageOutput{}, t.s.pageFailure(err, key, tree)
-	}
-	for _, file := range []string{res.Page, "index.md", "log.md"} {
-		t.s.enqueueEmbed(tree.Root, filepath.Join(tree.Root, "memory", filepath.FromSlash(file)))
 	}
 	return nil, mcpWritePageOutput{SpaceID: tree.SpaceID, Path: res.Page, Created: res.Created, Indexed: res.Indexed}, nil
 }

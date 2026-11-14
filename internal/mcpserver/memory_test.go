@@ -49,28 +49,15 @@ func callSearch(t *testing.T, args map[string]any) (*mcp.CallToolResult, searchO
 	return res, out
 }
 
-// The policy cmd/memory.go already follows: a server that cannot answer is a
-// fallback, never a failed search. The difference here is that the fallback
-// says so, because an agent reading a silent empty answer as "the wiki has
-// nothing" is the failure this tool exists to stop.
-func TestSearchMemoryFallsBackToTheLocalIndexAndSaysWhy(t *testing.T) {
+func TestSearchMemoryRanksTheLocalTree(t *testing.T) {
 	wikiFixture(t)
-	t.Setenv(config.VectorSearchEnv, "true")
-	t.Setenv(config.URLEnv, "http://127.0.0.1:1")
-	t.Setenv(config.TokenEnv, "tok")
 
 	_, out := callSearch(t, map[string]any{"query": "bm25 ranking"})
 	if len(out.Results) == 0 {
-		t.Fatal("search_memory returned nothing, want the local index to answer")
+		t.Fatal("search_memory returned nothing, want the local tree to answer")
 	}
 	if out.Results[0].Path != "ranking.md" {
 		t.Errorf("Results[0].Path = %q, want ranking.md", out.Results[0].Path)
-	}
-	if out.Source != sourceLocal {
-		t.Errorf("Source = %q, want %q", out.Source, sourceLocal)
-	}
-	if !strings.Contains(out.Note, "the server did not answer") {
-		t.Errorf("Note = %q, want it to say why the server was skipped", out.Note)
 	}
 }
 

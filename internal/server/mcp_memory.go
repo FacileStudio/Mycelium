@@ -15,9 +15,9 @@ import (
 // errMCPQuery is the refusal for an empty search.
 var errMCPQuery = errors.New("query is empty: pass the words to look for")
 
-// searchMemory is mycelium_search_memory: the API's hybrid search, run on
-// every tree in scope and merged by fused score.
-func (t *mcpTools) searchMemory(ctx context.Context, req *sdk.CallToolRequest, in mcpSearchInput) (*sdk.CallToolResult, mcpSearchOutput, error) {
+// searchMemory is mycelium_search_memory: the API's search, run on every tree
+// in scope and merged by score.
+func (t *mcpTools) searchMemory(_ context.Context, req *sdk.CallToolRequest, in mcpSearchInput) (*sdk.CallToolResult, mcpSearchOutput, error) {
 	query := strings.TrimSpace(in.Query)
 	if query == "" {
 		return nil, mcpSearchOutput{}, errMCPQuery
@@ -29,9 +29,7 @@ func (t *mcpTools) searchMemory(ctx context.Context, req *sdk.CallToolRequest, i
 	limit := hitLimit(in.Limit)
 	out := mcpSearchOutput{Results: []mcpHit{}}
 	for _, tree := range trees {
-		hits, degraded := t.s.searchTree(ctx, tree, query, limit)
-		out.Results = append(out.Results, hits...)
-		out.Degraded = out.Degraded || degraded
+		out.Results = append(out.Results, t.s.searchTree(tree, query, limit)...)
 	}
 	sort.SliceStable(out.Results, func(i, j int) bool { return out.Results[i].Score > out.Results[j].Score })
 	if len(out.Results) > limit {
@@ -41,19 +39,15 @@ func (t *mcpTools) searchMemory(ctx context.Context, req *sdk.CallToolRequest, i
 }
 
 // searchTree is memorySearchPost's ranking over one tree.
-func (s *Server) searchTree(ctx context.Context, tree mcpTree, query string, limit int) ([]mcpHit, bool) {
-	dir := filepath.Join(tree.Root, "memory")
-	index := chunkIndexOf(dir)
-	lexical := s.lexicalRanking(dir, query, index)
-	vector, degraded := s.vectorRanking(ctx, query, s.treeScope(tree.Root), index)
+func (s *Server) searchTree(tree mcpTree, query string, limit int) []mcpHit {
 	hits := []mcpHit{}
-	for _, hit := range fuse(index, [][]string{lexical, vector}, limit) {
+	for _, hit := range s.rankMemory(filepath.Join(tree.Root, "memory"), query, limit) {
 		hits = append(hits, mcpHit{
 			SpaceID: tree.SpaceID, SpaceName: tree.Name, Path: hit.Path, Heading: hit.Heading,
 			Line: hit.Line, Date: hit.Date, Excerpt: hit.Excerpt, Score: hit.Score,
 		})
 	}
-	return hits, degraded
+	return hits
 }
 
 // readMemoryPage is mycelium_read_memory_page.

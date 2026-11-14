@@ -10,21 +10,13 @@ import (
 	"github.com/FacileStudio/Mycelium/internal/memory"
 )
 
-// Similarity thresholds for the NOOP/CREATE/SUPERSEDE decision. Cosine over
-// embeddings separates "related" from "same claim" well enough to earn two
-// thresholds; the lexical fallback cannot, so offline SUPERSEDE uses the same
-// bar as near-duplicate and leans entirely on the judge plus the date check
-// for safety.
+// Similarity thresholds for the NOOP/CREATE/SUPERSEDE decision. Word overlap
+// cannot separate "related" from "same claim", so SUPERSEDE uses the
+// near-duplicate bar and leans entirely on the judge plus the date check for
+// safety.
 const (
-	EmbedNearDuplicate   = 0.90
-	EmbedSupersede       = 0.94
 	LexicalNearDuplicate = 0.60
 	weakMatchSimilarity  = 0.20
-)
-
-const (
-	metricEmbeddings = "embeddings"
-	metricLexical    = "lexical"
 )
 
 // Outcome is what consolidation decided to do with a candidate.
@@ -64,16 +56,13 @@ type Match struct {
 type Decision struct {
 	Outcome    Outcome
 	Similarity float64
-	Metric     string
 	Match      *Match
 }
 
-// Deduper consolidates candidates against the wiki under MemoryPath. Backend
-// may be nil or fail at call time; both degrade to lexical similarity so an
-// offline machine still consolidates, just blunter.
+// Deduper consolidates candidates against the wiki under MemoryPath by word
+// overlap.
 type Deduper struct {
 	MemoryPath string
-	Backend    memory.Backend
 	Judge      *Judge
 }
 
@@ -85,12 +74,11 @@ func (d *Deduper) Decide(ctx context.Context, c Candidate) (Decision, error) {
 	if len(chunks) == 0 {
 		return Decision{Outcome: OutcomeCreate}, nil
 	}
-	sims, metric := d.similarities(ctx, c.Text, chunks)
+	sims := similarities(c.Text, chunks)
 	best := argmax(sims)
-	nearDup, supersede := thresholds(metric)
 
-	dec := Decision{Similarity: sims[best], Metric: metric}
-	if sims[best] < nearDup {
+	dec := Decision{Similarity: sims[best]}
+	if sims[best] < LexicalNearDuplicate {
 		dec.Outcome = OutcomeCreate
 		if sims[best] >= weakMatchSimilarity {
 			dec.Match = matchOf(chunks[best], sims[best])
@@ -104,7 +92,7 @@ func (d *Deduper) Decide(ctx context.Context, c Candidate) (Decision, error) {
 		return dec, nil
 	}
 	judged := d.Judge.Compare(ctx, chunks[best].Text(), c.Text)
-	if judged.Verdict != VerdictAccept || sims[best] < supersede {
+	if judged.Verdict != VerdictAccept {
 		return dec, nil
 	}
 	episodeTime, ok := earliestTimestamp(c)
@@ -162,33 +150,12 @@ func (d *Deduper) pageRel(path string) (string, bool, error) {
 	return rel, true, nil
 }
 
-func (d *Deduper) similarities(ctx context.Context, query string, chunks []memory.Chunk) ([]float64, string) {
-	texts := make([]string, 0, len(chunks)+1)
-	texts = append(texts, query)
-	for _, c := range chunks {
-		texts = append(texts, c.Text())
-	}
+func similarities(query string, chunks []memory.Chunk) []float64 {
 	sims := make([]float64, len(chunks))
-	if d.Backend != nil {
-		vectors, err := d.Backend.Embed(ctx, texts)
-		if err == nil && len(vectors) == len(texts) {
-			for i := range chunks {
-				sims[i] = memory.Cosine(vectors[0], vectors[i+1])
-			}
-			return sims, metricEmbeddings
-		}
-	}
 	for i := range chunks {
 		sims[i] = lexicalSimilarity(query, chunks[i].Text())
 	}
-	return sims, metricLexical
-}
-
-func thresholds(metric string) (nearDup, supersede float64) {
-	if metric == metricEmbeddings {
-		return EmbedNearDuplicate, EmbedSupersede
-	}
-	return LexicalNearDuplicate, LexicalNearDuplicate
+	return sims
 }
 
 func matchOf(c memory.Chunk, sim float64) *Match {
@@ -236,10 +203,9 @@ func earliestTimestamp(c Candidate) (time.Time, bool) {
 	return best, found
 }
 
-// lexicalSimilarity is the offline stand-in for embeddings: an overlap
-// coefficient of the two texts' lowercase word tokens, intersection over the
-// smaller token set. Blunt by design — it knows words, not meaning — which is
-// exactly why its thresholds sit apart from the embedding ones.
+// lexicalSimilarity is an overlap coefficient of the two texts' lowercase word
+// tokens, intersection over the smaller token set. Blunt by design: it knows
+// words, not meaning.
 func lexicalSimilarity(a, b string) float64 {
 	at := tokenize(a)
 	bt := tokenize(b)
