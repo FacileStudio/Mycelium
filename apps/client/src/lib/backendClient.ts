@@ -18,6 +18,15 @@ export function spaceQuery(sep: '?' | '&' = '?'): string {
 	return id ? `${sep}space_id=${encodeURIComponent(id)}` : '';
 }
 
+/**
+ * The tree a single artifact lives in: `undefined` follows the active space, an empty string
+ * is the common tree, anything else is that space.
+ */
+export function treeQuery(space?: string): string {
+	if (space === undefined) return spaceQuery();
+	return space ? `?space_id=${encodeURIComponent(space)}` : '';
+}
+
 function getToken(): string | null {
 	if (typeof window === 'undefined') return null;
 	return localStorage.getItem(TOKEN_KEY);

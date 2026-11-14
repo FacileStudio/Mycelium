@@ -9,7 +9,7 @@
 		"build": "vite build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"test": "bun run scripts/check-messages.ts && bun run scripts/check-encre.ts"
+		"test": "bun run scripts/check-messages.ts && bun run scripts/check-encre.ts && bun src/lib/artifactSearch.check.ts"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-static": "^3.0.0",

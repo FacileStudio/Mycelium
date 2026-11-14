@@ -25,9 +25,23 @@ export interface ArtifactSummary {
 	machine: string;
 	created: string;
 	updated: string;
+	space_id?: string;
+	space_name?: string;
 }
 
 export type ReportSummary = ArtifactSummary;
+
+/** One artifact from `GET /artifacts/search`: `match` says whether the title held every word. */
+export interface ArtifactHit extends ArtifactSummary {
+	match?: 'title' | 'content';
+	snippet?: string;
+}
+
+export interface ArtifactSearchPage {
+	results: ArtifactHit[];
+	total: number;
+	next_cursor?: string;
+}
 
 export interface ArtifactDetail extends ArtifactSummary {
 	content: string;

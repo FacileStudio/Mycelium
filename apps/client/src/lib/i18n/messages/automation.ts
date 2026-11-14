@@ -63,12 +63,30 @@ export const automation = {
 		'Publica uno con `mycelium artifact add <file>` o la herramienta `publish_artifact`.',
 		'Veröffentliche einen mit `mycelium artifact add <file>` oder dem Tool `publish_artifact`.'
 	],
-	'artifacts.filter': [
-		'Filter artifacts by title, machine…',
-		'Filtrer les artefacts par titre, machine…',
-		'Filtrar artefactos por título, máquina…',
-		'Artefakte nach Titel, Maschine filtern…'
+	'artifacts.searchLabel': ['Search artifacts', 'Rechercher dans les artefacts', 'Buscar en los artefactos', 'Artefakte durchsuchen'],
+	'artifacts.searchPlaceholder': [
+		'Search titles and content',
+		'Rechercher dans les titres et le contenu',
+		'Buscar en títulos y contenido',
+		'Titel und Inhalt durchsuchen'
 	],
+	'artifacts.searching': ['Searching…', 'Recherche…', 'Buscando…', 'Suche läuft…'],
+	'artifacts.clearSearch': ['Clear search', 'Effacer la recherche', 'Borrar la búsqueda', 'Suche löschen'],
+	'artifacts.searchFailed': ['Search failed', 'La recherche a échoué', 'La búsqueda falló', 'Suche fehlgeschlagen'],
+	'artifacts.results': [
+		{ one: '1 artifact matches “{query}”', other: '{count} artifacts match “{query}”' },
+		{ one: '1 artefact correspond à « {query} »', other: '{count} artefacts correspondent à « {query} »' },
+		{ one: '1 artefacto coincide con «{query}»', other: '{count} artefactos coinciden con «{query}»' },
+		{ one: '1 Artefakt passt zu „{query}“', other: '{count} Artefakte passen zu „{query}“' }
+	],
+	'artifacts.noMatchText': [
+		'Every word must appear in the title or the text. Check the spelling or try fewer words.',
+		'Chaque mot doit figurer dans le titre ou le texte. Vérifiez l’orthographe ou essayez moins de mots.',
+		'Cada palabra debe aparecer en el título o en el texto. Revisa la ortografía o prueba con menos palabras.',
+		'Jedes Wort muss im Titel oder im Text vorkommen. Prüfe die Schreibweise oder versuche weniger Wörter.'
+	],
+	'artifacts.loadMore': ['Load more', 'Charger plus', 'Cargar más', 'Mehr laden'],
+	'artifacts.loadingMore': ['Loading…', 'Chargement…', 'Cargando…', 'Wird geladen…'],
 	'artifacts.noMatch': ['No artifacts match “{query}”.', 'Aucun artefact ne correspond à « {query} ».', 'Ningún artefacto coincide con «{query}».', 'Kein Artefakt passt zu „{query}“.'],
 	'artifacts.updated': ['Updated {date}', 'Mis à jour le {date}', 'Actualizado el {date}', 'Aktualisiert am {date}'],
 	'artifacts.created': ['Created {date}', 'Créé le {date}', 'Creado el {date}', 'Erstellt am {date}'],
@@ -87,5 +105,4 @@ export const automation = {
 		'El artefacto se eliminará de forma permanente de esta máquina y de la sincronización.',
 		'Das Artefakt wird dauerhaft von dieser Maschine und aus dem Sync gelöscht.'
 	],
-	'artifacts.unknownMachine': ['unknown', 'inconnue', 'desconocida', 'unbekannt'],
 } as const satisfies Record<string, Row>;
