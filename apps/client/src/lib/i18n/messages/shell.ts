@@ -37,126 +37,89 @@ export const shell = {
 		'Un único almacén de memoria, reglas y habilidades para cada agente de IA de código, sincronizado en todas tus máquinas.',
 		'Ein Speicher für Gedächtnis, Regeln und Skills aller KI-Coding-Agenten, synchronisiert auf allen deinen Maschinen.'
 	],
-	'landing.badge': [
-		'Local-first · Multi-agent · Open source',
-		'Local-first · Multi-agent · Open source',
-		'Local-first · Multiagente · Código abierto',
-		'Local-first · Multi-Agent · Open Source'
+	'landing.nav.features': ['Features', 'Fonctionnalités', 'Funciones', 'Funktionen'],
+	'landing.nav.downloads': ['Downloads', 'Téléchargements', 'Descargas', 'Downloads'],
+	'landing.hero.title': [
+		'One brain for every coding agent.',
+		'Un cerveau pour tous vos agents de code.',
+		'Un cerebro para todos tus agentes de código.',
+		'Ein Gehirn für alle deine Coding-Agenten.'
 	],
-	'landing.heroTitle': [
-		'One brain.|All your agents.',
-		'Un cerveau.|Tous vos agents.',
-		'Un cerebro.|Todos tus agentes.',
-		'Ein Gehirn.|Alle deine Agenten.'
+	'landing.hero.line': [
+		'Memory, rules, skills and flows, shared by every agent on every machine.',
+		'Mémoire, règles, skills et flows, partagés par chaque agent sur chaque machine.',
+		'Memoria, reglas, skills y flows, compartidos por cada agente en cada máquina.',
+		'Gedächtnis, Regeln, Skills und Flows, geteilt von jedem Agenten auf jeder Maschine.'
 	],
-	'landing.heroText': [
-		'Memory, rules and skills shared between pi, Claude, Gemini, Codex, Cursor and all your machines. One place, zero friction.',
-		'Mémoire, règles et compétences partagées entre pi, Claude, Gemini, Codex, Cursor et toutes vos machines. Un seul endroit, zéro friction.',
-		'Memoria, reglas y habilidades compartidas entre pi, Claude, Gemini, Codex, Cursor y todas tus máquinas. Un solo lugar, cero fricción.',
-		'Gedächtnis, Regeln und Skills, geteilt zwischen pi, Claude, Gemini, Codex, Cursor und allen deinen Maschinen. Ein Ort, keine Reibung.'
+	'landing.hero.cli': ['Install the CLI', 'Installer la CLI', 'Instalar la CLI', 'CLI installieren'],
+	'landing.demo.label': [
+		'An agent searches the shared memory and answers from a page another agent wrote.',
+		'Un agent cherche dans la mémoire partagée et répond avec une page écrite par un autre agent.',
+		'Un agente busca en la memoria compartida y responde con una página que escribió otro agente.',
+		'Ein Agent durchsucht das gemeinsame Gedächtnis und antwortet mit einer Seite, die ein anderer Agent schrieb.'
 	],
-	'landing.start': ['Get started', 'Commencer', 'Empezar', 'Loslegen'],
-	'landing.adaptersLabel': ['Adapters', 'Adaptateurs', 'Adaptadores', 'Adapter'],
-	'landing.adaptersTitle': [
-		'Write once.|Deploy everywhere.',
-		'Écrivez une fois.|Déployez partout.',
-		'Escribe una vez.|Despliega en todas partes.',
-		'Einmal schreiben.|Überall ausrollen.'
+	'landing.demo.prompt': [
+		'Why did the nightly backup stop?',
+		'Pourquoi la sauvegarde de nuit s’est arrêtée ?',
+		'¿Por qué se detuvo la copia de seguridad nocturna?',
+		'Warum ist das nächtliche Backup ausgefallen?'
 	],
-	'landing.adaptersText': [
-		'Your rules and skills are written in markdown. Mycelium generates the configuration files for every agent.',
-		'Vos règles et compétences sont écrites en markdown. Mycelium génère automatiquement les fichiers de configuration pour chaque agent.',
-		'Tus reglas y habilidades se escriben en markdown. Mycelium genera los archivos de configuración de cada agente.',
-		'Deine Regeln und Skills sind in Markdown geschrieben. Mycelium erzeugt die Konfigurationsdateien für jeden Agenten.'
+	'landing.demo.answer': [
+		'The backup user lost the docker group on 2026-08-12, so every dump failed. The fix is in conventions/backups.md.',
+		'L’utilisateur de sauvegarde a perdu le groupe docker le 2026-08-12, donc chaque dump échoue. Le correctif est dans conventions/backups.md.',
+		'El usuario de copias perdió el grupo docker el 2026-08-12, así que cada volcado falla. La solución está en conventions/backups.md.',
+		'Der Backup-Benutzer hat am 2026-08-12 die Gruppe docker verloren, deshalb scheitert jeder Dump. Die Lösung steht in conventions/backups.md.'
 	],
-	'landing.layersTitle': [
-		'Three layers.|Each one independent.',
-		'Trois couches.|Chacune indépendante.',
-		'Tres capas.|Cada una independiente.',
-		'Drei Schichten.|Jede für sich.'
+	'landing.features.title': ['How it works', 'Comment ça marche', 'Cómo funciona', 'So funktioniert es'],
+	'landing.feature.memory.title': ['Shared memory', 'Mémoire partagée', 'Memoria compartida', 'Gemeinsames Gedächtnis'],
+	'landing.feature.memory.body': [
+		'A markdown wiki your agents search before they start and update when they finish.',
+		'Un wiki markdown que vos agents consultent avant de commencer et complètent à la fin.',
+		'Una wiki en markdown que tus agentes consultan antes de empezar y actualizan al terminar.',
+		'Ein Markdown-Wiki, das deine Agenten vor dem Start durchsuchen und am Ende ergänzen.'
 	],
-	'landing.layersText': [
-		'No dependencies. Each piece works alone and gets richer with the others.',
-		'Pas de dépendance. Chaque pièce fonctionne seule et s’enrichit avec les autres.',
-		'Sin dependencias. Cada pieza funciona sola y se enriquece con las demás.',
-		'Keine Abhängigkeiten. Jedes Teil funktioniert allein und wird mit den anderen besser.'
+	'landing.feature.rules.title': ['Rules and skills', 'Règles et skills', 'Reglas y skills', 'Regeln und Skills'],
+	'landing.feature.rules.body': [
+		'Write them once. Mycelium generates CLAUDE.md, AGENTS.md, GEMINI.md and the Cursor rules.',
+		'Écrivez-les une fois. Mycelium génère CLAUDE.md, AGENTS.md, GEMINI.md et les règles Cursor.',
+		'Escríbelas una vez. Mycelium genera CLAUDE.md, AGENTS.md, GEMINI.md y las reglas de Cursor.',
+		'Einmal schreiben. Mycelium erzeugt CLAUDE.md, AGENTS.md, GEMINI.md und die Cursor-Regeln.'
 	],
-	'landing.layer.memory.title': ['Memory', 'Mémoire', 'Memoria', 'Gedächtnis'],
-	'landing.layer.memory.body': [
-		'A shared markdown wiki. Bugs, tools, projects, conventions: your agents learn from every session and share what they know.',
-		'Wiki partagé en markdown. Bugs, outils, projets, conventions : vos agents apprennent de chaque session et partagent ce savoir entre eux.',
-		'Una wiki compartida en markdown. Errores, herramientas, proyectos, convenciones: tus agentes aprenden de cada sesión y comparten lo que saben.',
-		'Ein gemeinsames Markdown-Wiki. Bugs, Tools, Projekte, Konventionen: deine Agenten lernen aus jeder Sitzung und teilen ihr Wissen.'
+	'landing.feature.flows.title': ['Flows', 'Flows', 'Flows', 'Flows'],
+	'landing.feature.flows.body': [
+		'Shell procedures that already worked, replayed in order, with every run recorded.',
+		'Des procédures shell qui ont déjà marché, rejouées dans l’ordre, chaque exécution enregistrée.',
+		'Procedimientos de shell que ya funcionaron, repetidos en orden, con cada ejecución registrada.',
+		'Shell-Abläufe, die schon funktioniert haben, der Reihe nach wiederholt, jeder Lauf protokolliert.'
 	],
-	'landing.layer.rules.title': ['Rules', 'Règles', 'Reglas', 'Regeln'],
-	'landing.layer.rules.body': [
-		'Modular rules for your agents. Code style, git conventions, engineering ladder: write them once, every agent follows them.',
-		'Règles modulaires pour vos agents. Style de code, conventions git, engineering ladder : écrivez-les une fois, tous vos agents les suivent.',
-		'Reglas modulares para tus agentes. Estilo de código, convenciones de git, engineering ladder: escríbelas una vez y todos tus agentes las siguen.',
-		'Modulare Regeln für deine Agenten. Code-Stil, Git-Konventionen, Engineering Ladder: einmal schreiben, alle Agenten befolgen sie.'
+	'landing.feature.sync.title': ['Sync and spaces', 'Synchro et espaces', 'Sincronización y espacios', 'Sync und Bereiche'],
+	'landing.feature.sync.body': [
+		'Every machine syncs in the background. Personal, team and client spaces stay apart.',
+		'Chaque machine se synchronise en arrière-plan. Les espaces perso, équipe et client restent séparés.',
+		'Cada máquina se sincroniza en segundo plano. Los espacios personal, de equipo y de cliente quedan separados.',
+		'Jede Maschine synchronisiert im Hintergrund. Private, Team- und Kundenbereiche bleiben getrennt.'
 	],
-	'landing.layer.skills.title': ['Skills', 'Compétences', 'Habilidades', 'Skills'],
-	'landing.layer.skills.body': [
-		'Agent-agnostic skills with portable definitions. One skill, six agents. No vendor lock-in.',
-		'Compétences agnostiques à l’agent, avec des définitions portables. Un skill, six agents. Pas de vendor lock-in.',
-		'Habilidades independientes del agente con definiciones portables. Una habilidad, seis agentes. Sin dependencia de proveedor.',
-		'Agent-unabhängige Skills mit portablen Definitionen. Ein Skill, sechs Agenten. Kein Vendor-Lock-in.'
+	'landing.cli.title': ['From the terminal', 'Depuis le terminal', 'Desde la terminal', 'Aus dem Terminal'],
+	'landing.cli.flow': [
+		'Each step reports its exit code and time. The run is saved as JSON.',
+		'Chaque étape donne son code de sortie et sa durée. L’exécution est enregistrée en JSON.',
+		'Cada paso muestra su código de salida y su duración. La ejecución se guarda en JSON.',
+		'Jeder Schritt meldet Exit-Code und Dauer. Der Lauf wird als JSON gespeichert.'
 	],
-	'landing.cellsLabel': ['Cells', 'Cellules', 'Celdas', 'Zellen'],
-	'landing.cellsTitle': ['Personal vs. team.', 'Perso vs. équipe.', 'Personal frente a equipo.', 'Privat oder Team.'],
-	'landing.cellsText': [
-		'A personal profile, a team profile, a client profile: each cell has its own memory, rules and skills. Stack them: personal rules win, memory adds up.',
-		'Un profil personnel, un profil équipe, un profil client : chaque cellule a sa propre mémoire, ses règles et ses skills. Superposez-les : les règles perso gagnent, la mémoire s’additionne.',
-		'Un perfil personal, un perfil de equipo, un perfil de cliente: cada celda tiene su propia memoria, reglas y habilidades. Apílalas: las reglas personales ganan, la memoria se suma.',
-		'Ein persönliches Profil, ein Teamprofil, ein Kundenprofil: jede Zelle hat eigenes Gedächtnis, eigene Regeln und Skills. Schichte sie: persönliche Regeln gewinnen, das Gedächtnis addiert sich.'
-	],
-	'landing.cell.personal': [
-		'Your memory, your preferences, your shortcuts',
-		'Votre mémoire, vos préférences, vos raccourcis',
-		'Tu memoria, tus preferencias, tus atajos',
-		'Dein Gedächtnis, deine Vorlieben, deine Abkürzungen'
-	],
-	'landing.cell.team': [
-		'Team conventions, tech stack, shared projects',
-		'Conventions d’équipe, stack technique, projets partagés',
-		'Convenciones del equipo, stack técnico, proyectos compartidos',
-		'Team-Konventionen, Tech-Stack, gemeinsame Projekte'
-	],
-	'landing.cell.client': [
-		'Project context, client rules',
-		'Contexte spécifique au projet, règles du client',
-		'Contexto del proyecto, reglas del cliente',
-		'Projektkontext, Kundenregeln'
-	],
-	'landing.syncLabel': ['Sync', 'Synchro', 'Sincronización', 'Sync'],
-	'landing.syncTitle': [
-		'Built-in sync.|Same binary.',
-		'Sync intégré.|Même binaire.',
-		'Sincronización integrada.|El mismo binario.',
-		'Integrierter Sync.|Dasselbe Binary.'
-	],
-	'landing.syncText': [
-		'mycelium serve runs an HTTP sync server. Deploy it on your VPS and connect your machines with a token.',
-		'mycelium serve lance un serveur de sync HTTP. Déployez-le sur votre VPS, connectez vos machines avec un token.',
-		'mycelium serve lanza un servidor de sincronización HTTP. Despliégalo en tu VPS y conecta tus máquinas con un token.',
-		'mycelium serve startet einen HTTP-Sync-Server. Betreibe ihn auf deinem VPS und verbinde deine Maschinen mit einem Token.'
-	],
-	'landing.syncOnServer': ['# on the server', '# sur le serveur', '# en el servidor', '# auf dem Server'],
-	'landing.syncOnMachine': ['# on your machine', '# sur votre machine', '# en tu máquina', '# auf deiner Maschine'],
-	'landing.syncDone': ['Synced 2 file(s).', '2 fichier(s) synchronisé(s).', '2 archivo(s) sincronizado(s).', '2 Datei(en) synchronisiert.'],
-	'landing.ctaTitle': [
-		'Open source. Local-first. Free.',
-		'Open source. Local-first. Gratuit.',
-		'Código abierto. Local-first. Gratis.',
-		'Open Source. Local-first. Kostenlos.'
-	],
-	'landing.ctaText': [
-		'One Go binary. Zero dependencies. Your data stays with you.',
-		'Un binaire Go. Zéro dépendance. Vos données restent chez vous.',
-		'Un binario de Go. Cero dependencias. Tus datos se quedan contigo.',
-		'Ein Go-Binary. Keine Abhängigkeiten. Deine Daten bleiben bei dir.'
+	'landing.cta.title': [
+		'Give your agents a memory.',
+		'Donnez une mémoire à vos agents.',
+		'Dales memoria a tus agentes.',
+		'Gib deinen Agenten ein Gedächtnis.'
 	],
 	'landing.code': ['View the code', 'Voir le code', 'Ver el código', 'Code ansehen'],
+	'downloads.title': ['Download Mycelium', 'Télécharger Mycelium', 'Descargar Mycelium', 'Mycelium herunterladen'],
+	'downloads.line': [
+		'Install the CLI on macOS or Linux, then run mycelium login.',
+		'Installez la CLI sur macOS ou Linux, puis lancez mycelium login.',
+		'Instala la CLI en macOS o Linux y ejecuta mycelium login.',
+		'Installiere die CLI auf macOS oder Linux und führe dann mycelium login aus.'
+	],
 	'landing.pricing': ['Pricing', 'Tarifs', 'Precios', 'Preise'],
 	'landing.footerTagline': [
 		'Shared memory for your AI agents.',

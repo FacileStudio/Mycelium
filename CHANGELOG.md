@@ -10,6 +10,19 @@ records what shipped rather than what was written down at the time.
 
 ## [Unreleased]
 
+### Added
+
+- Public `/downloads` page with every install option for the CLI (install script, `facile install`, Homebrew cask) and a link to the GitHub releases. No sign-in needed.
+
+### Changed
+
+- The landing page is shorter: a hero with an animated terminal demo of an agent running `mycelium memory search`, four feature blocks, a `mycelium flow run` demo tile, the install section, pricing and one closing call to action. The install section shows only the visitor's platform and links to `/downloads`.
+- Dashboard: `@facile/muse` moves from v0.21.0 to v0.23.0, which brings the Magnetik typeface. `@facile/mise-en-scene` v0.2.1 draws the landing demos.
+
+### Removed
+
+- The hand-rolled `WordReveal` animation and the direct `gsap` dependency.
+
 ## [0.51.0] - 2026-11-14
 
 ### Security
