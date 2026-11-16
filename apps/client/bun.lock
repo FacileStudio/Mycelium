@@ -8,7 +8,7 @@
         "@facile/encre": "github:FacileStudio/encre#v0.12.1",
         "@facile/journal": "github:FacileStudio/Journal#ts",
         "@facile/mise-en-scene": "github:FacileStudio/mise-en-scene#v0.2.1",
-        "@facile/muse": "github:FacileStudio/muse#v0.23.0",
+        "@facile/muse": "github:FacileStudio/muse#v0.32.0",
         "dompurify": "^3.4.17",
         "highlight.js": "^11.11.1",
         "iconify-icon": "^3.0.2",
@@ -93,13 +93,15 @@
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.27.7", "", { "os": "win32", "cpu": "x64" }, "sha512-56hiAJPhwQ1R4i+21FVF7V8kSD5zZTdHcVuRFMW0hn753vVfQN8xlx4uOPT4xoGH0Z/oVATuR82AiqSTDIpaHg=="],
 
+    "@facile/blob": ["@facile/blob@github:FacileStudio/blob#23a0db0", { "peerDependencies": { "svelte": "^5.29.0" } }, "FacileStudio-blob-23a0db0", "sha512-4h8WaLN/1qTQFaPPODp9Zm4M9d50bmEreHrfZeroucjGkcNX83fIY09o01BS9HUj/b6EU/emrhF5MO89zakDlg=="],
+
     "@facile/encre": ["@facile/encre@github:FacileStudio/encre#2eae88a", { "dependencies": { "@tiptap/core": "3.33.0", "@tiptap/extension-bubble-menu": "3.33.0", "@tiptap/extension-code": "3.33.0", "@tiptap/extension-code-block": "3.33.0", "@tiptap/extension-collaboration": "3.33.0", "@tiptap/extension-collaboration-caret": "3.33.0", "@tiptap/extension-hard-break": "3.33.0", "@tiptap/extension-image": "3.33.0", "@tiptap/extension-link": "3.33.0", "@tiptap/extension-list": "3.33.0", "@tiptap/extension-unique-id": "3.33.0", "@tiptap/extensions": "3.33.0", "@tiptap/pm": "3.33.0", "@tiptap/starter-kit": "3.33.0", "@tiptap/suggestion": "3.33.0", "@tiptap/y-tiptap": "3.3.0" }, "peerDependencies": { "@facile/muse": "github:FacileStudio/muse", "svelte": "^5.57.0", "y-protocols": "^1.0.7", "y-websocket": "^3.1.0", "yjs": "^13.6.33" } }, "FacileStudio-encre-2eae88a", "sha512-Zb0w+k0Ay5o250ePvI3Nm2UQG6eVKksaryPbwTmeD1uPOW0QW0gB/WtZqW2gFdTLB+9O34ihnE+g3BKNRy58iQ=="],
 
     "@facile/journal": ["@facile/journal@github:FacileStudio/Journal#186d6d4", {}, "FacileStudio-Journal-186d6d4", "sha512-flNpkoQEl3EeXACjNZ0hL14+9d0UFvrlPlFzKG9aQCB4mvrZmgp47RvpytwlFzD9pvC+EzshrGGkIrgnMVEmZg=="],
 
     "@facile/mise-en-scene": ["@facile/mise-en-scene@github:FacileStudio/mise-en-scene#29d936d", { "peerDependencies": { "svelte": "^5.29.0" } }, "FacileStudio-mise-en-scene-29d936d", "sha512-ZWvqtesVLNlH4i+oEBHh/obcLTDhdK+JFtnQYnwxrfEERCG2F111AxzEJ9syJkp2NFztic+oz/o4Y6pSh/KCtA=="],
 
-    "@facile/muse": ["@facile/muse@github:FacileStudio/muse#709a22d", { "dependencies": { "gsap": "^3.13.0", "tailwind-merge": "^3.5.0" }, "peerDependencies": { "svelte": "^5.0.0", "tailwindcss": "^4.0.0" } }, "FacileStudio-muse-709a22d", "sha512-YXi7YAF8R1qfUBmx3nWKfeKXo+utYj4dXmqA3IHdrX9Fvp49avnKZ5vTdfl51i1IbnBiy/SydMxzgUH2vo0drQ=="],
+    "@facile/muse": ["@facile/muse@github:FacileStudio/muse#8a8bbdd", { "dependencies": { "@facile/blob": "github:FacileStudio/blob#v0.2.2", "gsap": "^3.13.0", "tailwind-merge": "^3.5.0" }, "peerDependencies": { "svelte": "^5.0.0", "tailwindcss": "^4.0.0" } }, "FacileStudio-muse-8a8bbdd", "sha512-BIzJGWroE+gc664AbDBRuu6LrrGoKL1pnNXlqjLIZKDNnjrDNFgbVKturywx7Jb4dVzdULD7oe8ok5mG3Uc9Tw=="],
 
     "@floating-ui/core": ["@floating-ui/core@1.8.0", "", { "dependencies": { "@floating-ui/utils": "^0.2.12" } }, "sha512-0CIZ5itps/8x7BG8dEIhs53BvCUH2PCoogtakwRTut+Arm58sJooJ0AuZhLw2HJYIR5cMLNPBSS728sPho2khQ=="],
 
