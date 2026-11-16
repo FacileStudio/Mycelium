@@ -10,6 +10,12 @@ records what shipped rather than what was written down at the time.
 
 ## [Unreleased]
 
+## [0.54.2] - 2026-11-16
+
+### Changed
+
+- Client: muse v0.32.0. Tabs and segmented option cards are 36px tall on pointer devices and 44px on touch, and the user menu is slimmed (language and theme live in Settings, Preferences).
+
 ## [0.54.1] - 2026-11-14
 
 ### Fixed
