@@ -60,13 +60,14 @@ and fans it out. The agents stay thin; the brain is shared.
 curl -fsSL https://raw.githubusercontent.com/FacileStudio/Mycelium/main/install.sh | bash
 ```
 
-Installs to `~/.local/bin` via [facile](https://github.com/FacileStudio/facile), the suite
-installer. Pass `--bin-dir <dir>` to change that, `--source` to build from source.
+Installs to `~/.local/bin` via [kit](https://github.com/FacileStudio/kit), the Facile package
+manager. Pass `--bin-dir <dir>` to change that, `--source` to build from source, `--no-skill` to
+skip AI agent skill registration.
 
-Already have `facile`:
+Already have `kit`:
 
 ```sh
-facile install mycelium
+kit add mycelium
 ```
 
 ```sh

@@ -23,8 +23,8 @@ pre-push hook runs `scripts/check.sh` and is the only gate in front of that: nev
 The tag and the deployed image come from different places, and both are needed:
 
 - **A tag** (`v*`) runs `release.yml`, which is goreleaser only: platform tarballs, checksums and
-  the Homebrew tap. It **builds no container image**. This is what `facile install mycelium` and
-  `facile update` serve to a machine.
+  the Homebrew tap. It **builds no container image**. This is what `kit add mycelium` and
+  `kit update` serve to a machine.
 - **A push** is what rebuilds the server. Dokploy clones without tags, which is why a running
   container reports a short sha (`mycelium d676a63`) where a released binary reports `0.22.0`.
 
