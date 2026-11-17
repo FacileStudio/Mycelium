@@ -180,7 +180,7 @@ Steps left:
    Judge by container StartedAt, `/version` = 0.53.0 and the served bundle. Live checks:
    `POST /api/memory/search` returns results without `degraded`; `GET /api/artifacts/search?q=encre&all=true`
    returns hits with snippets; `mcp-live-smoke` with `MCP_TOOL=mycelium_search_artifacts`.
-10. Local CLI on ruche: `facile update` (or the repo's `install.sh`) to `~/.local/bin/mycelium`,
+10. Local CLI on ruche: `kit update` (or the repo's `install.sh`) to `~/.local/bin/mycelium`,
     then `mycelium --version`, `mycelium memory search "dokploy compose"` and `mycelium doctor`
     all succeed.
 11. Report to the owner (do not remove anything): Dokploy env keys the server no longer reads,
